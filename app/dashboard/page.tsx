@@ -21,8 +21,9 @@ import { ManualWeightModal } from '@/components/logging/ManualWeightModal'
 import { QuickSelectModal } from '@/components/logging/QuickSelectModal'
 import { TextLogModal } from '@/components/logging/TextLogModal'
 import { WorkoutLogger } from '@/components/logging/WorkoutLogger'
+import WorkoutEditModal from '@/components/dashboard/WorkoutEditModal'
 import { DAY_TYPE_ADJUSTMENTS } from '@/types/database'
-import type { DayType } from '@/types/database'
+import type { DayType, WorkoutSession } from '@/types/database'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -38,6 +39,7 @@ export default function DashboardPage() {
   const [showTextLog, setShowTextLog] = useState(false)
   const [showWorkout, setShowWorkout] = useState(false)
   const [showCoach, setShowCoach] = useState(false)
+  const [editingWorkout, setEditingWorkout] = useState<WorkoutSession | null>(null)
 
   const handleLogComplete = useCallback(() => {
     refreshLog()
@@ -166,6 +168,36 @@ export default function DashboardPage() {
           </div>
         </button>
 
+        {/* Today's Workouts */}
+        {workouts.length > 0 && (
+          <div className="rounded-2xl bg-gray-900 p-6">
+            <h2 className="mb-3 text-lg font-semibold">Today&apos;s Workouts</h2>
+            <div className="space-y-2">
+              {workouts.map((w) => (
+                <button
+                  key={w.id}
+                  type="button"
+                  onClick={() => setEditingWorkout(w)}
+                  className="w-full flex items-center justify-between rounded-lg bg-gray-800 p-3 text-left hover:bg-gray-700/80 transition-colors"
+                >
+                  <div>
+                    <p className="text-sm font-medium capitalize">{w.session_type}</p>
+                    <p className="text-xs text-gray-500">
+                      {w.duration_min ? `${w.duration_min} min` : ''}
+                      {w.duration_min && w.estimated_cal_burned ? ' · ' : ''}
+                      {w.estimated_cal_burned ? `${w.estimated_cal_burned} cal` : ''}
+                      {w.distance_miles ? ` · ${w.distance_miles} mi` : ''}
+                    </p>
+                  </div>
+                  <span className="text-xs text-gray-600">
+                    {new Date(w.trained_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Today's Food Log */}
         <div className="rounded-2xl bg-gray-900 p-6">
           <h2 className="mb-4 text-lg font-semibold">Today&apos;s Log</h2>
@@ -236,6 +268,15 @@ export default function DashboardPage() {
           userId={userId!}
           onComplete={() => { refreshWorkouts(); setShowWorkout(false) }}
           onClose={() => setShowWorkout(false)}
+        />
+      )}
+
+      {editingWorkout && (
+        <WorkoutEditModal
+          workout={editingWorkout}
+          onSaved={() => { refreshWorkouts(); setEditingWorkout(null) }}
+          onDeleted={() => { refreshWorkouts(); setEditingWorkout(null) }}
+          onClose={() => setEditingWorkout(null)}
         />
       )}
     </div>
