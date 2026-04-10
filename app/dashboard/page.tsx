@@ -12,6 +12,8 @@ import CaloriesRemainingCard from '@/components/dashboard/CaloriesRemainingCard'
 import MacroBars from '@/components/dashboard/MacroBars'
 import WeightCard from '@/components/dashboard/WeightCard'
 import ScoreCard from '@/components/dashboard/ScoreCard'
+import CoachPanel from '@/components/dashboard/CoachPanel'
+import SundayCheckinCard from '@/components/dashboard/SundayCheckinCard'
 import TodayLog from '@/components/dashboard/TodayLog'
 import LogFAB from '@/components/dashboard/LogFAB'
 import { VoiceLogger } from '@/components/logging/VoiceLogger'
@@ -35,6 +37,7 @@ export default function DashboardPage() {
   const [showQuickSelect, setShowQuickSelect] = useState(false)
   const [showTextLog, setShowTextLog] = useState(false)
   const [showWorkout, setShowWorkout] = useState(false)
+  const [showCoach, setShowCoach] = useState(false)
 
   const handleLogComplete = useCallback(() => {
     refreshLog()
@@ -96,6 +99,9 @@ export default function DashboardPage() {
       <div className="space-y-4 px-4">
         {/* Day Type Toggle */}
         <DayTypeToggle value={dayType} onChange={setDayType} />
+
+        {/* Sunday Check-in (only visible on Sundays) */}
+        <SundayCheckinCard userId={userId!} />
 
         {/* Calories Remaining */}
         <CaloriesRemainingCard
@@ -167,12 +173,26 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Floating Action Button */}
-      <LogFAB
-        onVoice={() => setShowVoice(true)}
-        onCamera={() => {/* Phase 2 */}}
-        onType={() => setShowTextLog(true)}
-        onQuickSelect={() => setShowQuickSelect(true)}
+      {/* Floating Action Button (hidden when Coach is expanded) */}
+      {!showCoach && (
+        <LogFAB
+          onVoice={() => setShowVoice(true)}
+          onCamera={() => {/* Phase 2 */}}
+          onType={() => setShowTextLog(true)}
+          onQuickSelect={() => setShowQuickSelect(true)}
+        />
+      )}
+
+      {/* AI Coach */}
+      <CoachPanel
+        dayType={dayType}
+        setDayType={setDayType}
+        expanded={showCoach}
+        onToggle={() => setShowCoach((prev) => !prev)}
+        refreshLog={refreshLog}
+        refreshWorkouts={refreshWorkouts}
+        refreshWeight={refreshWeight}
+        userId={userId!}
       />
 
       {/* Modals */}
