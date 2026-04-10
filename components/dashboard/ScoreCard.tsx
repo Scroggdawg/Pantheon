@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import GlassPanel from '@/components/ui/GlassPanel'
 import type { DayType, FoodLogEntry, WorkoutSession, WeightReading } from '@/types/database'
 import DailyPlanPanel from './DailyPlanPanel'
 
@@ -33,7 +34,7 @@ interface ScoreCardProps {
 }
 
 const CACHE_KEY = 'pantheon_score_cache'
-const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
+const CACHE_TTL = 30 * 60 * 1000
 
 function getCached(): (ScoreResponse & { timestamp: number }) | null {
   try {
@@ -49,6 +50,27 @@ function getCached(): (ScoreResponse & { timestamp: number }) | null {
 
 function setCache(data: ScoreResponse) {
   localStorage.setItem(CACHE_KEY, JSON.stringify({ ...data, timestamp: Date.now() }))
+}
+
+const GOLD = '#a47c16'
+const GOLD_LIGHT = '#c9a03c'
+const TEXT_DARK = '#3d3225'
+const TEXT_LIGHT = '#7a6a52'
+const TEXT_MUTED = '#8a7a60'
+
+function GoldDiamond({ size = 'small' }: { size?: 'small' | 'large' }) {
+  const px = size === 'small' ? 6 : 10
+  return (
+    <span
+      className="inline-block"
+      style={{
+        width: px,
+        height: px,
+        background: 'linear-gradient(135deg, #e8c048 0%, #c9a03c 50%, #a47c16 100%)',
+        transform: 'rotate(45deg)',
+      }}
+    />
+  )
 }
 
 export default function ScoreCard({
@@ -67,14 +89,23 @@ export default function ScoreCard({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPlan, setShowPlan] = useState(false)
+  const autoFired = useRef(false)
 
-  // Check cache on mount
+  // Auto-calculate on mount (check cache first)
   useEffect(() => {
     const cached = getCached()
-    if (cached) setScore(cached)
+    if (cached) {
+      setScore(cached)
+      return
+    }
+    if (!autoFired.current) {
+      autoFired.current = true
+      fetchScore()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function calculateScore(bypassCache = false) {
+  async function fetchScore(bypassCache = false) {
     if (!bypassCache) {
       const cached = getCached()
       if (cached) {
@@ -121,99 +152,95 @@ export default function ScoreCard({
 
   return (
     <>
-      <div className="rounded-2xl bg-gray-900 p-5">
-        <h2 className="text-base font-semibold mb-3">Greek God Bod Score</h2>
-
+      <GlassPanel className="p-5 mb-4">
         {score ? (
-          <div className="space-y-3">
-            {/* Roman numeral display */}
-            <div className="text-center">
-              <p className="text-5xl font-bold tracking-wider text-amber-400" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+          <div className="flex items-stretch gap-4">
+            {/* Roman numeral */}
+            <div className="flex items-center justify-center pr-4" style={{ borderRight: `1px solid rgba(201,160,60,0.2)` }}>
+              <span
+                className="text-6xl font-bold tracking-wider"
+                style={{
+                  fontFamily: 'var(--font-cinzel), serif',
+                  background: 'linear-gradient(180deg, #6b5520 0%, #9a7a28 30%, #b8923a 50%, #9a7a28 70%, #6b5520 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  filter: 'drop-shadow(1px 2px 1px rgba(40,30,10,0.6)) drop-shadow(-1px -1px 0px rgba(200,180,120,0.25))',
+                }}
+              >
                 {score.roman}
+              </span>
+            </div>
+
+            {/* Details */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <GoldDiamond size="small" />
+                <GoldDiamond size="large" />
+                <GoldDiamond size="small" />
+              </div>
+              <p className="text-[11px] uppercase tracking-[0.15em] font-semibold mb-1" style={{ color: TEXT_LIGHT }}>
+                Greek God Bod Score
               </p>
-              <p className="text-xs text-gray-500 mt-1">{score.score.toFixed(1)} / 10</p>
-            </div>
-
-            {/* Verdict */}
-            <p className="text-sm text-gray-200">{score.verdict}</p>
-
-            {/* Recommendation */}
-            {score.recommendation && (
-              <p className="text-sm text-gray-400">{score.recommendation}</p>
-            )}
-
-            {/* Remaining macros summary */}
-            <div className="rounded-lg bg-gray-800/50 px-3 py-2">
-              <p className="text-xs text-gray-500">
-                Remaining: {remainingCal} cal / {remainingProtein}g protein / {remainingCarbs}g carbs / {remainingFat}g fat
+              <p className="text-[14px] font-medium mb-2" style={{ color: TEXT_DARK }}>
+                {score.score.toFixed(1)} / 10
               </p>
-            </div>
+              <p className="text-[11px] leading-relaxed mb-3" style={{ color: TEXT_MUTED }}>
+                {score.verdict}
+              </p>
 
-            {/* Component breakdown */}
-            <div className="grid grid-cols-5 gap-1 text-center">
-              {[
-                { label: 'Protein', value: score.components.protein_score },
-                { label: 'Calories', value: score.components.calorie_score },
-                { label: 'Workout', value: score.components.workout_score },
-                { label: 'Trend', value: score.components.trend_score },
-                { label: 'Macros', value: score.components.macro_score },
-              ].map((c) => (
-                <div key={c.label}>
-                  <p className="text-xs text-gray-500">{c.label}</p>
-                  <p className="text-sm font-medium text-gray-300">
-                    {c.value != null ? c.value.toFixed(1) : '—'}
-                  </p>
-                </div>
-              ))}
-            </div>
+              {/* Remaining */}
+              <p className="text-[10px] mb-3" style={{ color: TEXT_MUTED }}>
+                Remaining: {remainingCal} cal / {remainingProtein}g P / {remainingCarbs}g C / {remainingFat}g F
+              </p>
 
-            {/* Action buttons */}
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => calculateScore(true)}
-                disabled={loading}
-                className="flex-1 rounded-lg border border-gray-700 py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
-              >
-                {loading ? 'Calculating...' : 'Recalculate'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowPlan(true)}
-                className="flex-1 rounded-lg bg-amber-600 py-2 text-sm font-medium hover:bg-amber-700"
-              >
-                See Plan
-              </button>
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fetchScore(true)}
+                  disabled={loading}
+                  className="text-[11px] uppercase tracking-wider font-semibold disabled:opacity-50"
+                  style={{ color: GOLD_LIGHT }}
+                >
+                  {loading ? 'Calculating\u2026' : 'Recalculate'}
+                </button>
+                <span style={{ color: 'rgba(201,160,60,0.3)' }}>&middot;</span>
+                <button
+                  type="button"
+                  onClick={() => setShowPlan(true)}
+                  className="text-[11px] uppercase tracking-wider font-semibold flex items-center gap-1"
+                  style={{ color: GOLD_LIGHT }}
+                >
+                  View Plan <span style={{ fontSize: '14px' }}>&rarr;</span>
+                </button>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-400 text-center">
-              Calculate your daily score based on nutrition, workouts, and weight trend.
-            </p>
+          <div className="text-center py-4">
             {error && (
-              <p className="text-xs text-red-400 text-center">{error}</p>
+              <p className="text-xs mb-2" style={{ color: '#b45454' }}>{error}</p>
             )}
-            <button
-              type="button"
-              onClick={() => calculateScore()}
-              disabled={loading}
-              className="w-full rounded-lg bg-amber-600 py-3 font-medium hover:bg-amber-700 disabled:opacity-50"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" />
-                  Calculating...
-                </span>
-              ) : (
-                'Calculate Score'
-              )}
-            </button>
+            {loading ? (
+              <div className="flex items-center justify-center gap-2" style={{ color: GOLD }}>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current" style={{ borderTopColor: 'transparent' }} />
+                <span className="text-[12px] uppercase tracking-wider font-semibold">Calculating score&hellip;</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fetchScore()}
+                className="text-[12px] uppercase tracking-wider font-semibold"
+                style={{ color: GOLD }}
+              >
+                Calculate Score
+              </button>
+            )}
           </div>
         )}
-      </div>
+      </GlassPanel>
 
-      {/* Daily Plan Panel */}
       {showPlan && (
         <DailyPlanPanel
           dayType={dayType}

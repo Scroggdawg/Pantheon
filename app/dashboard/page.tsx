@@ -7,15 +7,12 @@ import { useUser } from '@/hooks/useUser'
 import { useDailyLog } from '@/hooks/useDailyLog'
 import { useWeightTrend } from '@/hooks/useWeightTrend'
 import { useTodayWorkouts } from '@/hooks/useTodayWorkouts'
-import DayTypeToggle from '@/components/dashboard/DayTypeToggle'
-import CaloriesRemainingCard from '@/components/dashboard/CaloriesRemainingCard'
-import MacroBars from '@/components/dashboard/MacroBars'
-import WeightCard from '@/components/dashboard/WeightCard'
+import GlassPanel from '@/components/ui/GlassPanel'
+import MarbleBackground from '@/components/ui/MarbleBackground'
 import ScoreCard from '@/components/dashboard/ScoreCard'
 import CoachPanel from '@/components/dashboard/CoachPanel'
 import SundayCheckinCard from '@/components/dashboard/SundayCheckinCard'
 import TodayLog from '@/components/dashboard/TodayLog'
-import LogFAB from '@/components/dashboard/LogFAB'
 import { VoiceLogger } from '@/components/logging/VoiceLogger'
 import { ManualWeightModal } from '@/components/logging/ManualWeightModal'
 import { QuickSelectModal } from '@/components/logging/QuickSelectModal'
@@ -25,11 +22,60 @@ import WorkoutEditModal from '@/components/dashboard/WorkoutEditModal'
 import { DAY_TYPE_ADJUSTMENTS } from '@/types/database'
 import type { DayType, WorkoutSession } from '@/types/database'
 
+function toRoman(num: number): string {
+  const vals: [number, string][] = [
+    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+    [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
+  ]
+  let result = ''
+  for (const [value, numeral] of vals) {
+    while (num >= value) {
+      result += numeral
+      num -= value
+    }
+  }
+  return result
+}
+
+function formatRomanDate(): string {
+  const now = new Date()
+  const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'America/Los_Angeles' }).format(now)
+  const day = parseInt(new Intl.DateTimeFormat('en-US', { day: 'numeric', timeZone: 'America/Los_Angeles' }).format(now))
+  const year = parseInt(new Intl.DateTimeFormat('en-US', { year: 'numeric', timeZone: 'America/Los_Angeles' }).format(now))
+  return `${month} ${toRoman(day)} · ${toRoman(year)}`
+}
+
+const DAY_OPTIONS: { key: DayType; label: string }[] = [
+  { key: 'lift', label: 'Lift' },
+  { key: 'zone2', label: 'Zone II' },
+  { key: 'rest', label: 'Rest' },
+]
+
+const GOLD = '#a47c16'
+const GOLD_LIGHT = '#c9a03c'
+const GOLD_BRIGHT = '#e8c048'
+const TEXT_DARK = '#3d3225'
+const TEXT_MID = '#5a4a32'
+const TEXT_LIGHT = '#7a6a52'
+const TEXT_MUTED = '#8a7a60'
+const TEXT_DIM = '#9a8a6a'
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 my-4">
+      <div className="flex-1 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${GOLD_LIGHT}, ${GOLD_BRIGHT}, ${GOLD_LIGHT}, transparent)` }} />
+      <span className="text-[11px] uppercase tracking-[0.2em] font-medium" style={{ color: GOLD }}>{'\u2726'} {label} {'\u2726'}</span>
+      <div className="flex-1 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${GOLD_LIGHT}, ${GOLD_BRIGHT}, ${GOLD_LIGHT}, transparent)` }} />
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const { user, userId, loading: userLoading } = useUser()
-  const { entries, totals, loading: logLoading, refresh: refreshLog, deleteEntry } = useDailyLog(userId)
-  const { readings, latest, chartData, loading: weightLoading, refresh: refreshWeight } = useWeightTrend(userId)
+  const { entries, totals, refresh: refreshLog, deleteEntry } = useDailyLog(userId)
+  const { readings, latest, refresh: refreshWeight } = useWeightTrend(userId)
   const { workouts, refresh: refreshWorkouts } = useTodayWorkouts(userId)
 
   const [dayType, setDayType] = useState<DayType>('zone2')
@@ -39,7 +85,9 @@ export default function DashboardPage() {
   const [showTextLog, setShowTextLog] = useState(false)
   const [showWorkout, setShowWorkout] = useState(false)
   const [showCoach, setShowCoach] = useState(false)
+  const [showFoodMenu, setShowFoodMenu] = useState(false)
   const [editingWorkout, setEditingWorkout] = useState<WorkoutSession | null>(null)
+  const [syncing, setSyncing] = useState(false)
 
   const handleLogComplete = useCallback(() => {
     refreshLog()
@@ -53,10 +101,26 @@ export default function DashboardPage() {
     setShowManualWeight(false)
   }, [refreshWeight])
 
+  async function handleSync() {
+    if (syncing) return
+    setSyncing(true)
+    try {
+      const res = await fetch('/api/wyze/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+      })
+      const data = await res.json()
+      if (!data.error) refreshWeight()
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   if (userLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-400">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center" style={{ background: '#eae5de' }}>
+        <div style={{ color: TEXT_LIGHT }}>Loading...</div>
       </div>
     )
   }
@@ -71,53 +135,173 @@ export default function DashboardPage() {
   const proteinTarget = user.base_protein_g || 200
   const carbsTarget = (user.base_carbs_g || 160) + adj.carbs_g
   const fatTarget = user.base_fat_g || 90
-
-  const remaining = calorieTarget - totals.calories
+  const latestWeight = latest ? Number(latest.weight_lbs) : null
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-24">
-      {/* Header */}
-      <div className="px-4 pt-6 pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">PANTHEON</h1>
-            <p className="text-sm text-gray-400">
-              {new Date().toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/progress" className="text-sm text-blue-400 hover:text-blue-300 font-medium">
-              Progress
+    <div className="min-h-screen relative overflow-hidden" style={{ background: '#eae5de' }}>
+      <MarbleBackground />
+
+      {/* Ambient light spots */}
+      <div className="absolute top-20 left-10 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,252,245,0.5) 0%, transparent 70%)' }} />
+      <div className="absolute top-80 right-5 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,250,240,0.4) 0%, transparent 70%)' }} />
+      <div className="absolute top-[500px] left-[30px] w-32 h-32 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,248,235,0.35) 0%, transparent 70%)' }} />
+
+      <div className="relative z-10 px-4 pt-12 pb-32">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="flex justify-end mb-2">
+            <Link
+              href="/progress"
+              className="text-[11px] uppercase tracking-[0.15em] font-semibold"
+              style={{ color: GOLD_LIGHT }}
+            >
+              Progress &rarr;
             </Link>
-            <span className="text-sm text-gray-500">{user.name}</span>
+          </div>
+          <h1
+            className="text-3xl font-bold tracking-[0.15em] relative inline-block"
+            style={{
+              color: '#be9424',
+              WebkitTextStroke: '0.6px #5a4520',
+              textShadow: '0 2px 4px rgba(85,60,20,0.2)',
+            }}
+          >
+            <span className="relative">
+              PANTHEON
+              <span
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'repeating-linear-gradient(15deg, rgba(255,255,255,0) 0px, rgba(255,255,255,0.17) 2px, rgba(255,255,255,0) 4px)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                }}
+              />
+            </span>
+          </h1>
+          <p className="text-[11px] uppercase tracking-[0.3em] mt-1" style={{ color: TEXT_LIGHT }}>
+            Daily Record
+          </p>
+          <p className="text-[12px] mt-1 tracking-wider" style={{ color: TEXT_DIM }}>
+            {formatRomanDate()}
+          </p>
+        </div>
+
+        {/* Day Type Toggle */}
+        <div
+          className="relative rounded-[20px] p-1 mb-4 overflow-hidden"
+          style={{
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.04) 100%)',
+            backdropFilter: 'blur(0.1px)',
+            WebkitBackdropFilter: 'blur(0.1px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 0 rgba(0,0,0,0.1)',
+            border: '1px solid rgba(255,255,255,0.25)',
+          }}
+        >
+          <div className="flex gap-1 relative z-10">
+            {DAY_OPTIONS.map((day) => (
+              <button
+                key={day.key}
+                type="button"
+                onClick={() => setDayType(day.key)}
+                className="flex-1 py-3 px-3 text-[12px] font-semibold uppercase tracking-wider rounded-lg transition-all"
+                style={{
+                  color: GOLD,
+                  background: dayType === day.key
+                    ? 'linear-gradient(135deg, rgba(232,192,72,0.25) 0%, rgba(201,160,60,0.35) 100%)'
+                    : 'transparent',
+                  boxShadow: dayType === day.key
+                    ? '0 2px 8px rgba(201,160,60,0.25), inset 0 1px 0 rgba(255,248,200,0.5)'
+                    : 'none',
+                  border: dayType === day.key
+                    ? '1px solid rgba(201,160,60,0.4)'
+                    : '1px solid transparent',
+                }}
+              >
+                {day.label}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
 
-      <div className="space-y-4 px-4">
-        {/* Day Type Toggle */}
-        <DayTypeToggle value={dayType} onChange={setDayType} />
-
-        {/* Sunday Check-in (only visible on Sundays) */}
+        {/* Sunday Check-in */}
         <SundayCheckinCard userId={userId!} />
 
-        {/* Calories Remaining */}
-        <CaloriesRemainingCard
-          remaining={remaining}
-          target={calorieTarget}
-          consumed={totals.calories}
-        />
+        {/* Calories + Weight Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <GlassPanel className="p-4">
+            <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: TEXT_LIGHT }}>Calories</p>
+            <p className="text-2xl font-bold" style={{ color: GOLD, textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+              {totals.calories.toLocaleString()}
+            </p>
+            <p className="text-[10px] mt-1" style={{ color: TEXT_MUTED }}>
+              of {calorieTarget.toLocaleString()} kcal
+            </p>
+          </GlassPanel>
+          <GlassPanel className="p-4">
+            <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: TEXT_LIGHT }}>Weight</p>
+            {latestWeight !== null ? (
+              <>
+                <p className="text-2xl font-bold" style={{ color: GOLD, textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+                  {latestWeight.toFixed(1)}
+                </p>
+                <p className="text-[10px] mt-1" style={{ color: TEXT_MUTED }}>
+                  lbs &middot;{' '}
+                  <button type="button" onClick={handleSync} className="underline" style={{ color: TEXT_MUTED }}>
+                    {syncing ? 'syncing\u2026' : 'sync'}
+                  </button>
+                  {' \u00b7 '}
+                  <button type="button" onClick={() => setShowManualWeight(true)} className="underline" style={{ color: TEXT_MUTED }}>
+                    manual
+                  </button>
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg italic" style={{ color: TEXT_MUTED }}>&mdash;</p>
+                <p className="text-[10px] mt-1" style={{ color: TEXT_MUTED }}>
+                  <button type="button" onClick={handleSync} className="underline" style={{ color: TEXT_MUTED }}>
+                    {syncing ? 'syncing\u2026' : 'sync'}
+                  </button>
+                  {' \u00b7 '}
+                  <button type="button" onClick={() => setShowManualWeight(true)} className="underline" style={{ color: TEXT_MUTED }}>
+                    enter
+                  </button>
+                </p>
+              </>
+            )}
+          </GlassPanel>
+        </div>
 
-        {/* Macro Bars */}
-        <MacroBars
-          protein={{ current: totals.protein, target: proteinTarget }}
-          carbs={{ current: totals.carbs, target: carbsTarget }}
-          fat={{ current: totals.fat, target: fatTarget }}
-        />
+        {/* Macros */}
+        <GlassPanel className="p-4 mb-4">
+          <p className="text-[10px] uppercase tracking-wider mb-3" style={{ color: TEXT_LIGHT }}>Macros</p>
+          <div className="grid grid-cols-3 gap-4">
+            {([
+              { label: 'Protein', current: Math.round(totals.protein), target: proteinTarget, stroke: '#9333ea' },
+              { label: 'Carbs', current: Math.round(totals.carbs), target: carbsTarget, stroke: '#d97706' },
+              { label: 'Fat', current: Math.round(totals.fat), target: fatTarget, stroke: '#b45454' },
+            ]).map((macro) => {
+              const pct = macro.target > 0 ? Math.min((macro.current / macro.target) * 100, 100) : 0
+              return (
+                <div key={macro.label} className="flex flex-col gap-1">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] uppercase tracking-wider" style={{ color: TEXT_MID }}>{macro.label}</span>
+                    <span className="text-[11px] font-semibold" style={{ color: GOLD }}>{macro.current}g</span>
+                  </div>
+                  <div
+                    className="h-[7px] rounded-full relative overflow-hidden"
+                    style={{ background: 'rgba(200,185,160,0.25)', boxShadow: `0 0 0 2.5px ${macro.stroke}` }}
+                  >
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${GOLD_LIGHT}, ${GOLD_BRIGHT}, ${GOLD_LIGHT})` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </GlassPanel>
 
         {/* Greek God Bod Score */}
         <ScoreCard
@@ -133,90 +317,144 @@ export default function DashboardPage() {
           userId={userId!}
         />
 
-        {/* Weight Card */}
-        <WeightCard
-          latestWeight={latest ? Number(latest.weight_lbs) : null}
-          readings={chartData}
-          lastSynced={latest?.measured_at || null}
-          onSync={async () => {
-            const res = await fetch('/api/wyze/sync', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ user_id: userId }),
-            })
-            const data = await res.json()
-            if (data.error) return { error: data.error }
-            refreshWeight()
-            return { success: true }
-          }}
-          onManualEntry={() => setShowManualWeight(true)}
-        />
+        {/* Meals Section */}
+        <SectionDivider label="Meals" />
+        <GlassPanel className="p-4 mb-4">
+          <TodayLog userId={userId!} entries={entries} onDelete={deleteEntry} onUpdate={refreshLog} />
+        </GlassPanel>
 
-        {/* Log Workout Button */}
-        <button
-          onClick={() => setShowWorkout(true)}
-          className="w-full rounded-2xl bg-gray-900 p-4 text-left hover:bg-gray-800/80 transition-colors"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Log Workout</p>
-              <p className="text-sm text-gray-400">Describe your session and AI will parse it</p>
-            </div>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </div>
-        </button>
-
-        {/* Today's Workouts */}
-        <div className="rounded-2xl bg-gray-900 p-6">
-          <h2 className="mb-3 text-lg font-semibold">Today&apos;s Workouts</h2>
+        {/* Sessions Section */}
+        <SectionDivider label="Sessions" />
+        <GlassPanel className="p-4">
           {workouts.length === 0 ? (
-            <p className="text-gray-400 italic text-sm">No workouts logged yet</p>
+            <p className="text-[13px] italic" style={{ color: TEXT_MUTED }}>No workouts logged yet</p>
           ) : (
-            <div className="space-y-2">
+            <div>
               {workouts.map((w) => {
                 const details: string[] = []
                 if (w.duration_min) details.push(`${w.duration_min} min`)
                 if (w.estimated_cal_burned) details.push(`${w.estimated_cal_burned} cal`)
                 if (w.distance_miles) details.push(`${w.distance_miles} mi`)
                 if (w.session_type === 'lift' && w.total_volume_lbs) details.push(`${w.total_volume_lbs.toLocaleString()} lbs vol`)
+                const timeStr = new Date(w.trained_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
                 return (
                   <button
                     key={w.id}
                     type="button"
                     onClick={() => setEditingWorkout(w)}
-                    className="w-full flex items-center justify-between rounded-lg bg-gray-800 p-3 text-left hover:bg-gray-700/80 transition-colors"
+                    className="w-full flex items-center justify-between py-2 text-left border-b last:border-0"
+                    style={{ borderColor: 'rgba(180,160,120,0.12)' }}
                   >
-                    <div>
-                      <p className="text-sm font-medium capitalize">{w.session_type}</p>
-                      <p className="text-xs text-gray-500">{details.join(' · ')}</p>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-medium capitalize" style={{ color: TEXT_DARK }}>{w.session_type}</span>
+                      <span className="text-[10px] uppercase tracking-wider" style={{ color: TEXT_MUTED }}>
+                        {timeStr} &middot; {details.join(' \u00b7 ')}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-600">
-                      {new Date(w.trained_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                    <span className="text-[14px] font-semibold" style={{ color: GOLD }}>
+                      {w.duration_min ? `${w.duration_min} min` : ''}
                     </span>
                   </button>
                 )
               })}
             </div>
           )}
-        </div>
-
-        {/* Today's Food Log */}
-        <div className="rounded-2xl bg-gray-900 p-6">
-          <h2 className="mb-4 text-lg font-semibold">Today&apos;s Log</h2>
-          <TodayLog userId={userId!} entries={entries} onDelete={deleteEntry} onUpdate={refreshLog} />
-        </div>
+        </GlassPanel>
       </div>
 
-      {/* Floating Action Button (hidden when Coach is expanded) */}
+      {/* Fixed Bottom Bar (hidden when coach expanded) */}
       {!showCoach && (
-        <LogFAB
-          onVoice={() => setShowVoice(true)}
-          onCamera={() => {/* Phase 2 */}}
-          onType={() => setShowTextLog(true)}
-          onQuickSelect={() => setShowQuickSelect(true)}
-        />
+        <div className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: 'url("/marble-bar.png")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 20%',
+            }}
+          />
+          <div className="absolute top-0 left-0 right-0 h-[1px] z-20" style={{ background: GOLD_LIGHT, boxShadow: '0 0 2px rgba(201,160,60,0.5)' }} />
+          <div className="flex gap-3 px-4 py-3 relative z-10">
+            <button
+              type="button"
+              onClick={() => setShowFoodMenu((p) => !p)}
+              className="flex-1 py-3 rounded-[16px] text-[12px] font-bold uppercase tracking-wider relative overflow-hidden"
+              style={{
+                color: '#be9424',
+                background: 'linear-gradient(145deg, rgba(201,160,60,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(201,160,60,0.05) 100%)',
+                backdropFilter: 'blur(0.1px)',
+                border: '1px solid rgba(201,160,60,0.2)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.35)',
+              }}
+            >
+              <span className="relative z-30">Log Food</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowWorkout(true)}
+              className="flex-1 py-3 rounded-[16px] text-[12px] font-bold uppercase tracking-wider relative overflow-hidden"
+              style={{
+                color: '#be9424',
+                background: 'linear-gradient(145deg, rgba(201,160,60,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(201,160,60,0.05) 100%)',
+                backdropFilter: 'blur(0.1px)',
+                border: '1px solid rgba(201,160,60,0.2)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.35)',
+              }}
+            >
+              <span className="relative z-30">Log Workout</span>
+            </button>
+          </div>
+
+          {/* Food logging method popup */}
+          {showFoodMenu && (
+            <>
+              <div className="fixed inset-0 z-0" onClick={() => setShowFoodMenu(false)} />
+              <div className="absolute bottom-full left-0 right-0 px-4 pb-2 z-20">
+                <div
+                  className="rounded-[16px] overflow-hidden"
+                  style={{ background: 'rgba(60,50,35,0.95)', backdropFilter: 'blur(12px)', border: '1px solid rgba(201,160,60,0.3)' }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => { setShowVoice(true); setShowFoodMenu(false) }}
+                    className="w-full px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider flex items-center gap-3"
+                    style={{ color: GOLD_BRIGHT, borderBottom: '1px solid rgba(201,160,60,0.15)' }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="1" width="6" height="12" rx="3" />
+                      <path d="M19 10v2a7 7 0 01-14 0v-2" />
+                      <line x1="12" y1="19" x2="12" y2="23" />
+                    </svg>
+                    Voice
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowTextLog(true); setShowFoodMenu(false) }}
+                    className="w-full px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider flex items-center gap-3"
+                    style={{ color: GOLD_BRIGHT, borderBottom: '1px solid rgba(201,160,60,0.15)' }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="M8 16h8" />
+                    </svg>
+                    Type
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowQuickSelect(true); setShowFoodMenu(false) }}
+                    className="w-full px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider flex items-center gap-3"
+                    style={{ color: GOLD_BRIGHT }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z" />
+                    </svg>
+                    Quick Select
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       )}
 
       {/* AI Coach */}

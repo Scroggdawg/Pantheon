@@ -157,18 +157,30 @@ export default function SundayCheckinCard({ userId }: SundayCheckinCardProps) {
   if (!visible) return null
 
   return (
-    <div className="rounded-2xl bg-amber-900/20 border border-amber-800/40 p-5">
-      <h3 className="text-sm font-semibold text-amber-400 mb-2">Weekly Check-in</h3>
+    <div
+      className="rounded-[20px] p-5 mb-3"
+      style={{
+        background: 'linear-gradient(145deg, rgba(201,160,60,0.12) 0%, rgba(255,255,255,0.04) 100%)',
+        border: '1px solid rgba(201,160,60,0.3)',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.4)',
+      }}
+    >
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: '#a47c16' }}>Weekly Check-in</h3>
       {tdeeMessage && (
-        <p className="text-sm text-gray-300 mb-3">{tdeeMessage}</p>
+        <p className="text-[12px] leading-relaxed mb-3" style={{ color: '#5a4a32' }}>{tdeeMessage}</p>
       )}
       <button
         type="button"
         onClick={handleDismiss}
         disabled={dismissing}
-        className="w-full rounded-lg bg-amber-600 py-2 text-sm font-medium hover:bg-amber-700 disabled:opacity-50"
+        className="w-full rounded-lg py-2 text-[12px] font-bold uppercase tracking-wider disabled:opacity-50"
+        style={{
+          color: '#be9424',
+          background: 'linear-gradient(135deg, rgba(232,192,72,0.25) 0%, rgba(201,160,60,0.35) 100%)',
+          border: '1px solid rgba(201,160,60,0.4)',
+        }}
       >
-        {dismissing ? 'Saving...' : 'Got it — dismiss'}
+        {dismissing ? 'Saving\u2026' : 'Got it \u2014 dismiss'}
       </button>
     </div>
   )

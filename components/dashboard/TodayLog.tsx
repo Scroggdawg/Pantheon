@@ -157,8 +157,8 @@ export default function TodayLog({ userId, entries, onDelete, onUpdate }: TodayL
 
   if (entries.length === 0) {
     return (
-      <p className="text-gray-400 italic text-sm">
-        Nothing logged yet — tap the mic to start
+      <p className="text-[13px] italic" style={{ color: '#8a7a60' }}>
+        Nothing logged yet &mdash; tap Log Food to start
       </p>
     )
   }
@@ -172,7 +172,8 @@ export default function TodayLog({ userId, entries, onDelete, onUpdate }: TodayL
         {selectMode && selectedIds.size > 0 && (
           <button
             onClick={() => setShowSaveMeal(true)}
-            className="text-xs text-blue-400 hover:text-blue-300 font-medium"
+            className="text-[11px] uppercase tracking-wider font-semibold"
+            style={{ color: '#c9a03c' }}
           >
             Save as Meal ({selectedIds.size})
           </button>
@@ -182,7 +183,8 @@ export default function TodayLog({ userId, entries, onDelete, onUpdate }: TodayL
             setSelectMode((p) => !p)
             setSelectedIds(new Set())
           }}
-          className="text-xs text-gray-500 hover:text-gray-300"
+          className="text-[11px] uppercase tracking-wider"
+          style={{ color: '#8a7a60' }}
         >
           {selectMode ? 'Cancel' : 'Select'}
         </button>
@@ -191,7 +193,7 @@ export default function TodayLog({ userId, entries, onDelete, onUpdate }: TodayL
       <div className="space-y-5">
         {Array.from(grouped.entries()).map(([mealLabel, mealEntries]) => (
           <div key={mealLabel}>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-2" style={{ color: '#7a6a52' }}>
               {capitalize(mealLabel)}
             </h3>
 
@@ -213,20 +215,17 @@ export default function TodayLog({ userId, entries, onDelete, onUpdate }: TodayL
                     )}
                     <button
                       onClick={() => selectMode ? toggleSelect(entry.id) : openEdit(entry)}
-                      className="flex items-start justify-between gap-3 flex-1 text-left group min-w-0"
+                      className="flex items-center justify-between gap-3 flex-1 text-left min-w-0 py-1.5 border-b last:border-0"
+                      style={{ borderColor: 'rgba(180,160,120,0.12)' }}
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white truncate">{foodNames}</p>
-                        <p className="text-xs text-gray-500 tabular-nums">
-                          {entry.total_calories} cal &middot;{' '}
-                          {Math.round(entry.total_protein_g)}P /{' '}
-                          {Math.round(entry.total_carbs_g)}C /{' '}
-                          {Math.round(entry.total_fat_g)}F
-                        </p>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="text-[13px] font-medium truncate" style={{ color: '#3d3225' }}>{foodNames}</span>
+                        <span className="text-[10px] uppercase tracking-wider" style={{ color: '#8a7a60' }}>
+                          {capitalize(entry.meal_label || 'snack')} &middot; {formatTime(entry.logged_at)}
+                        </span>
                       </div>
-
-                      <span className="text-xs text-gray-600 shrink-0 pt-0.5 tabular-nums">
-                        {formatTime(entry.logged_at)}
+                      <span className="text-[14px] font-semibold shrink-0" style={{ color: '#a47c16' }}>
+                        {entry.total_calories} cal
                       </span>
                     </button>
                   </div>
