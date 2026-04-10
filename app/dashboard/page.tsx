@@ -19,8 +19,9 @@ import { QuickSelectModal } from '@/components/logging/QuickSelectModal'
 import { TextLogModal } from '@/components/logging/TextLogModal'
 import { WorkoutLogger } from '@/components/logging/WorkoutLogger'
 import WorkoutEditModal from '@/components/dashboard/WorkoutEditModal'
+import FoodEntryEditModal from '@/components/dashboard/FoodEntryEditModal'
 import { DAY_TYPE_ADJUSTMENTS } from '@/types/database'
-import type { DayType, WorkoutSession } from '@/types/database'
+import type { DayType, WorkoutSession, FoodLogEntry } from '@/types/database'
 
 function toRoman(num: number): string {
   const vals: [number, string][] = [
@@ -74,7 +75,7 @@ function SectionDivider({ label }: { label: string }) {
 export default function DashboardPage() {
   const router = useRouter()
   const { user, userId, loading: userLoading } = useUser()
-  const { entries, totals, refresh: refreshLog, deleteEntry } = useDailyLog(userId)
+  const { entries, totals, refresh: refreshLog } = useDailyLog(userId)
   const { readings, latest, refresh: refreshWeight } = useWeightTrend(userId)
   const { workouts, refresh: refreshWorkouts } = useTodayWorkouts(userId)
 
@@ -87,6 +88,7 @@ export default function DashboardPage() {
   const [showCoach, setShowCoach] = useState(false)
   const [showFoodMenu, setShowFoodMenu] = useState(false)
   const [editingWorkout, setEditingWorkout] = useState<WorkoutSession | null>(null)
+  const [editingEntry, setEditingEntry] = useState<FoodLogEntry | null>(null)
   const [syncing, setSyncing] = useState(false)
 
   const handleLogComplete = useCallback(() => {
@@ -320,7 +322,7 @@ export default function DashboardPage() {
         {/* Meals Section */}
         <SectionDivider label="Meals" />
         <GlassPanel className="p-4 mb-4">
-          <TodayLog userId={userId!} entries={entries} onDelete={deleteEntry} onUpdate={refreshLog} />
+          <TodayLog userId={userId!} entries={entries} onEdit={setEditingEntry} onUpdate={refreshLog} />
         </GlassPanel>
 
         {/* Sessions Section */}
@@ -519,6 +521,15 @@ export default function DashboardPage() {
           onSaved={() => { refreshWorkouts(); setEditingWorkout(null) }}
           onDeleted={() => { refreshWorkouts(); setEditingWorkout(null) }}
           onClose={() => setEditingWorkout(null)}
+        />
+      )}
+
+      {editingEntry && (
+        <FoodEntryEditModal
+          entry={editingEntry}
+          onSaved={() => { refreshLog(); setEditingEntry(null) }}
+          onDeleted={() => { refreshLog(); setEditingEntry(null) }}
+          onClose={() => setEditingEntry(null)}
         />
       )}
     </div>

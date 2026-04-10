@@ -32,6 +32,7 @@ export default function CoachPanel({
   onToggle,
   refreshLog,
   refreshWorkouts,
+  refreshWeight,
   userId,
 }: CoachPanelProps) {
   const [messages, setMessages] = useState<CoachMessage[]>([])
@@ -55,14 +56,14 @@ export default function CoachPanel({
     }
   }, [expanded])
 
+  function addMsg(content: string) {
+    setMessages((prev) => [...prev, { role: 'assistant' as const, content }])
+  }
+
   async function executeAction(action: CoachAction) {
     try {
       if (action.type === 'log_workout') {
-        const params = action.params as {
-          session_type: string
-          duration_min: number
-          notes: string
-        }
+        const params = action.params as { session_type: string; duration_min: number; notes: string }
         await supabase.from('workout_sessions').insert({
           user_id: userId,
           trained_at: new Date().toISOString(),
@@ -71,13 +72,10 @@ export default function CoachPanel({
           notes: params.notes || null,
         })
         refreshWorkouts()
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: `Logged ${params.session_type} workout (${params.duration_min} min).` },
-        ])
+        addMsg(`Logged ${params.session_type} workout (${params.duration_min} min).`)
+
       } else if (action.type === 'log_food') {
         const params = action.params as { description: string }
-        // Parse food via Claude
         const parseRes = await fetch('/api/claude/parse-meal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -85,8 +83,6 @@ export default function CoachPanel({
         })
         if (!parseRes.ok) throw new Error('Failed to parse food')
         const parsed = await parseRes.json()
-
-        // Insert into food log
         await supabase.from('food_log_entries').insert({
           user_id: userId,
           logged_at: new Date().toISOString(),
@@ -101,24 +97,159 @@ export default function CoachPanel({
           raw_input_text: params.description,
         })
         refreshLog()
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: `Logged: ${params.description} (${parsed.total_calories} cal, ${parsed.total_protein_g}g protein).` },
-        ])
+        addMsg(`Logged: ${params.description} (${parsed.total_calories} cal, ${parsed.total_protein_g}g protein).`)
+
       } else if (action.type === 'update_day_type') {
         const params = action.params as { day_type: DayType }
         setDayType(params.day_type)
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: `Day type updated to ${params.day_type}.` },
-        ])
+        addMsg(`Day type updated to ${params.day_type}.`)
+
+      } else if (action.type === 'edit_food_entry') {
+        const params = action.params as { entry_id: string; mode: string; description?: string; scale_factor?: number }
+
+        if (params.mode === 'reparse') {
+          // Full re-parse: user changed what the food is
+          const parseRes = await fetch('/api/claude/parse-meal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transcript: params.description }),
+          })
+          if (!parseRes.ok) throw new Error('Failed to parse food')
+          const parsed = await parseRes.json()
+          await supabase.from('food_log_entries').update({
+            foods_json: parsed.foods,
+            total_calories: parsed.total_calories,
+            total_protein_g: parsed.total_protein_g,
+            total_carbs_g: parsed.total_carbs_g,
+            total_fat_g: parsed.total_fat_g,
+            raw_input_text: params.description,
+          }).eq('id', params.entry_id)
+          refreshLog()
+          addMsg(`Updated entry to: ${params.description} (${parsed.total_calories} cal).`)
+
+        } else if (params.mode === 'scale') {
+          // Portion scaling: multiply all macros by scale_factor
+          const factor = params.scale_factor || 1
+          const { data: entry } = await supabase
+            .from('food_log_entries')
+            .select('*')
+            .eq('id', params.entry_id)
+            .single()
+          if (!entry) throw new Error('Entry not found')
+
+          const scaledFoods = (entry.foods_json as { name: string; qty: number; unit: string; calories: number; protein_g: number; carbs_g: number; fat_g: number }[]).map((f) => ({
+            ...f,
+            qty: Math.round(f.qty * factor * 10) / 10,
+            calories: Math.round(f.calories * factor),
+            protein_g: Math.round(f.protein_g * factor * 10) / 10,
+            carbs_g: Math.round(f.carbs_g * factor * 10) / 10,
+            fat_g: Math.round(f.fat_g * factor * 10) / 10,
+          }))
+          const newCal = Math.round(entry.total_calories * factor)
+          const newP = Math.round(entry.total_protein_g * factor * 10) / 10
+          const newC = Math.round(entry.total_carbs_g * factor * 10) / 10
+          const newF = Math.round(entry.total_fat_g * factor * 10) / 10
+
+          await supabase.from('food_log_entries').update({
+            foods_json: scaledFoods,
+            total_calories: newCal,
+            total_protein_g: newP,
+            total_carbs_g: newC,
+            total_fat_g: newF,
+          }).eq('id', params.entry_id)
+          refreshLog()
+          addMsg(`Scaled entry by ${factor}x (now ${newCal} cal).`)
+        }
+
+      } else if (action.type === 'delete_food_entry') {
+        const params = action.params as { entry_id: string }
+        await supabase.from('food_log_entries').delete().eq('id', params.entry_id)
+        refreshLog()
+        addMsg('Food entry deleted.')
+
+      } else if (action.type === 'edit_workout') {
+        const params = action.params as { session_id: string; session_type?: string; duration_min?: number; notes?: string }
+        const updates: Record<string, unknown> = {}
+        if (params.session_type) updates.session_type = params.session_type
+        if (params.duration_min != null) updates.duration_min = params.duration_min
+        if (params.notes != null) updates.workout_notes = params.notes
+        if (Object.keys(updates).length > 0) {
+          await supabase.from('workout_sessions').update(updates).eq('id', params.session_id)
+          refreshWorkouts()
+          addMsg('Workout updated.')
+        }
+
+      } else if (action.type === 'delete_workout') {
+        const params = action.params as { session_id: string }
+        await supabase.from('workout_exercises').delete().eq('session_id', params.session_id)
+        await supabase.from('workout_sessions').delete().eq('id', params.session_id)
+        refreshWorkouts()
+        addMsg('Workout deleted.')
+
+      } else if (action.type === 'log_weight') {
+        const params = action.params as { weight_lbs: number }
+        await supabase.from('weight_readings').insert({
+          user_id: userId,
+          measured_at: new Date().toISOString(),
+          weight_lbs: params.weight_lbs,
+          source: 'manual',
+        })
+        refreshWeight()
+        addMsg(`Logged weight: ${params.weight_lbs} lbs.`)
+
+      } else if (action.type === 'delete_weight') {
+        const params = action.params as { reading_id: string }
+        await supabase.from('weight_readings').delete().eq('id', params.reading_id)
+        refreshWeight()
+        addMsg('Weight reading deleted.')
+
+      } else if (action.type === 'log_saved_meal') {
+        const params = action.params as { meal_name: string; servings: number }
+        const { data: meal } = await supabase
+          .from('saved_meals')
+          .select('*')
+          .eq('user_id', userId)
+          .ilike('name', params.meal_name)
+          .limit(1)
+          .single()
+        if (!meal) throw new Error(`Saved meal "${params.meal_name}" not found`)
+
+        const yieldSrv = meal.yield_servings || 1
+        const ratio = (params.servings || 1) / yieldSrv
+        const scaledFoods = (meal.foods_json as { name: string; qty: number; unit: string; calories: number; protein_g: number; carbs_g: number; fat_g: number }[]).map((f) => ({
+          ...f,
+          qty: Math.round(f.qty * ratio * 10) / 10,
+          calories: Math.round(f.calories * ratio),
+          protein_g: Math.round(f.protein_g * ratio * 10) / 10,
+          carbs_g: Math.round(f.carbs_g * ratio * 10) / 10,
+          fat_g: Math.round(f.fat_g * ratio * 10) / 10,
+        }))
+        const portionCal = Math.round(meal.total_calories * ratio)
+
+        await supabase.from('food_log_entries').insert({
+          user_id: userId,
+          logged_at: new Date().toISOString(),
+          meal_label: meal.tags?.[0] || 'snack',
+          day_type: dayType,
+          foods_json: scaledFoods,
+          total_calories: portionCal,
+          total_protein_g: Math.round(meal.total_protein_g * ratio * 10) / 10,
+          total_carbs_g: Math.round(meal.total_carbs_g * ratio * 10) / 10,
+          total_fat_g: Math.round(meal.total_fat_g * ratio * 10) / 10,
+          log_method: 'quick',
+        })
+
+        await supabase.from('saved_meals').update({
+          times_logged: (meal.times_logged || 0) + 1,
+          last_logged_at: new Date().toISOString(),
+        }).eq('id', meal.id)
+
+        refreshLog()
+        addMsg(`Logged ${params.servings} serving(s) of "${meal.name}" (${portionCal} cal).`)
       }
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Action failed'
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: `Action failed: ${errMsg}` },
-      ])
+      addMsg(`Action failed: ${errMsg}`)
     }
   }
 

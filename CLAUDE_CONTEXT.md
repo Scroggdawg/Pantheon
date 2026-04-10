@@ -1,6 +1,6 @@
 # CLAUDE_CONTEXT.md — Pantheon
 
-**Last updated:** Session 5 (2026-04-10)
+**Last updated:** Session 6 (2026-04-10)
 **Production:** https://pantheon-woad.vercel.app
 **Deploy:** `npx vercel --prod --yes` (no git remote)
 
@@ -8,7 +8,7 @@
 
 ## What This Is
 
-AI-native nutrition and body composition tracker. Voice/text food logging, workout tracking, weight sync (Wyze Scale X), Greek God Bod scoring, AI coaching. Single-user app for Luke Scroggins.
+AI-native nutrition and body composition tracker. Voice/text food logging, workout tracking, weight sync (Wyze Scale X), Greek God Bod scoring, AI coaching with full CRUD. Single-user app for Luke Scroggins.
 
 ## Stack
 
@@ -43,7 +43,7 @@ app/
       parse-workout-image/route.ts — Vision OCR for workout images
       score/route.ts          — 5-component score + Claude verdict
       daily-plan/route.ts     — Remaining-day meal plan generator
-      coach/route.ts          — Conversational coach with action execution
+      coach/route.ts          — Conversational coach with 11 action types
     wyze/sync/route.ts        — Wyze Scale X weight sync
 
 components/
@@ -52,8 +52,9 @@ components/
     MarbleBackground.tsx      — Full-screen marble texture
   dashboard/
     ScoreCard.tsx             — Roman numeral score, auto-calculate, plan trigger
-    TodayLog.tsx              — Food log with edit/delete/select/save-as-meal
-    CoachPanel.tsx            — Chat interface, action execution
+    TodayLog.tsx              — Food log display (pure, emits onEdit)
+    FoodEntryEditModal.tsx    — Edit/delete food entries (standalone modal)
+    CoachPanel.tsx            — Chat interface, 11 CRUD action types
     DailyPlanPanel.tsx        — AI meal plan with re-roll
     SundayCheckinCard.tsx     — TDEE gate + weekly dismiss
     WorkoutEditModal.tsx      — Edit/delete workout sessions
@@ -61,9 +62,9 @@ components/
     VoiceLogger.tsx           — Web Speech API + voice corrections
     WorkoutLogger.tsx         — Text/image workout logging + HEIC
     TextLogModal.tsx          — Text meal entry
-    QuickSelectModal.tsx      — Saved meals quick-log
-    SaveMealModal.tsx         — Save entries as reusable meal
-    SavedMealEditModal.tsx    — Edit saved meals
+    QuickSelectModal.tsx      — Saved meals quick-log with portion selector
+    SaveMealModal.tsx         — Save entries as reusable meal + yield_servings
+    SavedMealEditModal.tsx    — Edit saved meals + yield_servings
     ManualWeightModal.tsx     — Manual weight entry
 
 hooks/
@@ -93,6 +94,7 @@ supabase/migrations/
   002_voice_corrections.sql   — Voice corrections table
   003_workout_image_url.sql   — image_url column
   004_workout_calories.sql    — Calorie estimation columns
+  005_yield_servings.sql      — yield_servings on saved_meals
 
 scripts/
   backup.ts                   — Export all Supabase data to JSON
@@ -104,10 +106,13 @@ scripts/
 - **Buttons:** `type="button"` on ALL non-submit buttons (browser default form submission).
 - **Dynamic import:** `import()` only for browser-only libraries (e.g., heic2any).
 - **Supabase client:** `lib/supabase/client.ts` is a singleton. Server routes use `lib/supabase/server.ts` (service role).
+- **Edit modal pattern:** Standalone component with `fixed inset-0 z-[60] bg-black/70`. Props: `item, onSaved, onDeleted, onClose`. Dashboard manages selection state. See FoodEntryEditModal and WorkoutEditModal.
 - **Score caching:** localStorage key `pantheon_score_cache`, 30-min TTL. Auto-calculates on mount.
 - **Score algorithm:** 5 weighted components (protein 30%, calories 25%, workout 20%, trend 15%, macros 10%). GROSS calories vs target, not net.
 - **TDEE:** `avg_daily_calories + (lbs_per_week_loss * 500)`. Gate: 14 weight readings + 10 food log days.
 - **DAY_TYPE_ADJUSTMENTS:** lift (+200 cal, +50g carbs), zone2 (0, 0), rest (-150 cal, -30g carbs).
+- **Recipe portions:** `saved_meals.yield_servings` (default 1). Macros scale by `servings / yield_servings`.
+- **Coach actions:** 11 types. Food edits have two modes: `reparse` (new food) and `scale` (quantity change). System prompt includes entry IDs for targeting.
 - **Visual theme:** Marble/gold Greco-Roman. GlassPanel for cards. Gold palette (#a47c16, #c9a03c, #e8c048). Cinzel font for Roman numerals.
 
 ## Critical Open Issue
@@ -123,3 +128,4 @@ scripts/
 | 3 | Backup script, Vercel deploy config |
 | 4 | Workout calorie estimation (MET), Greek God Bod Score, AI Coach + TDEE, Sunday check-in |
 | 5 | Dashboard visual redesign (marble/gold), UTC timezone fixes, tappable progress history, auto-score |
+| 6 | Consistent edit modal pattern, recipe portion system, Coach full CRUD (11 action types) |

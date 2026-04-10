@@ -129,6 +129,7 @@ export interface SavedMeal {
   times_logged: number
   last_logged_at: string | null
   tags: string[]
+  yield_servings: number
   is_staple: boolean
   created_at: string
 }

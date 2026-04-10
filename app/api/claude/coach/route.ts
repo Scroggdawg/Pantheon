@@ -1,7 +1,7 @@
 import { client } from '@/lib/claude/claude'
 import { createClient } from '@/lib/supabase/server'
 import { DAY_TYPE_ADJUSTMENTS } from '@/types/database'
-import type { DayType, FoodLogEntry, WorkoutSession, WeightReading } from '@/types/database'
+import type { DayType, FoodLogEntry, WorkoutSession, WeightReading, SavedMeal } from '@/types/database'
 
 function getLADate(date: Date): string {
   return date.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' })
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
         .select('*')
         .order('measured_at', { ascending: false })
         .limit(14),
-      supabase.from('saved_meals').select('name, total_calories, total_protein_g'),
+      supabase.from('saved_meals').select('name, total_calories, total_protein_g, total_carbs_g, total_fat_g, yield_servings'),
       supabase.from('pantry_items').select('name'),
       supabase.from('users').select('*').limit(1).single(),
     ])
@@ -137,8 +137,33 @@ export async function POST(request: Request) {
     )
 
     // Saved meals and pantry for context
-    const savedMealNames = (mealsRes.data || []).map((m: { name: string }) => m.name)
+    const savedMeals: SavedMeal[] = (mealsRes.data || []) as SavedMeal[]
     const pantryNames = (pantryRes.data || []).map((p: { name: string }) => p.name)
+
+    // Build entry/workout/weight ID listings for CRUD
+    const entryListing = entries.map((e) => {
+      const foods = e.foods_json.map((f) => f.name).join(', ')
+      return `  [${e.id}] ${e.meal_label || 'snack'}: ${foods} — ${e.total_calories} cal`
+    }).join('\n')
+
+    const workoutListing = workouts.map((w) => {
+      const details: string[] = []
+      if (w.duration_min) details.push(`${w.duration_min} min`)
+      if (w.estimated_cal_burned) details.push(`${w.estimated_cal_burned} cal burned`)
+      return `  [${w.id}] ${w.session_type} ${details.join(', ')}`
+    }).join('\n')
+
+    const recentWeightListing = weightReadings.slice(0, 3).map((r) => {
+      const date = new Date(r.measured_at).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' })
+      return `  [${r.id}] ${Number(r.weight_lbs).toFixed(1)} lbs on ${date}`
+    }).join('\n')
+
+    const savedMealListing = savedMeals.map((m) => {
+      const ys = m.yield_servings || 1
+      const perCal = Math.round(m.total_calories / ys)
+      const perP = Math.round(m.total_protein_g / ys)
+      return `  "${m.name}" — ${perCal} cal/srv, ${perP}g protein/srv${ys > 1 ? ` (${ys} servings)` : ''}`
+    }).join('\n')
 
     const systemPrompt = `You are the Pantheon AI Coach — a direct, data-driven training partner. You have full access to the user's nutrition, workout, and body composition data.
 
@@ -149,7 +174,15 @@ TODAY'S DATA:
 - Carbs: ${Math.round(totalCarbs)}g / ${carbsTarget}g (${remainingCarbs}g remaining)
 - Fat: ${Math.round(totalFat)}g / ${fatTarget}g (${remainingFat}g remaining)
 - Workouts: ${workoutSummary} (${totalCalBurned} cal burned total)
-- Entries logged: ${entries.length}
+
+TODAY'S FOOD ENTRIES (use these IDs for edit/delete):
+${entryListing || '  (none)'}
+
+TODAY'S WORKOUTS (use these IDs for edit/delete):
+${workoutListing || '  (none)'}
+
+RECENT WEIGHT READINGS (use these IDs for delete):
+${recentWeightListing || '  (none)'}
 
 BODY COMPOSITION:
 - Current weight: ${currentWeight ? `${currentWeight} lbs` : 'no reading today'}
@@ -163,7 +196,7 @@ ${tdeeResult ? `TDEE ESTIMATE:
 - Based on: avg ${tdeeResult.avgCalories} cal/day intake, ${tdeeResult.lbsPerWeek.toFixed(2)} lbs/week loss
 ` : 'TDEE: Not enough data yet (need 14 weight readings + 10 days of food logging)'}
 
-${savedMealNames.length > 0 ? `SAVED MEALS: ${savedMealNames.join(', ')}` : ''}
+${savedMeals.length > 0 ? `SAVED MEALS (use name for log_saved_meal):\n${savedMealListing}` : ''}
 ${pantryNames.length > 0 ? `PANTRY: ${pantryNames.join(', ')}` : ''}
 
 RULES:
@@ -171,14 +204,30 @@ RULES:
 2. HARD FLOOR: Never recommend net calories below 1800/day.
 3. For projections, derive from actual weight_readings trend. If < 7 readings, give a range not a specific number.
 4. Tone: like a knowledgeable training partner. Brief, not verbose.
-5. If the user wants to log a workout, return an action. If they want to log food, return an action. If they want to change day type, return an action.
+5. If the user wants to log, edit, or delete anything — return the appropriate action.
 6. If the user asks about pantry tracking: "Pantry tracking coming in a future update."
-7. If the user asks about logging weight: "Tap 'Enter manually' on the weight card to log weight."
 
 ACTIONS — when the user's message implies an action, include it in your response JSON:
-- Log workout: { "type": "log_workout", "params": { "session_type": "lift|bjj|zone2|other", "duration_min": number, "notes": "string" } }
+
+Create:
 - Log food: { "type": "log_food", "params": { "description": "the food to parse" } }
+- Log workout: { "type": "log_workout", "params": { "session_type": "lift|bjj|zone2|other", "duration_min": number, "notes": "string" } }
+- Log weight: { "type": "log_weight", "params": { "weight_lbs": number } }
+- Log saved meal: { "type": "log_saved_meal", "params": { "meal_name": "exact name", "servings": number } }
 - Update day type: { "type": "update_day_type", "params": { "day_type": "lift|zone2|rest" } }
+
+Edit food entry (two modes):
+- Re-describe (user changes WHAT the food is): { "type": "edit_food_entry", "params": { "entry_id": "uuid", "mode": "reparse", "description": "new food description" } }
+- Scale portion (user changes HOW MUCH): { "type": "edit_food_entry", "params": { "entry_id": "uuid", "mode": "scale", "scale_factor": number } }
+  Use scale mode when: "I only had half", "change to 1.5 cups", "make it 2 servings" → scale_factor is the multiplier (0.5, 1.5, 2.0, etc.)
+  Use reparse mode when: "change that to grilled chicken and rice", "it was actually a burrito" → completely different food
+
+Edit workout: { "type": "edit_workout", "params": { "session_id": "uuid", "session_type?": "string", "duration_min?": number, "notes?": "string" } }
+
+Delete:
+- Delete food entry: { "type": "delete_food_entry", "params": { "entry_id": "uuid" } }
+- Delete workout: { "type": "delete_workout", "params": { "session_id": "uuid" } }
+- Delete weight: { "type": "delete_weight", "params": { "reading_id": "uuid" } }
 
 Return ONLY valid JSON:
 { "message": "your response text", "action": { "type": "...", "params": { ... } } | null }`

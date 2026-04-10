@@ -14,6 +14,7 @@ interface Props {
 
 export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: Props) {
   const [name, setName] = useState(defaultName || '')
+  const [yieldServings, setYieldServings] = useState('1')
   const [tags, setTags] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -48,6 +49,7 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
         total_protein_g: totals.protein,
         total_carbs_g: totals.carbs,
         total_fat_g: totals.fat,
+        yield_servings: Math.max(1, parseInt(yieldServings) || 1),
         tags: tagList,
         is_staple: false,
       })
@@ -114,6 +116,22 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
             className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
             autoFocus
           />
+
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">Servings this recipe makes</label>
+            <input
+              type="number"
+              value={yieldServings}
+              onChange={(e) => setYieldServings(e.target.value)}
+              min="1"
+              className="w-24 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
+            />
+            {parseInt(yieldServings) > 1 && (
+              <span className="text-xs text-gray-500 ml-3">
+                {Math.round(totals.calories / (parseInt(yieldServings) || 1))} cal/serving
+              </span>
+            )}
+          </div>
 
           <input
             type="text"

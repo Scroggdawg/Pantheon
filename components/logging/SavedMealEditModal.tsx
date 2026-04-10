@@ -13,6 +13,7 @@ interface Props {
 
 export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props) {
   const [name, setName] = useState(meal.name)
+  const [yieldServings, setYieldServings] = useState(String(meal.yield_servings || 1))
   const [tags, setTags] = useState(meal.tags?.join(', ') ?? '')
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -33,7 +34,7 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
     try {
       const { error: updateErr } = await supabase
         .from('saved_meals')
-        .update({ name: name.trim(), tags: tagList })
+        .update({ name: name.trim(), yield_servings: Math.max(1, parseInt(yieldServings) || 1), tags: tagList })
         .eq('id', meal.id)
 
       if (updateErr) {
@@ -94,7 +95,12 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
         <div className="space-y-4">
           {/* Foods list (read-only) */}
           <div className="text-xs text-gray-500">
-            {meal.foods_json.map((f) => f.name).join(', ')} — {meal.total_calories} cal
+            {meal.foods_json.map((f) => f.name).join(', ')} — {meal.total_calories} cal total
+            {(meal.yield_servings || 1) > 1 && (
+              <span className="ml-1">
+                ({Math.round(meal.total_calories / (meal.yield_servings || 1))} cal/serving)
+              </span>
+            )}
           </div>
 
           <input
@@ -105,6 +111,25 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
             className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
             autoFocus
           />
+
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">Servings this recipe makes</label>
+            <input
+              type="number"
+              value={yieldServings}
+              onChange={(e) => setYieldServings(e.target.value)}
+              min="1"
+              className="w-24 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
+            />
+            {parseInt(yieldServings) > 1 && (
+              <span className="text-xs text-gray-500 ml-3">
+                {Math.round(meal.total_calories / (parseInt(yieldServings) || 1))} cal/serving ·{' '}
+                {Math.round(meal.total_protein_g / (parseInt(yieldServings) || 1))}P ·{' '}
+                {Math.round(meal.total_carbs_g / (parseInt(yieldServings) || 1))}C ·{' '}
+                {Math.round(meal.total_fat_g / (parseInt(yieldServings) || 1))}F
+              </span>
+            )}
+          </div>
 
           <input
             type="text"
