@@ -28,6 +28,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
   const [editingCal, setEditingCal] = useState(false)
   const [calOverride, setCalOverride] = useState('')
   const [calOverridden, setCalOverridden] = useState(false)
+  const [editedDistance, setEditedDistance] = useState<string>('')
   const supabase = createClient()
 
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -100,6 +101,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
 
       setParsed(data)
       setEditedExercises(data.exercises)
+      setEditedDistance(data.distance_miles != null ? String(data.distance_miles) : '')
       setStage('confirming')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse workout')
@@ -128,7 +130,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
           total_volume_lbs: totalVolume,
           estimated_cal_burned: parsed.estimated_cal_burned,
           cal_estimate_method: 'MET_estimate',
-          distance_miles: parsed.distance_miles,
+          distance_miles: editedDistance ? parseFloat(editedDistance) : parsed.distance_miles,
         })
         .select('id')
         .single()
@@ -348,6 +350,23 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
                 <span className="text-gray-400">{parsed.duration_min} min</span>
               )}
             </div>
+
+            {/* Distance input for zone2 workouts */}
+            {parsed.session_type === 'zone2' && (
+              <div className="flex items-center gap-3">
+                <label className="text-sm text-gray-400">Distance:</label>
+                <input
+                  type="number"
+                  value={editedDistance}
+                  onChange={(e) => setEditedDistance(e.target.value)}
+                  placeholder="miles"
+                  step="0.1"
+                  min="0"
+                  className="w-24 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+                />
+                <span className="text-sm text-gray-500">mi</span>
+              </div>
+            )}
 
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {editedExercises.map((ex, exIdx) => (
