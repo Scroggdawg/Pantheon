@@ -6,10 +6,12 @@ import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
 import { useDailyLog } from '@/hooks/useDailyLog'
 import { useWeightTrend } from '@/hooks/useWeightTrend'
+import { useTodayWorkouts } from '@/hooks/useTodayWorkouts'
 import DayTypeToggle from '@/components/dashboard/DayTypeToggle'
 import CaloriesRemainingCard from '@/components/dashboard/CaloriesRemainingCard'
 import MacroBars from '@/components/dashboard/MacroBars'
 import WeightCard from '@/components/dashboard/WeightCard'
+import ScoreCard from '@/components/dashboard/ScoreCard'
 import TodayLog from '@/components/dashboard/TodayLog'
 import LogFAB from '@/components/dashboard/LogFAB'
 import { VoiceLogger } from '@/components/logging/VoiceLogger'
@@ -24,7 +26,8 @@ export default function DashboardPage() {
   const router = useRouter()
   const { user, userId, loading: userLoading } = useUser()
   const { entries, totals, loading: logLoading, refresh: refreshLog, deleteEntry } = useDailyLog(userId)
-  const { latest, chartData, loading: weightLoading, refresh: refreshWeight } = useWeightTrend(userId)
+  const { readings, latest, chartData, loading: weightLoading, refresh: refreshWeight } = useWeightTrend(userId)
+  const { workouts, refresh: refreshWorkouts } = useTodayWorkouts(userId)
 
   const [dayType, setDayType] = useState<DayType>('zone2')
   const [showVoice, setShowVoice] = useState(false)
@@ -106,6 +109,20 @@ export default function DashboardPage() {
           protein={{ current: totals.protein, target: proteinTarget }}
           carbs={{ current: totals.carbs, target: carbsTarget }}
           fat={{ current: totals.fat, target: fatTarget }}
+        />
+
+        {/* Greek God Bod Score */}
+        <ScoreCard
+          dayType={dayType}
+          entries={entries}
+          workouts={workouts}
+          weightReadings={readings}
+          calorieTarget={calorieTarget}
+          proteinTarget={proteinTarget}
+          carbsTarget={carbsTarget}
+          fatTarget={fatTarget}
+          totals={totals}
+          userId={userId!}
         />
 
         {/* Weight Card */}
@@ -197,7 +214,7 @@ export default function DashboardPage() {
       {showWorkout && (
         <WorkoutLogger
           userId={userId!}
-          onComplete={() => setShowWorkout(false)}
+          onComplete={() => { refreshWorkouts(); setShowWorkout(false) }}
           onClose={() => setShowWorkout(false)}
         />
       )}
