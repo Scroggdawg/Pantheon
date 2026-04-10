@@ -29,6 +29,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
   const [calOverride, setCalOverride] = useState('')
   const [calOverridden, setCalOverridden] = useState(false)
   const [editedDistance, setEditedDistance] = useState<string>('')
+  const [editedTime, setEditedTime] = useState<string>('')
   const supabase = createClient()
 
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -102,6 +103,8 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
       setParsed(data)
       setEditedExercises(data.exercises)
       setEditedDistance(data.distance_miles != null ? String(data.distance_miles) : '')
+      const now = new Date()
+      setEditedTime(`${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`)
       setStage('confirming')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse workout')
@@ -117,11 +120,18 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
     try {
       const totalVolume = editedExercises.reduce((s, e) => s + e.total_volume_lbs, 0)
 
+      // Build trained_at from editedTime
+      const trainedAt = new Date()
+      if (editedTime) {
+        const [h, m] = editedTime.split(':').map(Number)
+        trainedAt.setHours(h, m, 0, 0)
+      }
+
       const { data: session, error: sessionErr } = await supabase
         .from('workout_sessions')
         .insert({
           user_id: userId,
-          trained_at: new Date().toISOString(),
+          trained_at: trainedAt.toISOString(),
           session_type: parsed.session_type,
           duration_min: parsed.duration_min,
           notes: parsed.notes,
@@ -351,8 +361,19 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
               )}
             </div>
 
-            {/* Distance input for zone2 workouts */}
-            {parsed.session_type === 'zone2' && (
+            {/* Time picker */}
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-gray-400">Time:</label>
+              <input
+                type="time"
+                value={editedTime}
+                onChange={(e) => setEditedTime(e.target.value)}
+                className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Distance input for zone2 and bjj workouts */}
+            {(parsed.session_type === 'zone2' || parsed.session_type === 'bjj') && (
               <div className="flex items-center gap-3">
                 <label className="text-sm text-gray-400">Distance:</label>
                 <input

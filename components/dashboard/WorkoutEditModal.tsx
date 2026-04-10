@@ -26,8 +26,13 @@ export default function WorkoutEditModal({
 }: WorkoutEditModalProps) {
   const [sessionType, setSessionType] = useState<SessionType>(workout.session_type)
   const [durationMin, setDurationMin] = useState(workout.duration_min != null ? String(workout.duration_min) : '')
+  const [editedTime, setEditedTime] = useState(() => {
+    const d = new Date(workout.trained_at)
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  })
   const [distanceMiles, setDistanceMiles] = useState(workout.distance_miles != null ? String(workout.distance_miles) : '')
   const [calBurned, setCalBurned] = useState(workout.estimated_cal_burned != null ? String(workout.estimated_cal_burned) : '')
+  const [volumeLbs, setVolumeLbs] = useState(workout.total_volume_lbs != null ? String(workout.total_volume_lbs) : '')
   const [notes, setNotes] = useState(workout.workout_notes || '')
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -43,12 +48,21 @@ export default function WorkoutEditModal({
         ? 'user_override'
         : workout.cal_estimate_method
 
+    // Build trained_at from editedTime
+    const trainedAt = new Date(workout.trained_at)
+    if (editedTime) {
+      const [h, m] = editedTime.split(':').map(Number)
+      trainedAt.setHours(h, m, 0, 0)
+    }
+
     await supabase
       .from('workout_sessions')
       .update({
         session_type: sessionType,
+        trained_at: trainedAt.toISOString(),
         duration_min: durationMin ? parseInt(durationMin) : null,
         distance_miles: distanceMiles ? parseFloat(distanceMiles) : null,
+        total_volume_lbs: volumeLbs ? parseInt(volumeLbs) : null,
         estimated_cal_burned: calValue,
         cal_estimate_method: calMethod,
         workout_notes: notes || null,
@@ -113,6 +127,17 @@ export default function WorkoutEditModal({
             </div>
           </div>
 
+          {/* Time */}
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">Time</label>
+            <input
+              type="time"
+              value={editedTime}
+              onChange={(e) => setEditedTime(e.target.value)}
+              className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+
           {/* Duration */}
           <div>
             <label className="text-xs text-gray-500 mb-1 block">Duration (min)</label>
@@ -126,8 +151,8 @@ export default function WorkoutEditModal({
             />
           </div>
 
-          {/* Distance (show for zone2) */}
-          {sessionType === 'zone2' && (
+          {/* Distance (show for zone2 and bjj) */}
+          {(sessionType === 'zone2' || sessionType === 'bjj') && (
             <div>
               <label className="text-xs text-gray-500 mb-1 block">Distance (miles)</label>
               <input
@@ -136,6 +161,21 @@ export default function WorkoutEditModal({
                 onChange={(e) => setDistanceMiles(e.target.value)}
                 placeholder="3.5"
                 step="0.1"
+                min="0"
+                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          )}
+
+          {/* Total volume (show for lift) */}
+          {sessionType === 'lift' && (
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Total Volume (lbs)</label>
+              <input
+                type="number"
+                value={volumeLbs}
+                onChange={(e) => setVolumeLbs(e.target.value)}
+                placeholder="12000"
                 min="0"
                 className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
               />

@@ -169,34 +169,38 @@ export default function DashboardPage() {
         </button>
 
         {/* Today's Workouts */}
-        {workouts.length > 0 && (
-          <div className="rounded-2xl bg-gray-900 p-6">
-            <h2 className="mb-3 text-lg font-semibold">Today&apos;s Workouts</h2>
+        <div className="rounded-2xl bg-gray-900 p-6">
+          <h2 className="mb-3 text-lg font-semibold">Today&apos;s Workouts</h2>
+          {workouts.length === 0 ? (
+            <p className="text-gray-400 italic text-sm">No workouts logged yet</p>
+          ) : (
             <div className="space-y-2">
-              {workouts.map((w) => (
-                <button
-                  key={w.id}
-                  type="button"
-                  onClick={() => setEditingWorkout(w)}
-                  className="w-full flex items-center justify-between rounded-lg bg-gray-800 p-3 text-left hover:bg-gray-700/80 transition-colors"
-                >
-                  <div>
-                    <p className="text-sm font-medium capitalize">{w.session_type}</p>
-                    <p className="text-xs text-gray-500">
-                      {w.duration_min ? `${w.duration_min} min` : ''}
-                      {w.duration_min && w.estimated_cal_burned ? ' · ' : ''}
-                      {w.estimated_cal_burned ? `${w.estimated_cal_burned} cal` : ''}
-                      {w.distance_miles ? ` · ${w.distance_miles} mi` : ''}
-                    </p>
-                  </div>
-                  <span className="text-xs text-gray-600">
-                    {new Date(w.trained_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                  </span>
-                </button>
-              ))}
+              {workouts.map((w) => {
+                const details: string[] = []
+                if (w.duration_min) details.push(`${w.duration_min} min`)
+                if (w.estimated_cal_burned) details.push(`${w.estimated_cal_burned} cal`)
+                if (w.distance_miles) details.push(`${w.distance_miles} mi`)
+                if (w.session_type === 'lift' && w.total_volume_lbs) details.push(`${w.total_volume_lbs.toLocaleString()} lbs vol`)
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={() => setEditingWorkout(w)}
+                    className="w-full flex items-center justify-between rounded-lg bg-gray-800 p-3 text-left hover:bg-gray-700/80 transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-medium capitalize">{w.session_type}</p>
+                      <p className="text-xs text-gray-500">{details.join(' · ')}</p>
+                    </div>
+                    <span className="text-xs text-gray-600">
+                      {new Date(w.trained_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Today's Food Log */}
         <div className="rounded-2xl bg-gray-900 p-6">
