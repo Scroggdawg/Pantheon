@@ -181,8 +181,10 @@ export async function POST(request: Request) {
 
     // Call Claude for verdict + recommendation
     const verdictPrompt = `You are the Greek God Bod Score coach for Pantheon. Given these component scores and data, write:
-1. A one-sentence verdict — specific numbers, no generic phrases.
-2. A two-sentence recommendation — actionable, time-aware.
+1. A one-sentence verdict — specific numbers, no generic phrases. Keep under 120 characters.
+2. A one-to-two sentence recommendation — actionable, time-aware. Keep under 200 characters.
+
+Be concise and direct. No filler words.
 
 HARD RULE: Never recommend net calories below 1800/day.
 
