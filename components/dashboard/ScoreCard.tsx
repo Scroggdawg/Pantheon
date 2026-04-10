@@ -170,6 +170,7 @@ export default function ScoreCard({
             {/* Action buttons */}
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={() => calculateScore(true)}
                 disabled={loading}
                 className="flex-1 rounded-lg border border-gray-700 py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
@@ -177,6 +178,7 @@ export default function ScoreCard({
                 {loading ? 'Calculating...' : 'Recalculate'}
               </button>
               <button
+                type="button"
                 onClick={() => setShowPlan(true)}
                 className="flex-1 rounded-lg bg-amber-600 py-2 text-sm font-medium hover:bg-amber-700"
               >
@@ -193,6 +195,7 @@ export default function ScoreCard({
               <p className="text-xs text-red-400 text-center">{error}</p>
             )}
             <button
+              type="button"
               onClick={() => calculateScore()}
               disabled={loading}
               className="w-full rounded-lg bg-amber-600 py-3 font-medium hover:bg-amber-700 disabled:opacity-50"
