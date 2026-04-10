@@ -33,9 +33,16 @@ Return this exact JSON structure:
     }
   ],
   "total_volume_lbs": number,
+  "distance_miles": number|null,
+  "activity_detail": "run|bike|row|swim|walk|null",
   "notes": "string|null",
   "clarification_needed": "string|null"
 }
+
+Additional rules:
+- If the user mentions a distance (e.g. "3.5 mile run", "10 mile bike"), include it as distance_miles.
+- If the activity is a specific type of zone2 (run, bike, row, swim) or a walk, set activity_detail accordingly.
+- For lifting sessions, set distance_miles to null and activity_detail to null.
 `
 
 export interface ParsedExercise {
@@ -51,8 +58,12 @@ export interface ParsedWorkoutResponse {
   duration_min: number | null
   exercises: ParsedExercise[]
   total_volume_lbs: number
+  distance_miles: number | null
+  activity_detail: string | null
   notes: string | null
   clarification_needed: string | null
+  estimated_cal_burned: number
+  cal_assumption: string
   imageUrl?: string | null
 }
 

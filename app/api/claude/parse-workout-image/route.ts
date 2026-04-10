@@ -1,5 +1,6 @@
 import { client } from '@/lib/claude/claude'
 import { createClient } from '@/lib/supabase/server'
+import { estimateCalories } from '@/lib/claude/calories'
 
 const WORKOUT_IMAGE_SYSTEM_PROMPT = `This is a handwritten gym workout. Parse every exercise you can read into structured JSON:
 {
@@ -15,11 +16,15 @@ const WORKOUT_IMAGE_SYSTEM_PROMPT = `This is a handwritten gym workout. Parse ev
     }
   ],
   "total_volume_lbs": number,
+  "distance_miles": number|null,
+  "activity_detail": "run|bike|row|swim|walk|null",
   "notes": "string|null",
   "clarification_needed": "string|null"
 }
 Common shorthand: RDL = Romanian deadlift, DB = dumbbell, BB = barbell, RP = rest-pause, AMRAP = as many reps as possible, BW = bodyweight.
-If weight is unclear, set weight_lbs to null. Infer muscle_groups from exercise names. Calculate total_volume_lbs = sum of (reps * weight) across all sets. Return ONLY valid JSON.`
+If weight is unclear, set weight_lbs to null. Infer muscle_groups from exercise names. Calculate total_volume_lbs = sum of (reps * weight) across all sets.
+If distance is mentioned or visible, include it as distance_miles. If the activity is a specific type of zone2 (run, bike, row, swim) or a walk, set activity_detail accordingly. For lifting, set both to null.
+Return ONLY valid JSON.`
 
 export async function POST(request: Request) {
   try {
@@ -69,6 +74,29 @@ export async function POST(request: Request) {
     const parsed = JSON.parse(text)
     console.log('[parse-workout-image] Success:', parsed.exercises?.length, 'exercises')
 
+    // Fetch most recent weight for calorie estimation
+    let weightLbs = 198
+    try {
+      const supabaseWeight = await createClient()
+      const { data: weightRow } = await supabaseWeight
+        .from('weight_readings')
+        .select('weight_lbs')
+        .order('measured_at', { ascending: false })
+        .limit(1)
+        .single()
+      if (weightRow?.weight_lbs) weightLbs = Number(weightRow.weight_lbs)
+    } catch {
+      console.warn('[parse-workout-image] Weight fetch failed, using 198 lbs default')
+    }
+
+    const calResult = estimateCalories({
+      session_type: parsed.session_type,
+      duration_min: parsed.duration_min,
+      distance_miles: parsed.distance_miles ?? null,
+      weight_lbs: weightLbs,
+      activity_detail: parsed.activity_detail ?? null,
+    })
+
     // Upload image to Supabase Storage instead of storing base64 in DB
     let imageUrl: string | null = null
     try {
@@ -93,7 +121,13 @@ export async function POST(request: Request) {
       console.warn('[parse-workout-image] Storage upload failed, continuing without image URL')
     }
 
-    return Response.json({ ...parsed, imageUrl })
+    return Response.json({
+      ...parsed,
+      imageUrl,
+      estimated_cal_burned: calResult.estimated_cal_burned,
+      cal_assumption: calResult.cal_assumption,
+      distance_miles: parsed.distance_miles ?? null,
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     console.error('[parse-workout-image] ERROR:', message)

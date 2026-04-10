@@ -11,7 +11,7 @@ interface Props {
   onClose: () => void
 }
 
-type Stage = 'input' | 'processing' | 'confirming' | 'saving'
+type Stage = 'input' | 'processing' | 'confirming' | 'saving' | 'done'
 
 export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
   const [stage, setStage] = useState<Stage>('input')
@@ -24,6 +24,10 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageDataRef = useRef<{ base64: string; mediaType: string } | null>(null)
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null)
+  const [editingCal, setEditingCal] = useState(false)
+  const [calOverride, setCalOverride] = useState('')
+  const [calOverridden, setCalOverridden] = useState(false)
   const supabase = createClient()
 
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -122,6 +126,9 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
           raw_input_text: text || null,
           image_url: parsed.imageUrl || null,
           total_volume_lbs: totalVolume,
+          estimated_cal_burned: parsed.estimated_cal_burned,
+          cal_estimate_method: 'MET_estimate',
+          distance_miles: parsed.distance_miles,
         })
         .select('id')
         .single()
@@ -145,7 +152,8 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
 
       setSaveError(null)
       setRetryCount(0)
-      onComplete()
+      setSavedSessionId(session.id)
+      setStage('done')
     } catch (err) {
       const next = retryCount + 1
       setRetryCount(next)
@@ -238,6 +246,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
             {stage === 'processing' && 'Parsing workout...'}
             {stage === 'confirming' && 'Confirm Workout'}
             {stage === 'saving' && 'Saving...'}
+            {stage === 'done' && 'Workout Saved'}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -455,6 +464,83 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
         {stage === 'saving' && (
           <div className="flex items-center justify-center py-8">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-700 border-t-green-500" />
+          </div>
+        )}
+
+        {/* Done stage — calorie estimate display */}
+        {stage === 'done' && parsed && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-center py-3">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+
+            {calOverridden ? (
+              <div className="rounded-lg bg-gray-800 p-4 text-center">
+                <p className="text-lg font-semibold text-green-400">
+                  {calOverride} cal burned
+                </p>
+                <p className="text-xs text-gray-500 mt-1">(your entry)</p>
+              </div>
+            ) : editingCal ? (
+              <div className="rounded-lg bg-gray-800 p-4 space-y-3">
+                <label className="text-sm text-gray-400">Enter actual calories burned:</label>
+                <input
+                  type="number"
+                  value={calOverride}
+                  onChange={(e) => setCalOverride(e.target.value)}
+                  placeholder={String(parsed.estimated_cal_burned)}
+                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white text-center text-lg focus:border-blue-500 focus:outline-none"
+                  autoFocus
+                  min={0}
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditingCal(false)}
+                    className="flex-1 rounded-lg border border-gray-700 py-2 text-sm hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const val = parseInt(calOverride)
+                      if (!val || val <= 0 || !savedSessionId) return
+                      await supabase
+                        .from('workout_sessions')
+                        .update({ estimated_cal_burned: val, cal_estimate_method: 'user_override' })
+                        .eq('id', savedSessionId)
+                      setCalOverridden(true)
+                      setEditingCal(false)
+                    }}
+                    disabled={!calOverride || parseInt(calOverride) <= 0}
+                    className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setEditingCal(true)}
+                className="w-full rounded-lg bg-gray-800 p-4 text-left hover:bg-gray-700/80 transition-colors"
+              >
+                <p className="text-sm font-medium text-white">
+                  Estimated {parsed.estimated_cal_burned} cal burned
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {parsed.cal_assumption}. Tap to adjust.
+                </p>
+              </button>
+            )}
+
+            <button
+              onClick={onComplete}
+              className="w-full rounded-lg bg-blue-600 py-3 font-medium hover:bg-blue-700"
+            >
+              Done
+            </button>
           </div>
         )}
       </div>

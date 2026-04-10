@@ -3,6 +3,7 @@ export type LogMethod = 'voice' | 'photo' | 'barcode' | 'quick' | 'manual' | 'oc
 export type SessionType = 'lift' | 'bjj' | 'zone2' | 'other'
 export type Confidence = 'low' | 'medium' | 'high'
 export type WeightSource = 'wyze_sync' | 'manual'
+export type CalEstimateMethod = 'MET_estimate' | 'user_override' | 'apple_health'
 
 export interface User {
   id: string
@@ -157,6 +158,12 @@ export interface WorkoutSession {
   raw_input_text: string | null
   image_url: string | null
   total_volume_lbs: number | null
+  distance_miles: number | null
+  estimated_cal_burned: number | null
+  cal_estimate_method: CalEstimateMethod
+  avg_heart_rate: number | null
+  perceived_effort: number | null
+  workout_notes: string | null
   created_at: string
 }
 
