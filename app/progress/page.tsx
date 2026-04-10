@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import { createClient } from '@/lib/supabase/client'
+import WorkoutEditModal from '@/components/dashboard/WorkoutEditModal'
 import Link from 'next/link'
+import type { WorkoutSession } from '@/types/database'
 import {
   ResponsiveContainer,
   LineChart,
@@ -40,9 +42,10 @@ export default function ProgressPage() {
 
   const [weightData, setWeightData] = useState<{ date: string; weight: number; bodyFat?: number }[]>([])
   const [calorieData, setCalorieData] = useState<{ date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
-  const [workoutData, setWorkoutData] = useState<{ date: string; volume: number; type: string; calBurned: number | null; duration: number | null; distance: number | null; calMethod: string | null }[]>([])
+  const [workoutData, setWorkoutData] = useState<WorkoutSession[]>([])
   const [bodyCompData, setBodyCompData] = useState<{ date: string; bodyFat?: number; muscle?: number; water?: number }[]>([])
   const [workoutFilter, setWorkoutFilter] = useState<string>('all')
+  const [editingWorkout, setEditingWorkout] = useState<WorkoutSession | null>(null)
   const [loading, setLoading] = useState(true)
 
   const supabase = createClient()
@@ -69,7 +72,7 @@ export default function ProgressPage() {
           .order('logged_at', { ascending: true }),
         supabase
           .from('workout_sessions')
-          .select('trained_at, total_volume_lbs, session_type, duration_min, distance_miles, estimated_cal_burned, cal_estimate_method')
+          .select('*')
           .eq('user_id', userId!)
           .gte('trained_at', since)
           .order('trained_at', { ascending: true }),
@@ -122,24 +125,26 @@ export default function ProgressPage() {
 
       // Workouts
       if (workouts.data) {
-        const wkData = workouts.data as { trained_at: string; total_volume_lbs: number | null; session_type: string; duration_min: number | null; distance_miles: number | null; estimated_cal_burned: number | null; cal_estimate_method: string | null }[]
-        setWorkoutData(
-          wkData.map((w) => ({
-            date: formatDate(w.trained_at),
-            volume: w.total_volume_lbs || 0,
-            type: w.session_type,
-            calBurned: w.estimated_cal_burned,
-            duration: w.duration_min,
-            distance: w.distance_miles ? Number(w.distance_miles) : null,
-            calMethod: w.cal_estimate_method,
-          }))
-        )
+        setWorkoutData(workouts.data as WorkoutSession[])
       }
 
       setLoading(false)
     }
 
     fetchAll()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, range])
+
+  const refreshWorkouts = useCallback(async () => {
+    if (!userId) return
+    const since = range === 'all' ? '2020-01-01' : daysAgo(range === '7d' ? 7 : range === '30d' ? 30 : 90)
+    const { data } = await supabase
+      .from('workout_sessions')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('trained_at', since)
+      .order('trained_at', { ascending: true })
+    if (data) setWorkoutData(data as WorkoutSession[])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, range])
 
@@ -280,13 +285,20 @@ export default function ProgressPage() {
             </div>
 
             {(() => {
-              const filtered = workoutFilter === 'all' ? workoutData : workoutData.filter((w) => w.type === workoutFilter)
+              const filtered = workoutFilter === 'all' ? workoutData : workoutData.filter((w) => w.session_type === workoutFilter)
               if (filtered.length === 0) {
                 return <p className="text-center text-gray-500 py-8 text-sm">No workout data{workoutFilter !== 'all' ? ` for ${workoutFilter}` : ''}</p>
               }
 
-              const hasCalData = filtered.some((w) => w.calBurned != null)
-              const hasDistData = filtered.some((w) => w.distance != null)
+              const chartData = filtered.map((w) => ({
+                date: formatDate(w.trained_at),
+                volume: w.total_volume_lbs || 0,
+                calBurned: w.estimated_cal_burned,
+                distance: w.distance_miles ? Number(w.distance_miles) : null,
+              }))
+
+              const hasCalData = chartData.some((w) => w.calBurned != null)
+              const hasDistData = chartData.some((w) => w.distance != null)
 
               return (
                 <div className="space-y-6">
@@ -295,7 +307,7 @@ export default function ProgressPage() {
                     <p className="text-xs text-gray-500 mb-2">{filtered.length} sessions — Volume</p>
                     <div className="h-48">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={filtered}>
+                        <BarChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                           <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
                           <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} width={50} />
@@ -312,7 +324,7 @@ export default function ProgressPage() {
                       <p className="text-xs text-gray-500 mb-2">Calories Burned</p>
                       <div className="h-48">
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={filtered.filter((w) => w.calBurned != null)}>
+                          <BarChart data={chartData.filter((w) => w.calBurned != null)}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
                             <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} width={45} />
@@ -330,7 +342,7 @@ export default function ProgressPage() {
                       <p className="text-xs text-gray-500 mb-2">Distance (miles)</p>
                       <div className="h-48">
                         <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={filtered.filter((w) => w.distance != null)}>
+                          <LineChart data={chartData.filter((w) => w.distance != null)}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
                             <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} width={40} />
@@ -344,32 +356,46 @@ export default function ProgressPage() {
 
                   {/* Workout history table */}
                   <div>
-                    <p className="text-xs text-gray-500 mb-2">History</p>
+                    <p className="text-xs text-gray-500 mb-2">History — tap a row to edit</p>
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs">
                         <thead>
                           <tr className="text-gray-500 border-b border-gray-800">
                             <th className="text-left py-2 pr-2">Date</th>
                             <th className="text-left py-2 pr-2">Type</th>
+                            <th className="text-right py-2 pr-2">Time</th>
                             <th className="text-right py-2 pr-2">Min</th>
                             <th className="text-right py-2 pr-2">Mi</th>
+                            <th className="text-left py-2 pr-2">Notes</th>
                             <th className="text-right py-2 pr-2">Cal</th>
                             <th className="text-right py-2">Source</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {filtered.map((w, i) => (
-                            <tr key={i} className="border-b border-gray-800/50">
-                              <td className="py-2 pr-2 text-gray-300">{w.date}</td>
-                              <td className="py-2 pr-2 text-gray-400 capitalize">{w.type}</td>
-                              <td className="py-2 pr-2 text-right text-gray-400">{w.duration ?? '—'}</td>
-                              <td className="py-2 pr-2 text-right text-gray-400">{w.distance?.toFixed(1) ?? '—'}</td>
-                              <td className="py-2 pr-2 text-right text-gray-300">{w.calBurned ?? '—'}</td>
-                              <td className="py-2 text-right text-gray-500">
-                                {w.calMethod === 'user_override' ? 'Your Entry' : w.calMethod === 'apple_health' ? 'Apple Health' : w.calBurned != null ? 'Estimated' : '—'}
-                              </td>
-                            </tr>
-                          ))}
+                          {filtered.map((w) => {
+                            const noteText = w.workout_notes || ''
+                            const truncated = noteText.length > 20 ? noteText.slice(0, 20) + '…' : noteText
+                            return (
+                              <tr
+                                key={w.id}
+                                onClick={() => setEditingWorkout(w)}
+                                className="border-b border-gray-800/50 cursor-pointer hover:bg-gray-800/50 transition-colors"
+                              >
+                                <td className="py-2 pr-2 text-gray-300">{formatDate(w.trained_at)}</td>
+                                <td className="py-2 pr-2 text-gray-400 capitalize">{w.session_type}</td>
+                                <td className="py-2 pr-2 text-right text-gray-400">
+                                  {new Date(w.trained_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                                </td>
+                                <td className="py-2 pr-2 text-right text-gray-400">{w.duration_min ?? '—'}</td>
+                                <td className="py-2 pr-2 text-right text-gray-400">{w.distance_miles ? Number(w.distance_miles).toFixed(1) : '—'}</td>
+                                <td className="py-2 pr-2 text-gray-500">{truncated || '—'}</td>
+                                <td className="py-2 pr-2 text-right text-gray-300">{w.estimated_cal_burned ?? '—'}</td>
+                                <td className="py-2 text-right text-gray-500">
+                                  {w.cal_estimate_method === 'user_override' ? 'Your Entry' : w.cal_estimate_method === 'apple_health' ? 'Apple Health' : w.estimated_cal_burned != null ? 'Estimated' : '—'}
+                                </td>
+                              </tr>
+                            )
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -406,6 +432,15 @@ export default function ProgressPage() {
             )}
           </div>
         </div>
+      )}
+
+      {editingWorkout && (
+        <WorkoutEditModal
+          workout={editingWorkout}
+          onSaved={() => { refreshWorkouts(); setEditingWorkout(null) }}
+          onDeleted={() => { refreshWorkouts(); setEditingWorkout(null) }}
+          onClose={() => setEditingWorkout(null)}
+        />
       )}
     </div>
   )

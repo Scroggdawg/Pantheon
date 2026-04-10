@@ -9,7 +9,7 @@ export function useTodayWorkouts(userId: string | null) {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date())
 
   const refresh = useCallback(async () => {
     if (!userId) return
