@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import type { FoodItem } from '@/types/database'
 
@@ -91,12 +92,23 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
     await performInsert()
   }
 
-  return (
+  if (typeof document === 'undefined') return null
+
+  const inputStyle: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.5)',
+    border: '1px solid rgba(201,160,60,0.25)',
+    color: '#3d3225',
+  }
+
+  const modal = (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 sm:items-center">
-      <div className="w-full max-w-md rounded-t-2xl bg-gray-900 p-6 sm:rounded-2xl">
+      <div
+        className="w-full max-w-md rounded-t-2xl p-6 sm:rounded-2xl"
+        style={{ background: 'rgba(255,253,249,0.95)', border: '1px solid rgba(201,160,60,0.2)' }}
+      >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Save as Meal</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <h2 className="text-lg font-semibold" style={{ color: '#3d3225' }}>Save as Meal</h2>
+          <button type="button" onClick={onClose} className="hover:opacity-70 transition-opacity" style={{ color: '#a47c16' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -104,7 +116,7 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
         </div>
 
         <div className="space-y-4">
-          <div className="text-xs text-gray-500">
+          <div className="text-xs" style={{ color: 'rgba(70,48,12,0.58)' }}>
             {foods.map((f) => f.name).join(', ')} — {totals.calories} cal
           </div>
 
@@ -113,21 +125,23 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Meal name (e.g. Post-Gym Shake)"
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1"
+            style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
             autoFocus
           />
 
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Servings this recipe makes</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(70,48,12,0.58)' }}>Servings this recipe makes</label>
             <input
               type="number"
               value={yieldServings}
               onChange={(e) => setYieldServings(e.target.value)}
               min="1"
-              className="w-24 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
+              className="w-24 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+              style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
             />
             {parseInt(yieldServings) > 1 && (
-              <span className="text-xs text-gray-500 ml-3">
+              <span className="text-xs ml-3" style={{ color: 'rgba(70,48,12,0.5)' }}>
                 {Math.round(totals.calories / (parseInt(yieldServings) || 1))} cal/serving
               </span>
             )}
@@ -138,26 +152,31 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="Tags (optional, comma separated)"
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1"
+            style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
           />
 
           {duplicateWarning ? (
             <div className="space-y-3">
-              <p className="text-sm text-amber-300">{duplicateWarning}</p>
+              <p className="text-sm" style={{ color: '#a47c16' }}>{duplicateWarning}</p>
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => setDuplicateWarning(null)}
-                  className="flex-1 rounded-lg border border-gray-700 py-3 text-sm font-medium hover:bg-gray-800"
+                  className="flex-1 rounded-lg py-3 text-sm font-medium hover:opacity-80 transition-opacity"
+                  style={{ border: '1px solid rgba(201,160,60,0.3)', color: '#5a4a32' }}
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setDuplicateWarning(null)
                     performInsert()
                   }}
                   disabled={saving}
-                  className="flex-1 rounded-lg bg-blue-600 py-3 font-medium hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 rounded-lg py-3 font-medium disabled:opacity-50 hover:opacity-80 transition-opacity"
+                  style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
                 >
                   {saving ? 'Saving...' : 'Save Anyway'}
                 </button>
@@ -165,9 +184,11 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
             </div>
           ) : (
             <button
+              type="button"
               onClick={handleSave}
               disabled={!name.trim() || saving}
-              className="w-full rounded-lg bg-blue-600 py-3 font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="w-full rounded-lg py-3 font-medium disabled:opacity-50 hover:opacity-80 transition-opacity"
+              style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
             >
               {saving ? 'Saving...' : 'Save Meal'}
             </button>
@@ -180,4 +201,6 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
       </div>
     </div>
   )
+
+  return createPortal(modal, document.body)
 }

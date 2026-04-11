@@ -30,6 +30,8 @@ const GOLD = '#a47c16'
 const GOLD_LIGHT = '#c9a03c'
 const TEXT_DARK = '#3d3225'
 const TEXT_MID = '#5a4a32'
+const BAR_PPP = 48   // pixels per data point for bar charts
+const LINE_PPP = 60  // pixels per data point for line charts
 
 function SectionDivider() {
   return (
@@ -238,21 +240,23 @@ export default function ProgressPage() {
                 : 'No data yet'}
             </p>
             {weightData.length > 1 ? (
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={weightData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                    <YAxis
-                      domain={['dataMin - 1', 'dataMax + 1']}
-                      tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }}
-                      tickLine={false}
-                      width={40}
-                    />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Line type="monotone" dataKey="weight" stroke={GOLD_LIGHT} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="h-48 overflow-x-auto">
+                <div style={{ minWidth: '100%', width: weightData.length * LINE_PPP, height: '100%' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={weightData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                      <YAxis
+                        domain={['dataMin - 1', 'dataMax + 1']}
+                        tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }}
+                        tickLine={false}
+                        width={40}
+                      />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Line type="monotone" dataKey="weight" stroke={GOLD_LIGHT} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             ) : (
               <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>Log weight to see your trend</p>
@@ -270,21 +274,23 @@ export default function ProgressPage() {
                 : 'No data yet'}
             </p>
             {calorieData.length > 0 ? (
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={calorieData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend
-                      wrapperStyle={{ fontSize: 11, color: 'rgba(70,48,12,0.6)' }}
-                    />
-                    <Bar dataKey="protein" stackId="macros" fill="#7836a8" name="Protein" />
-                    <Bar dataKey="carbs" stackId="macros" fill="#94680e" name="Carbs" />
-                    <Bar dataKey="fat" stackId="macros" fill="#8e261e" name="Fat" />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="h-56 overflow-x-auto">
+                <div style={{ minWidth: '100%', width: calorieData.length * BAR_PPP, height: '100%' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={calorieData} barSize={32}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend
+                        wrapperStyle={{ fontSize: 11, color: 'rgba(70,48,12,0.6)' }}
+                      />
+                      <Bar dataKey="protein" stackId="macros" fill="#7836a8" name="Protein" />
+                      <Bar dataKey="carbs" stackId="macros" fill="#94680e" name="Carbs" />
+                      <Bar dataKey="fat" stackId="macros" fill="#8e261e" name="Fat" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             ) : (
               <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>Log meals to see macro breakdown</p>
@@ -336,16 +342,18 @@ export default function ProgressPage() {
                   {/* Volume chart */}
                   <div>
                     <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>{filtered.length} sessions — Volume</p>
-                    <div className="h-48">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                          <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                          <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={50} />
-                          <Tooltip contentStyle={tooltipStyle} />
-                          <Bar dataKey="volume" fill="#a78bfa" name="Volume (lbs)" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
+                    <div className="h-48 overflow-x-auto">
+                      <div style={{ minWidth: '100%', width: chartData.length * BAR_PPP, height: '100%' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={chartData} barSize={32}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                            <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={50} />
+                            <Tooltip contentStyle={tooltipStyle} />
+                            <Bar dataKey="volume" fill="#a78bfa" name="Volume (lbs)" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   </div>
 
@@ -353,16 +361,18 @@ export default function ProgressPage() {
                   {hasCalData && (
                     <div>
                       <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>Calories Burned</p>
-                      <div className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={chartData.filter((w) => w.calBurned != null)}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
-                            <Tooltip contentStyle={tooltipStyle} />
-                            <Bar dataKey="calBurned" fill="#f97316" name="Cal Burned" radius={[4, 4, 0, 0]} />
-                          </BarChart>
-                        </ResponsiveContainer>
+                      <div className="h-48 overflow-x-auto">
+                        <div style={{ minWidth: '100%', width: chartData.filter((w) => w.calBurned != null).length * BAR_PPP, height: '100%' }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData.filter((w) => w.calBurned != null)} barSize={32}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                              <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
+                              <Tooltip contentStyle={tooltipStyle} />
+                              <Bar dataKey="calBurned" fill="#f97316" name="Cal Burned" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -371,16 +381,18 @@ export default function ProgressPage() {
                   {hasDistData && (
                     <div>
                       <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>Distance (miles)</p>
-                      <div className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={chartData.filter((w) => w.distance != null)}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={40} />
-                            <Tooltip contentStyle={tooltipStyle} />
-                            <Line type="monotone" dataKey="distance" stroke="#34d399" strokeWidth={2} dot={{ r: 2 }} name="Miles" />
-                          </LineChart>
-                        </ResponsiveContainer>
+                      <div className="h-48 overflow-x-auto">
+                        <div style={{ minWidth: '100%', width: chartData.filter((w) => w.distance != null).length * LINE_PPP, height: '100%' }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData.filter((w) => w.distance != null)}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                              <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={40} />
+                              <Tooltip contentStyle={tooltipStyle} />
+                              <Line type="monotone" dataKey="distance" stroke="#34d399" strokeWidth={2} dot={{ r: 2 }} name="Miles" />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -446,18 +458,20 @@ export default function ProgressPage() {
               {bodyCompData.length > 0 ? 'From scale readings' : 'No body comp data yet'}
             </p>
             {bodyCompData.length > 1 ? (
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={bodyCompData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={40} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(70,48,12,0.6)' }} />
-                    <Area type="monotone" dataKey="bodyFat" stroke="#f87171" fill="#f87171" fillOpacity={0.15} name="Body Fat %" />
-                    <Area type="monotone" dataKey="water" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.15} name="Water %" />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="h-48 overflow-x-auto">
+                <div style={{ minWidth: '100%', width: bodyCompData.length * LINE_PPP, height: '100%' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={bodyCompData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={40} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(70,48,12,0.6)' }} />
+                      <Area type="monotone" dataKey="bodyFat" stroke="#f87171" fill="#f87171" fillOpacity={0.15} name="Body Fat %" />
+                      <Area type="monotone" dataKey="water" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.15} name="Water %" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             ) : (
               <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>
