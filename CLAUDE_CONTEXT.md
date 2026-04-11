@@ -1,6 +1,6 @@
 # CLAUDE_CONTEXT.md — Pantheon
 
-**Last updated:** Session 6 (2026-04-10)
+**Last updated:** Session 7 (2026-04-10)
 **Production:** https://pantheon-woad.vercel.app
 **Deploy:** `npx vercel --prod --yes` (no git remote)
 
@@ -113,7 +113,9 @@ scripts/
 - **DAY_TYPE_ADJUSTMENTS:** lift (+200 cal, +50g carbs), zone2 (0, 0), rest (-150 cal, -30g carbs).
 - **Recipe portions:** `saved_meals.yield_servings` (default 1). Macros scale by `servings / yield_servings`.
 - **Coach actions:** 11 types. Food edits have two modes: `reparse` (new food) and `scale` (quantity change). System prompt includes entry IDs for targeting.
-- **Visual theme:** Marble/gold Greco-Roman. GlassPanel for cards. Gold palette (#a47c16, #c9a03c, #e8c048). Cinzel font for Roman numerals.
+- **Visual theme:** Marble/gold Greco-Roman. GlassPanel for cards. Gold palette (#a47c16, #c9a03c, #e8c048). Cinzel font for Roman numerals. Both dashboard and progress page use this theme.
+- **Chart width:** `overflow-x-auto` wrapper + inner div with `minWidth: '100%', width: data.length * PPP`. BAR_PPP=48, LINE_PPP=60. `barSize={32}` on BarCharts.
+- **Portal for modals inside GlassPanel:** GlassPanel's `backdropFilter` creates a containing block that traps `fixed` children. Use `createPortal(jsx, document.body)` for modals rendered inside GlassPanel (e.g., SaveMealModal in TodayLog).
 
 ## Critical Open Issue
 
@@ -128,4 +130,5 @@ scripts/
 | 3 | Backup script, Vercel deploy config |
 | 4 | Workout calorie estimation (MET), Greek God Bod Score, AI Coach + TDEE, Sunday check-in |
 | 5 | Dashboard visual redesign (marble/gold), UTC timezone fixes, tappable progress history, auto-score |
-| 6 | Consistent edit modal pattern, recipe portion system, Coach full CRUD (11 action types), progress page marble/gold restyle, chart width scaling, CoachPanel restyle, SaveMealModal portal fix, Log Food button fix |
+| 6 | Consistent edit modal pattern, recipe portion system, Coach full CRUD (11 action types) |
+| 7 | Progress page marble/gold restyle, chart width scaling, CoachPanel restyle, SaveMealModal portal fix, Log Food button fix |
