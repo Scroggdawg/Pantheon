@@ -128,4 +128,4 @@ scripts/
 | 3 | Backup script, Vercel deploy config |
 | 4 | Workout calorie estimation (MET), Greek God Bod Score, AI Coach + TDEE, Sunday check-in |
 | 5 | Dashboard visual redesign (marble/gold), UTC timezone fixes, tappable progress history, auto-score |
-| 6 | Consistent edit modal pattern, recipe portion system, Coach full CRUD (11 action types) |
+| 6 | Consistent edit modal pattern, recipe portion system, Coach full CRUD (11 action types), progress page marble/gold restyle |

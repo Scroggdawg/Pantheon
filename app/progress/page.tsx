@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import { createClient } from '@/lib/supabase/client'
 import WorkoutEditModal from '@/components/dashboard/WorkoutEditModal'
+import GlassPanel from '@/components/ui/GlassPanel'
+import MarbleBackground from '@/components/ui/MarbleBackground'
 import Link from 'next/link'
 import type { WorkoutSession } from '@/types/database'
 import {
@@ -23,6 +25,21 @@ import {
 } from 'recharts'
 
 type TimeRange = '7d' | '30d' | '90d' | 'all'
+
+const GOLD = '#a47c16'
+const GOLD_LIGHT = '#c9a03c'
+const TEXT_DARK = '#3d3225'
+const TEXT_MID = '#5a4a32'
+
+function SectionDivider() {
+  return (
+    <div className="flex items-center justify-center gap-3 py-1">
+      <div className="h-px flex-1" style={{ background: `linear-gradient(to right, transparent, ${GOLD_LIGHT}44, transparent)` }} />
+      <span style={{ color: `${GOLD_LIGHT}88`, fontSize: 10 }}>&#10022;</span>
+      <div className="h-px flex-1" style={{ background: `linear-gradient(to right, transparent, ${GOLD_LIGHT}44, transparent)` }} />
+    </div>
+  )
+}
 
 function daysAgo(days: number): string {
   const d = new Date()
@@ -150,8 +167,8 @@ export default function ProgressPage() {
 
   if (userLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-400">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#eae5de' }}>
+        <div style={{ color: 'rgba(70,48,12,0.5)' }}>Loading...</div>
       </div>
     )
   }
@@ -162,35 +179,42 @@ export default function ProgressPage() {
   }
 
   const tooltipStyle = {
-    backgroundColor: '#1f2937',
-    border: 'none',
+    backgroundColor: 'rgba(255,252,245,0.95)',
+    border: '1px solid rgba(164,124,22,0.25)',
     borderRadius: '0.5rem',
-    color: '#f9fafb',
+    color: 'rgba(70,48,12,0.88)',
     fontSize: 12,
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-12">
+    <div className="min-h-screen pb-12" style={{ backgroundColor: '#eae5de' }}>
+      <MarbleBackground />
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white">
+            <Link href="/dashboard" className="text-sm hover:opacity-70 transition-opacity" style={{ color: GOLD }}>
               &larr; Dashboard
             </Link>
-            <h1 className="text-2xl font-bold mt-1">Progress</h1>
+            <h1
+              className="text-2xl font-bold mt-1 uppercase tracking-widest"
+              style={{ color: '#be9424', WebkitTextStroke: '0.6px rgba(70,42,4,0.28)' }}
+            >
+              PROGRESS
+            </h1>
           </div>
           {/* Time range selector */}
-          <div className="flex gap-1 rounded-lg bg-gray-900 p-1">
+          <div className="flex gap-3">
             {(['7d', '30d', '90d', 'all'] as TimeRange[]).map((r) => (
               <button
+                type="button"
                 key={r}
                 onClick={() => setRange(r)}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                  range === r
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
+                className="px-1 pb-1 text-xs font-semibold transition-colors"
+                style={{
+                  color: range === r ? '#5a3e08' : 'rgba(70,48,12,0.5)',
+                  borderBottom: range === r ? '3px solid rgba(165,128,32,0.72)' : '3px solid transparent',
+                }}
               >
                 {r === 'all' ? 'All' : r}
               </button>
@@ -201,14 +225,14 @@ export default function ProgressPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-700 border-t-blue-500" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4" style={{ borderColor: 'rgba(164,124,22,0.2)', borderTopColor: GOLD }} />
         </div>
       ) : (
-        <div className="space-y-6 px-4">
+        <div className="space-y-4 px-4">
           {/* 1. Weight Trend */}
-          <div className="rounded-2xl bg-gray-900 p-5">
-            <h2 className="text-base font-semibold mb-1">Weight Trend</h2>
-            <p className="text-xs text-gray-500 mb-4">
+          <GlassPanel className="p-5">
+            <h2 className="text-sm font-semibold mb-1 uppercase tracking-wider" style={{ color: GOLD }}>Weight Trend</h2>
+            <p className="text-xs mb-4" style={{ color: 'rgba(70,48,12,0.58)' }}>
               {weightData.length > 0
                 ? `${weightData[0].weight} → ${weightData[weightData.length - 1].weight} lbs`
                 : 'No data yet'}
@@ -217,28 +241,30 @@ export default function ProgressPage() {
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={weightData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
                     <YAxis
                       domain={['dataMin - 1', 'dataMax + 1']}
-                      tick={{ fontSize: 10, fill: '#6b7280' }}
+                      tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }}
                       tickLine={false}
                       width={40}
                     />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Line type="monotone" dataKey="weight" stroke="#60a5fa" strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="weight" stroke={GOLD_LIGHT} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-8 text-sm">Log weight to see your trend</p>
+              <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>Log weight to see your trend</p>
             )}
-          </div>
+          </GlassPanel>
+
+          <SectionDivider />
 
           {/* 2. Calories & Macros */}
-          <div className="rounded-2xl bg-gray-900 p-5">
-            <h2 className="text-base font-semibold mb-1">Daily Calories & Macros</h2>
-            <p className="text-xs text-gray-500 mb-4">
+          <GlassPanel className="p-5">
+            <h2 className="text-sm font-semibold mb-1 uppercase tracking-wider" style={{ color: GOLD }}>Daily Calories & Macros</h2>
+            <p className="text-xs mb-4" style={{ color: 'rgba(70,48,12,0.58)' }}>
               {calorieData.length > 0
                 ? `Avg ${Math.round(calorieData.reduce((s, d) => s + d.calories, 0) / calorieData.length)} cal/day`
                 : 'No data yet'}
@@ -247,36 +273,41 @@ export default function ProgressPage() {
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={calorieData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} width={45} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
                     <Tooltip contentStyle={tooltipStyle} />
                     <Legend
-                      wrapperStyle={{ fontSize: 11, color: '#9ca3af' }}
+                      wrapperStyle={{ fontSize: 11, color: 'rgba(70,48,12,0.6)' }}
                     />
-                    <Bar dataKey="protein" stackId="macros" fill="#34d399" name="Protein" />
-                    <Bar dataKey="carbs" stackId="macros" fill="#60a5fa" name="Carbs" />
-                    <Bar dataKey="fat" stackId="macros" fill="#fbbf24" name="Fat" />
+                    <Bar dataKey="protein" stackId="macros" fill="#7836a8" name="Protein" />
+                    <Bar dataKey="carbs" stackId="macros" fill="#94680e" name="Carbs" />
+                    <Bar dataKey="fat" stackId="macros" fill="#8e261e" name="Fat" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-8 text-sm">Log meals to see macro breakdown</p>
+              <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>Log meals to see macro breakdown</p>
             )}
-          </div>
+          </GlassPanel>
+
+          <SectionDivider />
 
           {/* 3. Workout Section */}
-          <div className="rounded-2xl bg-gray-900 p-5">
+          <GlassPanel className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold">Workouts</h2>
-              <div className="flex gap-1 rounded-lg bg-gray-800 p-1">
+              <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: GOLD }}>Workouts</h2>
+              <div className="flex gap-3">
                 {['all', 'zone2', 'lift', 'bjj'].map((f) => (
                   <button
+                    type="button"
                     key={f}
                     onClick={() => setWorkoutFilter(f)}
-                    className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                      workoutFilter === f ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
-                    }`}
+                    className="px-1 pb-1 text-xs font-semibold transition-colors"
+                    style={{
+                      color: workoutFilter === f ? '#5a3e08' : 'rgba(70,48,12,0.5)',
+                      borderBottom: workoutFilter === f ? '3px solid rgba(165,128,32,0.72)' : '3px solid transparent',
+                    }}
                   >
                     {f === 'all' ? 'All' : f === 'zone2' ? 'Zone 2' : f.charAt(0).toUpperCase() + f.slice(1)}
                   </button>
@@ -287,7 +318,7 @@ export default function ProgressPage() {
             {(() => {
               const filtered = workoutFilter === 'all' ? workoutData : workoutData.filter((w) => w.session_type === workoutFilter)
               if (filtered.length === 0) {
-                return <p className="text-center text-gray-500 py-8 text-sm">No workout data{workoutFilter !== 'all' ? ` for ${workoutFilter}` : ''}</p>
+                return <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>No workout data{workoutFilter !== 'all' ? ` for ${workoutFilter}` : ''}</p>
               }
 
               const chartData = filtered.map((w) => ({
@@ -304,13 +335,13 @@ export default function ProgressPage() {
                 <div className="space-y-6">
                   {/* Volume chart */}
                   <div>
-                    <p className="text-xs text-gray-500 mb-2">{filtered.length} sessions — Volume</p>
+                    <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>{filtered.length} sessions — Volume</p>
                     <div className="h-48">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                          <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
-                          <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} width={50} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                          <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                          <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={50} />
                           <Tooltip contentStyle={tooltipStyle} />
                           <Bar dataKey="volume" fill="#a78bfa" name="Volume (lbs)" radius={[4, 4, 0, 0]} />
                         </BarChart>
@@ -321,13 +352,13 @@ export default function ProgressPage() {
                   {/* Calories burned chart */}
                   {hasCalData && (
                     <div>
-                      <p className="text-xs text-gray-500 mb-2">Calories Burned</p>
+                      <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>Calories Burned</p>
                       <div className="h-48">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={chartData.filter((w) => w.calBurned != null)}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} width={45} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                            <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
                             <Tooltip contentStyle={tooltipStyle} />
                             <Bar dataKey="calBurned" fill="#f97316" name="Cal Burned" radius={[4, 4, 0, 0]} />
                           </BarChart>
@@ -339,13 +370,13 @@ export default function ProgressPage() {
                   {/* Distance chart (only if data exists) */}
                   {hasDistData && (
                     <div>
-                      <p className="text-xs text-gray-500 mb-2">Distance (miles)</p>
+                      <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>Distance (miles)</p>
                       <div className="h-48">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={chartData.filter((w) => w.distance != null)}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} width={40} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                            <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={40} />
                             <Tooltip contentStyle={tooltipStyle} />
                             <Line type="monotone" dataKey="distance" stroke="#34d399" strokeWidth={2} dot={{ r: 2 }} name="Miles" />
                           </LineChart>
@@ -356,11 +387,11 @@ export default function ProgressPage() {
 
                   {/* Workout history table */}
                   <div>
-                    <p className="text-xs text-gray-500 mb-2">History — tap a row to edit</p>
+                    <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>History — tap a row to edit</p>
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs">
                         <thead>
-                          <tr className="text-gray-500 border-b border-gray-800">
+                          <tr style={{ color: 'rgba(70,48,12,0.5)', borderBottom: '1px solid rgba(165,128,32,0.2)' }}>
                             <th className="text-left py-2 pr-2">Date</th>
                             <th className="text-left py-2 pr-2">Type</th>
                             <th className="text-right py-2 pr-2">Time</th>
@@ -379,18 +410,19 @@ export default function ProgressPage() {
                               <tr
                                 key={w.id}
                                 onClick={() => setEditingWorkout(w)}
-                                className="border-b border-gray-800/50 cursor-pointer hover:bg-gray-800/50 transition-colors"
+                                className="cursor-pointer transition-colors hover:bg-amber-50/40"
+                                style={{ borderBottom: '1px solid rgba(165,128,32,0.15)' }}
                               >
-                                <td className="py-2 pr-2 text-gray-300">{formatDate(w.trained_at)}</td>
-                                <td className="py-2 pr-2 text-gray-400 capitalize">{w.session_type}</td>
-                                <td className="py-2 pr-2 text-right text-gray-400">
+                                <td className="py-2 pr-2" style={{ color: TEXT_DARK }}>{formatDate(w.trained_at)}</td>
+                                <td className="py-2 pr-2 capitalize" style={{ color: TEXT_MID }}>{w.session_type}</td>
+                                <td className="py-2 pr-2 text-right" style={{ color: TEXT_MID }}>
                                   {new Date(w.trained_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                                 </td>
-                                <td className="py-2 pr-2 text-right text-gray-400">{w.duration_min ?? '—'}</td>
-                                <td className="py-2 pr-2 text-right text-gray-400">{w.distance_miles ? Number(w.distance_miles).toFixed(1) : '—'}</td>
-                                <td className="py-2 pr-2 text-gray-500">{truncated || '—'}</td>
-                                <td className="py-2 pr-2 text-right text-gray-300">{w.estimated_cal_burned ?? '—'}</td>
-                                <td className="py-2 text-right text-gray-500">
+                                <td className="py-2 pr-2 text-right" style={{ color: TEXT_MID }}>{w.duration_min ?? '—'}</td>
+                                <td className="py-2 pr-2 text-right" style={{ color: TEXT_MID }}>{w.distance_miles ? Number(w.distance_miles).toFixed(1) : '—'}</td>
+                                <td className="py-2 pr-2" style={{ color: 'rgba(70,48,12,0.5)' }}>{truncated || '—'}</td>
+                                <td className="py-2 pr-2 text-right" style={{ color: TEXT_DARK }}>{w.estimated_cal_burned ?? '—'}</td>
+                                <td className="py-2 text-right" style={{ color: 'rgba(70,48,12,0.5)' }}>
                                   {w.cal_estimate_method === 'user_override' ? 'Your Entry' : w.cal_estimate_method === 'apple_health' ? 'Apple Health' : w.estimated_cal_burned != null ? 'Estimated' : '—'}
                                 </td>
                               </tr>
@@ -403,34 +435,36 @@ export default function ProgressPage() {
                 </div>
               )
             })()}
-          </div>
+          </GlassPanel>
+
+          <SectionDivider />
 
           {/* 4. Body Composition */}
-          <div className="rounded-2xl bg-gray-900 p-5">
-            <h2 className="text-base font-semibold mb-1">Body Composition</h2>
-            <p className="text-xs text-gray-500 mb-4">
+          <GlassPanel className="p-5">
+            <h2 className="text-sm font-semibold mb-1 uppercase tracking-wider" style={{ color: GOLD }}>Body Composition</h2>
+            <p className="text-xs mb-4" style={{ color: 'rgba(70,48,12,0.58)' }}>
               {bodyCompData.length > 0 ? 'From scale readings' : 'No body comp data yet'}
             </p>
             {bodyCompData.length > 1 ? (
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={bodyCompData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} width={40} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={40} />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Legend wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
+                    <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(70,48,12,0.6)' }} />
                     <Area type="monotone" dataKey="bodyFat" stroke="#f87171" fill="#f87171" fillOpacity={0.15} name="Body Fat %" />
                     <Area type="monotone" dataKey="water" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.15} name="Water %" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-8 text-sm">
+              <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>
                 Use a smart scale to track body composition
               </p>
             )}
-          </div>
+          </GlassPanel>
         </div>
       )}
 
