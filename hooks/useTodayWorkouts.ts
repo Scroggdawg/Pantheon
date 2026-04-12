@@ -4,12 +4,12 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { WorkoutSession } from '@/types/database'
 
-export function useTodayWorkouts(userId: string | null) {
+export function useTodayWorkouts(userId: string | null, dateStr?: string) {
   const [workouts, setWorkouts] = useState<WorkoutSession[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date())
+  const today = dateStr || new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date())
 
   const refresh = useCallback(async () => {
     if (!userId) return

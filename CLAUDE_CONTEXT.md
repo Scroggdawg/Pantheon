@@ -1,6 +1,6 @@
 # CLAUDE_CONTEXT.md — Pantheon
 
-**Last updated:** Session 8 (2026-04-11)
+**Last updated:** Session 9 (2026-04-12)
 **Production:** https://pantheon-woad.vercel.app
 **Deploy:** `npx vercel --prod --yes` (no git remote)
 
@@ -69,9 +69,9 @@ components/
 
 hooks/
   useUser.ts                  — Current user profile
-  useDailyLog.ts              — Today's food entries + totals
+  useDailyLog.ts              — Food entries + totals (accepts optional dateStr)
   useWeightTrend.ts           — 7-day weight readings + latest
-  useTodayWorkouts.ts         — Today's workout sessions
+  useTodayWorkouts.ts         — Workout sessions (accepts optional dateStr)
   useVoiceCorrections.ts      — Voice correction learning
 
 lib/
@@ -107,7 +107,8 @@ scripts/
 - **Dynamic import:** `import()` only for browser-only libraries (e.g., heic2any).
 - **Supabase client:** `lib/supabase/client.ts` is a singleton. Server routes use `lib/supabase/server.ts` (service role).
 - **Edit modal pattern:** Standalone component with `fixed inset-0 z-[60] bg-black/70`. Props: `item, onSaved, onDeleted, onClose`. Dashboard manages selection state. See FoodEntryEditModal and WorkoutEditModal.
-- **Score caching:** localStorage key `pantheon_score_cache`, 30-min TTL. Auto-calculates on mount.
+- **Score caching:** localStorage key `pantheon_score_cache_${dateStr}`, 30-min TTL. Auto-calculates on mount and date change.
+- **Date navigation:** `selectedDate` state in dashboard, default `getTodayLA()`. Passed to hooks, ScoreCard, CoachPanel. `shiftDate()` for day arithmetic. `selectedDateNoon(dateStr)` helper in CoachPanel for action timestamps.
 - **Score algorithm:** 5 weighted components (protein 30%, calories 25%, workout 20%, trend 15%, macros 10%). GROSS calories vs target, not net.
 - **TDEE:** `avg_daily_calories + (lbs_per_week_loss * 500)`. Gate: 14 weight readings + 10 food log days.
 - **DAY_TYPE_ADJUSTMENTS:** lift (+200 cal, +50g carbs), zone2 (0, 0), rest (-150 cal, -30g carbs).
@@ -133,3 +134,4 @@ scripts/
 | 6 | Consistent edit modal pattern, recipe portion system, Coach full CRUD (11 action types) |
 | 7 | Progress page marble/gold restyle, chart width scaling, CoachPanel restyle, SaveMealModal portal fix, Log Food button fix |
 | 8 | Restyle 8 remaining dark modals to marble/gold, portion scaler in FoodEntryEditModal |
+| 9 | Past-day navigation: date picker, parameterized hooks, date-keyed score cache, coach timestamps |

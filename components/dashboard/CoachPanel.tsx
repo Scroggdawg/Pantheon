@@ -23,6 +23,11 @@ interface CoachPanelProps {
   refreshWorkouts: () => void
   refreshWeight: () => void
   userId: string
+  selectedDate: string
+}
+
+function selectedDateNoon(dateStr: string): string {
+  return new Date(`${dateStr}T12:00:00-07:00`).toISOString()
 }
 
 export default function CoachPanel({
@@ -34,6 +39,7 @@ export default function CoachPanel({
   refreshWorkouts,
   refreshWeight,
   userId,
+  selectedDate,
 }: CoachPanelProps) {
   const [messages, setMessages] = useState<CoachMessage[]>([])
   const [input, setInput] = useState('')
@@ -66,7 +72,7 @@ export default function CoachPanel({
         const params = action.params as { session_type: string; duration_min: number; notes: string }
         await supabase.from('workout_sessions').insert({
           user_id: userId,
-          trained_at: new Date().toISOString(),
+          trained_at: selectedDateNoon(selectedDate),
           session_type: params.session_type,
           duration_min: params.duration_min,
           notes: params.notes || null,
@@ -85,7 +91,7 @@ export default function CoachPanel({
         const parsed = await parseRes.json()
         await supabase.from('food_log_entries').insert({
           user_id: userId,
-          logged_at: new Date().toISOString(),
+          logged_at: selectedDateNoon(selectedDate),
           meal_label: parsed.meal_label,
           day_type: dayType,
           foods_json: parsed.foods,
@@ -190,7 +196,7 @@ export default function CoachPanel({
         const params = action.params as { weight_lbs: number }
         await supabase.from('weight_readings').insert({
           user_id: userId,
-          measured_at: new Date().toISOString(),
+          measured_at: selectedDateNoon(selectedDate),
           weight_lbs: params.weight_lbs,
           source: 'manual',
         })
@@ -228,7 +234,7 @@ export default function CoachPanel({
 
         await supabase.from('food_log_entries').insert({
           user_id: userId,
-          logged_at: new Date().toISOString(),
+          logged_at: selectedDateNoon(selectedDate),
           meal_label: meal.tags?.[0] || 'snack',
           day_type: dayType,
           foods_json: scaledFoods,
@@ -241,7 +247,7 @@ export default function CoachPanel({
 
         await supabase.from('saved_meals').update({
           times_logged: (meal.times_logged || 0) + 1,
-          last_logged_at: new Date().toISOString(),
+          last_logged_at: selectedDateNoon(selectedDate),
         }).eq('id', meal.id)
 
         refreshLog()
@@ -269,7 +275,7 @@ export default function CoachPanel({
           message: trimmed,
           conversation_history: messages,
           day_type: dayType,
-          current_time_iso: new Date().toISOString(),
+          current_time_iso: selectedDateNoon(selectedDate),
         }),
       })
 

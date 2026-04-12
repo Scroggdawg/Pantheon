@@ -31,14 +31,14 @@ interface ScoreCardProps {
   fatTarget: number
   totals: { calories: number; protein: number; carbs: number; fat: number }
   userId: string
+  selectedDate: string
 }
 
-const CACHE_KEY = 'pantheon_score_cache'
 const CACHE_TTL = 30 * 60 * 1000
 
-function getCached(): (ScoreResponse & { timestamp: number }) | null {
+function getCached(dateStr: string): (ScoreResponse & { timestamp: number }) | null {
   try {
-    const raw = localStorage.getItem(CACHE_KEY)
+    const raw = localStorage.getItem(`pantheon_score_cache_${dateStr}`)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     if (Date.now() - parsed.timestamp < CACHE_TTL) return parsed
@@ -48,8 +48,8 @@ function getCached(): (ScoreResponse & { timestamp: number }) | null {
   }
 }
 
-function setCache(data: ScoreResponse) {
-  localStorage.setItem(CACHE_KEY, JSON.stringify({ ...data, timestamp: Date.now() }))
+function setCache(dateStr: string, data: ScoreResponse) {
+  localStorage.setItem(`pantheon_score_cache_${dateStr}`, JSON.stringify({ ...data, timestamp: Date.now() }))
 }
 
 const GOLD = '#a47c16'
@@ -84,6 +84,7 @@ export default function ScoreCard({
   fatTarget,
   totals,
   userId,
+  selectedDate,
 }: ScoreCardProps) {
   const [score, setScore] = useState<ScoreResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -91,23 +92,21 @@ export default function ScoreCard({
   const [showPlan, setShowPlan] = useState(false)
   const autoFired = useRef(false)
 
-  // Auto-calculate on mount (check cache first)
+  // Auto-calculate on mount or date change (check cache first)
   useEffect(() => {
-    const cached = getCached()
+    const cached = getCached(selectedDate)
     if (cached) {
       setScore(cached)
       return
     }
-    if (!autoFired.current) {
-      autoFired.current = true
-      fetchScore()
-    }
+    autoFired.current = true
+    fetchScore()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [selectedDate])
 
   async function fetchScore(bypassCache = false) {
     if (!bypassCache) {
-      const cached = getCached()
+      const cached = getCached(selectedDate)
       if (cached) {
         setScore(cached)
         return
@@ -123,7 +122,7 @@ export default function ScoreCard({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           day_type: dayType,
-          current_time_iso: new Date().toISOString(),
+          current_time_iso: new Date(`${selectedDate}T12:00:00-07:00`).toISOString(),
           entries,
           workouts,
           weight_readings: weightReadings,
@@ -137,7 +136,7 @@ export default function ScoreCard({
 
       const data: ScoreResponse = await res.json()
       setScore(data)
-      setCache(data)
+      setCache(selectedDate, data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to calculate score')
     } finally {

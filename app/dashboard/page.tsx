@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
@@ -39,12 +39,23 @@ function toRoman(num: number): string {
   return result
 }
 
-function formatRomanDate(): string {
-  const now = new Date()
-  const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'America/Los_Angeles' }).format(now)
-  const day = parseInt(new Intl.DateTimeFormat('en-US', { day: 'numeric', timeZone: 'America/Los_Angeles' }).format(now))
-  const year = parseInt(new Intl.DateTimeFormat('en-US', { year: 'numeric', timeZone: 'America/Los_Angeles' }).format(now))
+function getTodayLA(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date())
+}
+
+function formatRomanDate(dateStr: string): string {
+  // Parse YYYY-MM-DD as local date (noon to avoid timezone edge)
+  const d = new Date(`${dateStr}T12:00:00`)
+  const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d)
+  const day = d.getDate()
+  const year = d.getFullYear()
   return `${month} ${toRoman(day)} · ${toRoman(year)}`
+}
+
+function shiftDate(dateStr: string, days: number): string {
+  const d = new Date(`${dateStr}T12:00:00`)
+  d.setDate(d.getDate() + days)
+  return d.toISOString().split('T')[0]
 }
 
 const DAY_OPTIONS: { key: DayType; label: string }[] = [
@@ -75,9 +86,12 @@ function SectionDivider({ label }: { label: string }) {
 export default function DashboardPage() {
   const router = useRouter()
   const { user, userId, loading: userLoading } = useUser()
-  const { entries, totals, refresh: refreshLog } = useDailyLog(userId)
+  const [selectedDate, setSelectedDate] = useState(getTodayLA)
+  const isToday = selectedDate === getTodayLA()
+  const datePickerRef = useRef<HTMLInputElement>(null)
+  const { entries, totals, refresh: refreshLog } = useDailyLog(userId, selectedDate)
   const { readings, latest, refresh: refreshWeight } = useWeightTrend(userId)
-  const { workouts, refresh: refreshWorkouts } = useTodayWorkouts(userId)
+  const { workouts, refresh: refreshWorkouts } = useTodayWorkouts(userId, selectedDate)
 
   const [dayType, setDayType] = useState<DayType>('zone2')
   const [showVoice, setShowVoice] = useState(false)
@@ -183,9 +197,56 @@ export default function DashboardPage() {
           <p className="text-[11px] uppercase tracking-[0.3em] mt-1" style={{ color: TEXT_LIGHT }}>
             Daily Record
           </p>
-          <p className="text-[12px] mt-1 tracking-wider" style={{ color: TEXT_DIM }}>
-            {formatRomanDate()}
-          </p>
+          <div className="flex items-center justify-center gap-3 mt-1">
+            <button
+              type="button"
+              onClick={() => setSelectedDate(shiftDate(selectedDate, -1))}
+              className="px-2 py-1 hover:opacity-70 transition-opacity"
+              style={{ color: GOLD_LIGHT }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => datePickerRef.current?.showPicker()}
+              className="text-[12px] tracking-wider hover:opacity-70 transition-opacity"
+              style={{ color: TEXT_DIM }}
+            >
+              {formatRomanDate(selectedDate)}
+            </button>
+            <input
+              ref={datePickerRef}
+              type="date"
+              value={selectedDate}
+              max={getTodayLA()}
+              onChange={(e) => { if (e.target.value) setSelectedDate(e.target.value) }}
+              className="absolute w-0 h-0 opacity-0 pointer-events-none"
+              tabIndex={-1}
+            />
+            <button
+              type="button"
+              onClick={() => setSelectedDate(shiftDate(selectedDate, 1))}
+              disabled={isToday}
+              className="px-2 py-1 transition-opacity"
+              style={{ color: GOLD_LIGHT, opacity: isToday ? 0.25 : 1 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+          {!isToday && (
+            <button
+              type="button"
+              onClick={() => setSelectedDate(getTodayLA())}
+              className="text-[11px] mt-1 uppercase tracking-wider font-semibold hover:opacity-70 transition-opacity"
+              style={{ color: GOLD_LIGHT }}
+            >
+              Today &rarr;
+            </button>
+          )}
         </div>
 
         {/* Day Type Toggle */}
@@ -317,6 +378,7 @@ export default function DashboardPage() {
           fatTarget={fatTarget}
           totals={totals}
           userId={userId!}
+          selectedDate={selectedDate}
         />
 
         {/* Meals Section */}
@@ -469,6 +531,7 @@ export default function DashboardPage() {
         refreshWorkouts={refreshWorkouts}
         refreshWeight={refreshWeight}
         userId={userId!}
+        selectedDate={selectedDate}
       />
 
       {/* Modals */}
