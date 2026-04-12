@@ -13,6 +13,12 @@ interface Props {
 
 type Stage = 'input' | 'processing' | 'confirming' | 'saving' | 'done'
 
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.5)',
+  border: '1px solid rgba(201,160,60,0.25)',
+  color: '#3d3225',
+}
+
 export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
   const [stage, setStage] = useState<Stage>('input')
   const [text, setText] = useState('')
@@ -250,17 +256,20 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl bg-gray-900 p-6 sm:rounded-2xl">
+      <div
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl p-6 sm:rounded-2xl"
+        style={{ background: 'rgba(255,253,249,0.95)', border: '1px solid rgba(201,160,60,0.2)' }}
+      >
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold" style={{ color: '#3d3225' }}>
             {stage === 'input' && 'Log Workout'}
             {stage === 'processing' && 'Parsing workout...'}
             {stage === 'confirming' && 'Confirm Workout'}
             {stage === 'saving' && 'Saving...'}
             {stage === 'done' && 'Workout Saved'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <button type="button" onClick={onClose} className="hover:opacity-70 transition-opacity" style={{ color: '#a47c16' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -274,7 +283,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
         {/* Input stage */}
         {stage === 'input' && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm" style={{ color: 'rgba(70,48,12,0.5)' }}>
               Describe your workout or upload a photo of your notes.
             </p>
 
@@ -295,6 +304,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
                   className="w-full rounded-lg max-h-48 object-cover"
                 />
                 <button
+                  type="button"
                   onClick={clearImage}
                   className="absolute top-2 right-2 rounded-full bg-black/60 p-1 text-white hover:bg-black/80"
                 >
@@ -305,8 +315,10 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
               </div>
             ) : (
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-lg border border-dashed border-gray-600 py-4 text-sm text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-colors"
+                className="w-full rounded-lg border border-dashed py-4 text-sm transition-colors hover:opacity-80"
+                style={{ borderColor: 'rgba(201,160,60,0.4)', color: 'rgba(70,48,12,0.5)' }}
               >
                 Upload workout photo
               </button>
@@ -318,15 +330,18 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Bench press 4x8 at 185, incline DB press 3x10 at 60..."
                 rows={4}
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none resize-none"
+                className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1 resize-none"
+                style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
                 autoFocus
               />
             )}
 
             <button
+              type="button"
               onClick={handleSubmit}
               disabled={!text.trim() && !imagePreview}
-              className="w-full rounded-lg bg-blue-600 py-3 font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="w-full rounded-lg py-3 font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+              style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
             >
               Parse Workout
             </button>
@@ -336,9 +351,12 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
         {/* Processing stage */}
         {stage === 'processing' && (
           <div className="flex flex-col items-center justify-center py-8 gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-700 border-t-blue-500" />
+            <div
+              className="h-8 w-8 animate-spin rounded-full border-4"
+              style={{ borderColor: 'rgba(201,160,60,0.2)', borderTopColor: '#c9a03c' }}
+            />
             {imagePreview && (
-              <p className="text-xs text-gray-500">Reading handwriting...</p>
+              <p className="text-xs" style={{ color: 'rgba(70,48,12,0.45)' }}>Reading handwriting...</p>
             )}
           </div>
         )}
@@ -353,29 +371,33 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
             )}
 
             <div className="flex items-center gap-3 text-sm">
-              <span className="rounded-full bg-blue-900/50 px-3 py-1 text-blue-300 capitalize">
+              <span
+                className="rounded-full px-3 py-1 capitalize"
+                style={{ background: 'rgba(201,160,60,0.15)', color: '#a47c16' }}
+              >
                 {parsed.session_type}
               </span>
               {parsed.duration_min && (
-                <span className="text-gray-400">{parsed.duration_min} min</span>
+                <span style={{ color: 'rgba(70,48,12,0.5)' }}>{parsed.duration_min} min</span>
               )}
             </div>
 
             {/* Time picker */}
             <div className="flex items-center gap-3">
-              <label className="text-sm text-gray-400">Time:</label>
+              <label className="text-sm" style={{ color: 'rgba(70,48,12,0.5)' }}>Time:</label>
               <input
                 type="time"
                 value={editedTime}
                 onChange={(e) => setEditedTime(e.target.value)}
-                className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+                className="rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+                style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
               />
             </div>
 
             {/* Distance input for zone2 and bjj workouts */}
             {(parsed.session_type === 'zone2' || parsed.session_type === 'bjj') && (
               <div className="flex items-center gap-3">
-                <label className="text-sm text-gray-400">Distance:</label>
+                <label className="text-sm" style={{ color: 'rgba(70,48,12,0.5)' }}>Distance:</label>
                 <input
                   type="number"
                   value={editedDistance}
@@ -383,66 +405,76 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
                   placeholder="miles"
                   step="0.1"
                   min="0"
-                  className="w-24 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+                  className="w-24 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+                  style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
                 />
-                <span className="text-sm text-gray-500">mi</span>
+                <span className="text-sm" style={{ color: 'rgba(70,48,12,0.45)' }}>mi</span>
               </div>
             )}
 
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {editedExercises.map((ex, exIdx) => (
-                <div key={exIdx} className="rounded-lg bg-gray-800 p-3">
+                <div key={exIdx} className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.35)' }}>
                   <div className="flex items-center justify-between mb-2">
                     <input
                       type="text"
                       value={ex.exercise_name}
                       onChange={(e) => updateExerciseName(exIdx, e.target.value)}
-                      className="font-medium text-sm bg-transparent border-b border-transparent focus:border-gray-600 focus:outline-none w-full mr-2"
+                      className="font-medium text-sm bg-transparent border-b border-transparent focus:outline-none w-full mr-2"
+                      style={{ color: '#3d3225', borderBottomColor: 'transparent' }}
+                      onFocus={(e) => { e.currentTarget.style.borderBottomColor = 'rgba(201,160,60,0.4)' }}
+                      onBlur={(e) => { e.currentTarget.style.borderBottomColor = 'transparent' }}
                     />
                     <button
+                      type="button"
                       onClick={() => removeExercise(exIdx)}
-                      className="text-gray-500 hover:text-red-400 shrink-0"
+                      className="shrink-0 hover:opacity-70 transition-opacity"
+                      style={{ color: 'rgba(70,48,12,0.35)' }}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 6L6 18M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
-                  <div className="text-xs text-gray-500 mb-2">
+                  <div className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.45)' }}>
                     {ex.muscle_groups.join(', ')}
                   </div>
                   <div className="space-y-1">
                     {ex.sets.map((set, setIdx) => (
                       <div key={setIdx} className="flex items-center gap-2 text-sm">
-                        <span className="text-gray-500 w-6">S{setIdx + 1}</span>
+                        <span className="w-6" style={{ color: 'rgba(70,48,12,0.45)' }}>S{setIdx + 1}</span>
                         <input
                           type="number"
                           value={set.reps}
                           onChange={(e) => updateSetReps(exIdx, setIdx, Number(e.target.value))}
-                          className="w-14 rounded bg-gray-700 px-2 py-1 text-center text-sm"
+                          className="w-14 rounded px-2 py-1 text-center text-sm focus:outline-none focus:ring-1"
+                          style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
                           min={1}
                         />
-                        <span className="text-gray-500 text-xs">reps</span>
-                        <span className="text-gray-600">@</span>
+                        <span className="text-xs" style={{ color: 'rgba(70,48,12,0.45)' }}>reps</span>
+                        <span style={{ color: 'rgba(70,48,12,0.3)' }}>@</span>
                         <input
                           type="number"
                           value={set.weight_lbs ?? ''}
                           onChange={(e) => updateSetWeight(exIdx, setIdx, Number(e.target.value))}
-                          className="w-16 rounded bg-gray-700 px-2 py-1 text-center text-sm"
+                          className="w-16 rounded px-2 py-1 text-center text-sm focus:outline-none focus:ring-1"
+                          style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
                           min={0}
                           placeholder="BW"
                         />
-                        <span className="text-gray-500 text-xs">lbs</span>
+                        <span className="text-xs" style={{ color: 'rgba(70,48,12,0.45)' }}>lbs</span>
                       </div>
                     ))}
                   </div>
                   <button
+                    type="button"
                     onClick={() => addSet(exIdx)}
-                    className="mt-2 text-xs text-blue-400 hover:text-blue-300"
+                    className="mt-2 text-xs hover:opacity-70 transition-opacity"
+                    style={{ color: '#a47c16' }}
                   >
                     + Add set
                   </button>
-                  <div className="mt-2 text-xs text-gray-400">
+                  <div className="mt-2 text-xs" style={{ color: 'rgba(70,48,12,0.5)' }}>
                     Volume: {ex.total_volume_lbs.toLocaleString()} lbs
                   </div>
                 </div>
@@ -451,16 +483,18 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
 
             {/* Add exercise */}
             <button
+              type="button"
               onClick={addExercise}
-              className="w-full rounded-lg border border-dashed border-gray-600 py-2 text-sm text-gray-400 hover:border-gray-500 hover:text-gray-300"
+              className="w-full rounded-lg border border-dashed py-2 text-sm transition-colors hover:opacity-80"
+              style={{ borderColor: 'rgba(201,160,60,0.4)', color: 'rgba(70,48,12,0.5)' }}
             >
               + Add exercise
             </button>
 
             {/* Total volume */}
-            <div className="rounded-lg bg-gray-800/50 p-3 flex justify-between text-sm">
-              <span className="font-medium">Total Volume</span>
-              <span className="text-blue-400 font-semibold">
+            <div className="rounded-lg p-3 flex justify-between text-sm" style={{ background: 'rgba(201,160,60,0.08)' }}>
+              <span className="font-medium" style={{ color: '#3d3225' }}>Total Volume</span>
+              <span className="font-semibold" style={{ color: '#a47c16' }}>
                 {editedExercises.reduce((s, e) => s + e.total_volume_lbs, 0).toLocaleString()} lbs
               </span>
             </div>
@@ -468,7 +502,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
             {saveError === '__FALLBACK__' && (
               <div className="rounded-lg bg-red-900/30 p-4 space-y-2">
                 <p className="text-sm text-red-300 font-medium">Persistent save error. Copy your workout below:</p>
-                <pre className="text-xs text-gray-300 whitespace-pre-wrap select-all">
+                <pre className="text-xs whitespace-pre-wrap select-all" style={{ color: '#3d3225' }}>
                   {editedExercises.map((ex) =>
                     `${ex.exercise_name}\n${ex.sets.map((s, i) => `  S${i + 1}: ${s.reps} reps @ ${s.weight_lbs ?? 'BW'} lbs`).join('\n')}`
                   ).join('\n\n')}
@@ -482,17 +516,21 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
 
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={() => {
                   setStage('input')
                   setParsed(null)
                 }}
-                className="flex-1 rounded-lg border border-gray-700 py-3 text-sm font-medium hover:bg-gray-800"
+                className="flex-1 rounded-lg py-3 text-sm font-medium hover:opacity-80 transition-opacity"
+                style={{ border: '1px solid rgba(201,160,60,0.3)', color: '#5a4a32' }}
               >
                 Edit input
               </button>
               <button
+                type="button"
                 onClick={handleConfirm}
-                className="flex-1 rounded-lg bg-blue-600 py-3 text-sm font-medium hover:bg-blue-700"
+                className="flex-1 rounded-lg py-3 text-sm font-medium hover:opacity-90 transition-opacity"
+                style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
               >
                 {saveError === '__FALLBACK__' ? 'Retry Save' : 'Save Workout'}
               </button>
@@ -503,7 +541,10 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
         {/* Saving stage */}
         {stage === 'saving' && (
           <div className="flex items-center justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-700 border-t-green-500" />
+            <div
+              className="h-8 w-8 animate-spin rounded-full border-4"
+              style={{ borderColor: 'rgba(201,160,60,0.2)', borderTopColor: '#c9a03c' }}
+            />
           </div>
         )}
 
@@ -511,39 +552,43 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
         {stage === 'done' && parsed && (
           <div className="space-y-4">
             <div className="flex items-center justify-center py-3">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#a47c16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
             </div>
 
             {calOverridden ? (
-              <div className="rounded-lg bg-gray-800 p-4 text-center">
-                <p className="text-lg font-semibold text-green-400">
+              <div className="rounded-lg p-4 text-center" style={{ background: 'rgba(255,255,255,0.35)' }}>
+                <p className="text-lg font-semibold" style={{ color: '#a47c16' }}>
                   {calOverride} cal burned
                 </p>
-                <p className="text-xs text-gray-500 mt-1">(your entry)</p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(70,48,12,0.45)' }}>(your entry)</p>
               </div>
             ) : editingCal ? (
-              <div className="rounded-lg bg-gray-800 p-4 space-y-3">
-                <label className="text-sm text-gray-400">Enter actual calories burned:</label>
+              <div className="rounded-lg p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.35)' }}>
+                <label className="text-sm" style={{ color: 'rgba(70,48,12,0.5)' }}>Enter actual calories burned:</label>
                 <input
                   type="number"
                   value={calOverride}
                   onChange={(e) => setCalOverride(e.target.value)}
                   placeholder={String(parsed.estimated_cal_burned)}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white text-center text-lg focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg px-4 py-3 text-center text-lg focus:outline-none focus:ring-1"
+                  style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
                   autoFocus
                   min={0}
                 />
                 <div className="flex gap-3">
                   <button
+                    type="button"
                     onClick={() => setEditingCal(false)}
-                    className="flex-1 rounded-lg border border-gray-700 py-2 text-sm hover:bg-gray-700"
+                    className="flex-1 rounded-lg py-2 text-sm hover:opacity-80 transition-opacity"
+                    style={{ border: '1px solid rgba(201,160,60,0.3)', color: '#5a4a32' }}
                   >
                     Cancel
                   </button>
                   <button
+                    type="button"
                     onClick={async () => {
                       const val = parseInt(calOverride)
                       if (!val || val <= 0 || !savedSessionId) return
@@ -555,7 +600,8 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
                       setEditingCal(false)
                     }}
                     disabled={!calOverride || parseInt(calOverride) <= 0}
-                    className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                    className="flex-1 rounded-lg py-2 text-sm font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+                    style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
                   >
                     Save
                   </button>
@@ -563,21 +609,25 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
               </div>
             ) : (
               <button
+                type="button"
                 onClick={() => setEditingCal(true)}
-                className="w-full rounded-lg bg-gray-800 p-4 text-left hover:bg-gray-700/80 transition-colors"
+                className="w-full rounded-lg p-4 text-left transition-colors hover:opacity-80"
+                style={{ background: 'rgba(255,255,255,0.35)' }}
               >
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium" style={{ color: '#3d3225' }}>
                   Estimated {parsed.estimated_cal_burned} cal burned
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs mt-1" style={{ color: 'rgba(70,48,12,0.5)' }}>
                   {parsed.cal_assumption}. Tap to adjust.
                 </p>
               </button>
             )}
 
             <button
+              type="button"
               onClick={onComplete}
-              className="w-full rounded-lg bg-blue-600 py-3 font-medium hover:bg-blue-700"
+              className="w-full rounded-lg py-3 font-medium hover:opacity-90 transition-opacity"
+              style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
             >
               Done
             </button>

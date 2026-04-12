@@ -11,6 +11,12 @@ interface Props {
   onDeleted: () => void
 }
 
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.5)',
+  border: '1px solid rgba(201,160,60,0.25)',
+  color: '#3d3225',
+}
+
 export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props) {
   const [name, setName] = useState(meal.name)
   const [yieldServings, setYieldServings] = useState(String(meal.yield_servings || 1))
@@ -82,10 +88,13 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 sm:items-center">
-      <div className="w-full max-w-md rounded-t-2xl bg-gray-900 p-6 sm:rounded-2xl">
+      <div
+        className="w-full max-w-md rounded-t-2xl p-6 sm:rounded-2xl"
+        style={{ background: 'rgba(255,253,249,0.95)', border: '1px solid rgba(201,160,60,0.2)' }}
+      >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Edit Meal</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <h2 className="text-lg font-semibold" style={{ color: '#3d3225' }}>Edit Meal</h2>
+          <button type="button" onClick={onClose} className="hover:opacity-70 transition-opacity" style={{ color: '#a47c16' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -94,7 +103,7 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
 
         <div className="space-y-4">
           {/* Foods list (read-only) */}
-          <div className="text-xs text-gray-500">
+          <div className="text-xs" style={{ color: 'rgba(70,48,12,0.58)' }}>
             {meal.foods_json.map((f) => f.name).join(', ')} — {meal.total_calories} cal total
             {(meal.yield_servings || 1) > 1 && (
               <span className="ml-1">
@@ -108,21 +117,23 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Meal name"
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1"
+            style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
             autoFocus
           />
 
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Servings this recipe makes</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(70,48,12,0.58)' }}>Servings this recipe makes</label>
             <input
               type="number"
               value={yieldServings}
               onChange={(e) => setYieldServings(e.target.value)}
               min="1"
-              className="w-24 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
+              className="w-24 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+              style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
             />
             {parseInt(yieldServings) > 1 && (
-              <span className="text-xs text-gray-500 ml-3">
+              <span className="text-xs ml-3" style={{ color: 'rgba(70,48,12,0.5)' }}>
                 {Math.round(meal.total_calories / (parseInt(yieldServings) || 1))} cal/serving ·{' '}
                 {Math.round(meal.total_protein_g / (parseInt(yieldServings) || 1))}P ·{' '}
                 {Math.round(meal.total_carbs_g / (parseInt(yieldServings) || 1))}C ·{' '}
@@ -136,12 +147,14 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="Tags (optional, comma separated)"
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1"
+            style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
           />
 
           <div className="flex gap-3">
             {!deleteConfirm ? (
               <button
+                type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
                 className="rounded-lg border border-red-900 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-900/30 disabled:opacity-50"
@@ -150,6 +163,7 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
               </button>
             ) : (
               <button
+                type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
                 className="rounded-lg bg-red-700 px-4 py-3 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
@@ -159,9 +173,11 @@ export function SavedMealEditModal({ meal, onClose, onSaved, onDeleted }: Props)
             )}
 
             <button
+              type="button"
               onClick={handleSave}
               disabled={!name.trim() || isSaving}
-              className="flex-1 rounded-lg bg-blue-600 py-3 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 rounded-lg py-3 text-sm font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+              style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
             >
               {isSaving ? 'Saving...' : 'Save'}
             </button>

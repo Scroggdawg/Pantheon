@@ -12,6 +12,12 @@ interface Props {
   onClose: () => void
 }
 
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.5)',
+  border: '1px solid rgba(201,160,60,0.25)',
+  color: '#3d3225',
+}
+
 function scaleFoods(foods: FoodItem[], ratio: number): FoodItem[] {
   return foods.map((f) => ({
     ...f,
@@ -112,23 +118,26 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
 
     return (
       <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center">
-        <div className="w-full max-w-lg rounded-t-2xl bg-gray-900 p-6 sm:rounded-2xl">
+        <div
+          className="w-full max-w-lg rounded-t-2xl p-6 sm:rounded-2xl"
+          style={{ background: 'rgba(255,253,249,0.95)', border: '1px solid rgba(201,160,60,0.2)' }}
+        >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{selectedMeal.name}</h2>
-            <button type="button" onClick={() => setSelectedMeal(null)} className="text-gray-400 hover:text-white">
+            <h2 className="text-lg font-semibold" style={{ color: '#3d3225' }}>{selectedMeal.name}</h2>
+            <button type="button" onClick={() => setSelectedMeal(null)} className="hover:opacity-70 transition-opacity" style={{ color: '#a47c16' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          <div className="text-xs text-gray-500 mb-4">
+          <div className="text-xs mb-4" style={{ color: 'rgba(70,48,12,0.58)' }}>
             {selectedMeal.foods_json.map((f) => f.name).join(', ')}
             {yieldSrv > 1 && <span> — recipe makes {yieldSrv} servings</span>}
           </div>
 
           <div className="mb-4">
-            <label className="text-xs text-gray-500 mb-1 block">How many servings?</label>
+            <label className="text-xs mb-1 block" style={{ color: 'rgba(70,48,12,0.58)' }}>How many servings?</label>
             <div className="flex items-center gap-3">
               <input
                 type="number"
@@ -136,9 +145,10 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
                 onChange={(e) => setServings(e.target.value)}
                 min="0.25"
                 step="0.25"
-                className="w-24 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
+                className="w-24 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+                style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
               />
-              <span className="text-sm text-gray-400">
+              <span className="text-sm" style={{ color: 'rgba(70,48,12,0.5)' }}>
                 {portionCal} cal · {portionP}P · {portionC}C · {portionF}F
               </span>
             </div>
@@ -148,7 +158,8 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
             <button
               type="button"
               onClick={() => setSelectedMeal(null)}
-              className="rounded-lg border border-gray-700 px-4 py-3 text-sm font-medium text-gray-400 hover:bg-gray-800"
+              className="rounded-lg px-4 py-3 text-sm font-medium hover:opacity-80 transition-opacity"
+              style={{ border: '1px solid rgba(201,160,60,0.3)', color: '#5a4a32' }}
             >
               Back
             </button>
@@ -156,7 +167,8 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
               type="button"
               onClick={logMeal}
               disabled={saving || !parseFloat(servings)}
-              className="flex-1 rounded-lg bg-blue-600 py-3 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 rounded-lg py-3 text-sm font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+              style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
             >
               {saving ? 'Logging...' : 'Log'}
             </button>
@@ -168,10 +180,13 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center">
-      <div className="w-full max-w-lg rounded-t-2xl bg-gray-900 p-6 sm:rounded-2xl max-h-[80vh] overflow-y-auto">
+      <div
+        className="w-full max-w-lg rounded-t-2xl p-6 sm:rounded-2xl max-h-[80vh] overflow-y-auto"
+        style={{ background: 'rgba(255,253,249,0.95)', border: '1px solid rgba(201,160,60,0.2)' }}
+      >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Quick Log</h2>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-white">
+          <h2 className="text-lg font-semibold" style={{ color: '#3d3225' }}>Quick Log</h2>
+          <button type="button" onClick={onClose} className="hover:opacity-70 transition-opacity" style={{ color: '#a47c16' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -179,9 +194,9 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
         </div>
 
         {loading ? (
-          <div className="py-8 text-center text-gray-400">Loading meals...</div>
+          <div className="py-8 text-center" style={{ color: 'rgba(70,48,12,0.5)' }}>Loading meals...</div>
         ) : meals.length === 0 ? (
-          <div className="py-8 text-center text-gray-400">
+          <div className="py-8 text-center" style={{ color: 'rgba(70,48,12,0.5)' }}>
             No saved meals yet. Log meals via voice to build your library.
           </div>
         ) : (
@@ -199,19 +214,23 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
                     type="button"
                     onClick={() => selectMeal(meal)}
                     disabled={saving}
-                    className="flex-1 rounded-xl bg-gray-800 p-4 text-left hover:bg-gray-700 disabled:opacity-50 transition"
+                    className="flex-1 rounded-xl p-4 text-left disabled:opacity-50 transition hover:opacity-80"
+                    style={{ background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(201,160,60,0.12)' }}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="font-medium">{meal.name}</div>
-                      <div className="text-sm text-gray-400">
+                      <div className="font-medium" style={{ color: '#3d3225' }}>{meal.name}</div>
+                      <div className="text-sm" style={{ color: 'rgba(70,48,12,0.5)' }}>
                         {perServingCal} cal{yieldSrv > 1 && '/srv'}
                       </div>
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
+                    <div className="mt-1 text-xs" style={{ color: 'rgba(70,48,12,0.45)' }}>
                       {perServingP}P · {perServingC}C · {perServingF}F
                       {yieldSrv > 1 && <span className="ml-1">per serving ({yieldSrv} srv)</span>}
                       {meal.is_staple && (
-                        <span className="ml-2 rounded bg-blue-900/50 px-1.5 py-0.5 text-blue-300">
+                        <span
+                          className="ml-2 rounded px-1.5 py-0.5"
+                          style={{ background: 'rgba(201,160,60,0.15)', color: '#a47c16' }}
+                        >
                           staple
                         </span>
                       )}
@@ -223,7 +242,8 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
                       e.stopPropagation()
                       setEditingMeal(meal)
                     }}
-                    className="shrink-0 rounded-lg p-2 text-gray-500 hover:text-white hover:bg-gray-800 transition"
+                    className="shrink-0 rounded-lg p-2 transition hover:opacity-70"
+                    style={{ color: 'rgba(70,48,12,0.4)' }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />

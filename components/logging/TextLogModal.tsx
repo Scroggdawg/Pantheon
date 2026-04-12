@@ -13,6 +13,12 @@ interface Props {
   onClose: () => void
 }
 
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.5)',
+  border: '1px solid rgba(201,160,60,0.25)',
+  color: '#3d3225',
+}
+
 export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
   const [text, setText] = useState('')
   const [stage, setStage] = useState<'input' | 'processing' | 'confirming' | 'saving' | 'done'>('input')
@@ -88,16 +94,19 @@ export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center">
-      <div className="w-full max-w-lg rounded-t-2xl bg-gray-900 p-6 sm:rounded-2xl">
+      <div
+        className="w-full max-w-lg rounded-t-2xl p-6 sm:rounded-2xl"
+        style={{ background: 'rgba(255,253,249,0.95)', border: '1px solid rgba(201,160,60,0.2)' }}
+      >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold" style={{ color: '#3d3225' }}>
             {stage === 'input' && 'Type your meal'}
             {stage === 'processing' && 'Parsing...'}
             {stage === 'confirming' && 'Confirm meal'}
             {stage === 'saving' && 'Saving...'}
             {stage === 'done' && 'Saved!'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <button type="button" onClick={onClose} className="hover:opacity-70 transition-opacity" style={{ color: '#a47c16' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -115,13 +124,16 @@ export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
               onChange={(e) => setText(e.target.value)}
               placeholder="e.g. 3 eggs, 2 strips of bacon, and a protein shake"
               rows={3}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none resize-none"
+              className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1 resize-none"
+              style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
               autoFocus
             />
             <button
+              type="button"
               onClick={handleParse}
               disabled={!text.trim()}
-              className="w-full rounded-lg bg-blue-600 py-3 font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="w-full rounded-lg py-3 font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+              style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
             >
               Parse meal
             </button>
@@ -130,7 +142,10 @@ export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
 
         {stage === 'processing' && (
           <div className="flex items-center justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-700 border-t-blue-500" />
+            <div
+              className="h-8 w-8 animate-spin rounded-full border-4"
+              style={{ borderColor: 'rgba(201,160,60,0.2)', borderTopColor: '#c9a03c' }}
+            />
           </div>
         )}
 
@@ -138,25 +153,25 @@ export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
           <div className="space-y-4">
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {editedFoods.map((food, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-lg bg-gray-800 p-3">
+                <div key={i} className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.35)' }}>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{food.name}</div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-sm font-medium truncate" style={{ color: '#3d3225' }}>{food.name}</div>
+                    <div className="text-xs" style={{ color: 'rgba(70,48,12,0.5)' }}>
                       {food.calories} cal · {food.protein_g}P · {food.carbs_g}C · {food.fat_g}F
                     </div>
                   </div>
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm" style={{ color: 'rgba(70,48,12,0.5)' }}>
                     {food.qty} {food.unit}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-lg bg-gray-800/50 p-3 flex justify-between text-sm">
-              <span className="font-medium">
+            <div className="rounded-lg p-3 flex justify-between text-sm" style={{ background: 'rgba(201,160,60,0.08)' }}>
+              <span className="font-medium" style={{ color: '#3d3225' }}>
                 {editedFoods.reduce((s, f) => s + f.calories, 0)} cal
               </span>
-              <span className="text-gray-400">
+              <span style={{ color: 'rgba(70,48,12,0.5)' }}>
                 {editedFoods.reduce((s, f) => s + f.protein_g, 0).toFixed(0)}P ·{' '}
                 {editedFoods.reduce((s, f) => s + f.carbs_g, 0).toFixed(0)}C ·{' '}
                 {editedFoods.reduce((s, f) => s + f.fat_g, 0).toFixed(0)}F
@@ -165,14 +180,18 @@ export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
 
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={() => { setStage('input'); setParsed(null) }}
-                className="flex-1 rounded-lg border border-gray-700 py-3 text-sm font-medium hover:bg-gray-800"
+                className="flex-1 rounded-lg py-3 text-sm font-medium hover:opacity-80 transition-opacity"
+                style={{ border: '1px solid rgba(201,160,60,0.3)', color: '#5a4a32' }}
               >
                 Edit text
               </button>
               <button
+                type="button"
                 onClick={handleConfirm}
-                className="flex-1 rounded-lg bg-blue-600 py-3 text-sm font-medium hover:bg-blue-700"
+                className="flex-1 rounded-lg py-3 text-sm font-medium hover:opacity-90 transition-opacity"
+                style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
               >
                 Looks right
               </button>
@@ -182,22 +201,29 @@ export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
 
         {stage === 'saving' && (
           <div className="flex items-center justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-700 border-t-green-500" />
+            <div
+              className="h-8 w-8 animate-spin rounded-full border-4"
+              style={{ borderColor: 'rgba(201,160,60,0.2)', borderTopColor: '#c9a03c' }}
+            />
           </div>
         )}
 
         {stage === 'done' && (
           <div className="space-y-4 text-center py-4">
-            <div className="text-green-400 text-sm">Meal logged successfully.</div>
+            <div className="text-sm" style={{ color: '#a47c16' }}>Meal logged successfully.</div>
             <button
+              type="button"
               onClick={() => setShowSaveMeal(true)}
-              className="text-sm text-blue-400 hover:text-blue-300"
+              className="text-sm hover:opacity-70 transition-opacity"
+              style={{ color: '#a47c16' }}
             >
               Save as meal?
             </button>
             <button
+              type="button"
               onClick={onComplete}
-              className="w-full rounded-lg bg-gray-800 py-3 text-sm font-medium hover:bg-gray-700"
+              className="w-full rounded-lg py-3 text-sm font-medium hover:opacity-80 transition-opacity"
+              style={{ border: '1px solid rgba(201,160,60,0.3)', color: '#5a4a32' }}
             >
               Done
             </button>

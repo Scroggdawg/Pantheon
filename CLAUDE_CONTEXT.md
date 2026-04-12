@@ -1,6 +1,6 @@
 # CLAUDE_CONTEXT.md — Pantheon
 
-**Last updated:** Session 7 (2026-04-10)
+**Last updated:** Session 8 (2026-04-11)
 **Production:** https://pantheon-woad.vercel.app
 **Deploy:** `npx vercel --prod --yes` (no git remote)
 
@@ -132,3 +132,4 @@ scripts/
 | 5 | Dashboard visual redesign (marble/gold), UTC timezone fixes, tappable progress history, auto-score |
 | 6 | Consistent edit modal pattern, recipe portion system, Coach full CRUD (11 action types) |
 | 7 | Progress page marble/gold restyle, chart width scaling, CoachPanel restyle, SaveMealModal portal fix, Log Food button fix |
+| 8 | Restyle 8 remaining dark modals to marble/gold, portion scaler in FoodEntryEditModal |

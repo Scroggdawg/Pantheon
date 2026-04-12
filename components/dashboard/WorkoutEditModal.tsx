@@ -18,6 +18,14 @@ const SESSION_TYPES: { value: SessionType; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.5)',
+  border: '1px solid rgba(201,160,60,0.25)',
+  color: '#3d3225',
+}
+
+const labelStyle: React.CSSProperties = { color: 'rgba(70,48,12,0.58)' }
+
 export default function WorkoutEditModal({
   workout,
   onSaved,
@@ -94,11 +102,14 @@ export default function WorkoutEditModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 sm:items-center">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl bg-gray-900 p-6 sm:rounded-2xl">
+      <div
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl p-6 sm:rounded-2xl"
+        style={{ background: 'rgba(255,253,249,0.95)', border: '1px solid rgba(201,160,60,0.2)' }}
+      >
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Edit Workout</h2>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-white">
+          <h2 className="text-lg font-semibold" style={{ color: '#3d3225' }}>Edit Workout</h2>
+          <button type="button" onClick={onClose} className="hover:opacity-70 transition-opacity" style={{ color: '#a47c16' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -108,18 +119,19 @@ export default function WorkoutEditModal({
         <div className="space-y-4">
           {/* Session type */}
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Type</label>
+            <label className="text-xs mb-1 block" style={labelStyle}>Type</label>
             <div className="flex gap-2">
               {SESSION_TYPES.map((t) => (
                 <button
                   key={t.value}
                   type="button"
                   onClick={() => setSessionType(t.value)}
-                  className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+                  className="flex-1 rounded-lg py-2 text-sm font-medium transition-all"
+                  style={
                     sessionType === t.value
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                  }`}
+                      ? { background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }
+                      : { background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(201,160,60,0.2)', color: '#5a4a32' }
+                  }
                 >
                   {t.label}
                 </button>
@@ -129,32 +141,34 @@ export default function WorkoutEditModal({
 
           {/* Time */}
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Time</label>
+            <label className="text-xs mb-1 block" style={labelStyle}>Time</label>
             <input
               type="time"
               value={editedTime}
               onChange={(e) => setEditedTime(e.target.value)}
-              className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+              className="rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+              style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
             />
           </div>
 
           {/* Duration */}
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Duration (min)</label>
+            <label className="text-xs mb-1 block" style={labelStyle}>Duration (min)</label>
             <input
               type="number"
               value={durationMin}
               onChange={(e) => setDurationMin(e.target.value)}
               placeholder="45"
               min="0"
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+              style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
             />
           </div>
 
           {/* Distance (show for zone2 and bjj) */}
           {(sessionType === 'zone2' || sessionType === 'bjj') && (
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Distance (miles)</label>
+              <label className="text-xs mb-1 block" style={labelStyle}>Distance (miles)</label>
               <input
                 type="number"
                 value={distanceMiles}
@@ -162,7 +176,8 @@ export default function WorkoutEditModal({
                 placeholder="3.5"
                 step="0.1"
                 min="0"
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+                style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
               />
             </div>
           )}
@@ -170,46 +185,49 @@ export default function WorkoutEditModal({
           {/* Total volume (show for lift) */}
           {sessionType === 'lift' && (
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Total Volume (lbs)</label>
+              <label className="text-xs mb-1 block" style={labelStyle}>Total Volume (lbs)</label>
               <input
                 type="number"
                 value={volumeLbs}
                 onChange={(e) => setVolumeLbs(e.target.value)}
                 placeholder="12000"
                 min="0"
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+                style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
               />
             </div>
           )}
 
           {/* Calories burned */}
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Calories Burned</label>
+            <label className="text-xs mb-1 block" style={labelStyle}>Calories Burned</label>
             <input
               type="number"
               value={calBurned}
               onChange={(e) => setCalBurned(e.target.value)}
               placeholder="350"
               min="0"
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1"
+              style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
             />
             {workout.cal_estimate_method === 'MET_estimate' && (
-              <p className="text-xs text-gray-600 mt-1">MET estimate — edit to override</p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(70,48,12,0.45)' }}>MET estimate — edit to override</p>
             )}
             {workout.cal_estimate_method === 'user_override' && (
-              <p className="text-xs text-gray-600 mt-1">Your entry</p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(70,48,12,0.45)' }}>Your entry</p>
             )}
           </div>
 
           {/* Notes */}
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Notes</label>
+            <label className="text-xs mb-1 block" style={labelStyle}>Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes..."
               rows={2}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none resize-none"
+              className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 resize-none"
+              style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
             />
           </div>
 
@@ -237,7 +255,8 @@ export default function WorkoutEditModal({
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 rounded-lg bg-blue-600 py-3 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 rounded-lg py-3 text-sm font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+              style={{ background: 'linear-gradient(145deg, #c9a03c, #a47c16)', color: '#fff' }}
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
