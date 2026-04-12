@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
 import { useDailyLog } from '@/hooks/useDailyLog'
@@ -85,8 +85,13 @@ function SectionDivider({ label }: { label: string }) {
 
 export default function DashboardPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, userId, loading: userLoading } = useUser()
-  const [selectedDate, setSelectedDate] = useState(getTodayLA)
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const param = searchParams.get('date')
+    if (param && /^\d{4}-\d{2}-\d{2}$/.test(param) && param <= getTodayLA()) return param
+    return getTodayLA()
+  })
   const isToday = selectedDate === getTodayLA()
   const datePickerRef = useRef<HTMLInputElement>(null)
   const { entries, totals, refresh: refreshLog } = useDailyLog(userId, selectedDate)
@@ -197,16 +202,14 @@ export default function DashboardPage() {
           <p className="text-[11px] uppercase tracking-[0.3em] mt-1" style={{ color: TEXT_LIGHT }}>
             Daily Record
           </p>
-          <div className="flex items-center justify-center gap-3 mt-1">
+          <div className="flex items-center justify-center gap-4 mt-1">
             <button
               type="button"
               onClick={() => setSelectedDate(shiftDate(selectedDate, -1))}
-              className="px-2 py-1 hover:opacity-70 transition-opacity"
+              className="text-[11px] uppercase tracking-[0.15em] font-semibold hover:opacity-70 transition-opacity"
               style={{ color: GOLD_LIGHT }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
+              &larr; Previous
             </button>
             <button
               type="button"
@@ -229,12 +232,10 @@ export default function DashboardPage() {
               type="button"
               onClick={() => setSelectedDate(shiftDate(selectedDate, 1))}
               disabled={isToday}
-              className="px-2 py-1 transition-opacity"
-              style={{ color: GOLD_LIGHT, opacity: isToday ? 0.25 : 1 }}
+              className="text-[11px] uppercase tracking-[0.15em] font-semibold transition-opacity"
+              style={{ color: GOLD_LIGHT, opacity: isToday ? 0.3 : 1 }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
+              Next &rarr;
             </button>
           </div>
           {!isToday && (

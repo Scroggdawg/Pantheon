@@ -54,13 +54,18 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+function toIsoDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export default function ProgressPage() {
   const router = useRouter()
   const { user, userId, loading: userLoading } = useUser()
   const [range, setRange] = useState<TimeRange>('30d')
 
   const [weightData, setWeightData] = useState<{ date: string; weight: number; bodyFat?: number }[]>([])
-  const [calorieData, setCalorieData] = useState<{ date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
+  const [calorieData, setCalorieData] = useState<{ date: string; isoDate: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
   const [workoutData, setWorkoutData] = useState<WorkoutSession[]>([])
   const [bodyCompData, setBodyCompData] = useState<{ date: string; bodyFat?: number; muscle?: number; water?: number }[]>([])
   const [workoutFilter, setWorkoutFilter] = useState<string>('all')
@@ -68,6 +73,13 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true)
 
   const supabase = createClient()
+
+  // Recharts onClick provides activePayload at runtime but its types don't expose it
+  function handleChartClick(state: unknown) {
+    const s = state as { activePayload?: { payload?: Record<string, unknown> }[] } | null
+    const iso = s?.activePayload?.[0]?.payload?.isoDate as string | undefined
+    if (iso) router.push(`/dashboard?date=${iso}`)
+  }
 
   useEffect(() => {
     if (!userId) return
@@ -124,7 +136,7 @@ export default function ProgressPage() {
         const fData = foodLogs.data as { logged_at: string; total_calories: number; total_protein_g: number; total_carbs_g: number; total_fat_g: number }[]
         const byDay: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {}
         for (const entry of fData) {
-          const day = formatDate(entry.logged_at)
+          const day = toIsoDate(entry.logged_at)
           if (!byDay[day]) byDay[day] = { calories: 0, protein: 0, carbs: 0, fat: 0 }
           byDay[day].calories += entry.total_calories
           byDay[day].protein += entry.total_protein_g
@@ -132,8 +144,9 @@ export default function ProgressPage() {
           byDay[day].fat += entry.total_fat_g
         }
         setCalorieData(
-          Object.entries(byDay).map(([date, vals]) => ({
-            date,
+          Object.entries(byDay).map(([isoDate, vals]) => ({
+            date: formatDate(isoDate + 'T12:00:00'),
+            isoDate,
             calories: Math.round(vals.calories),
             protein: Math.round(vals.protein),
             carbs: Math.round(vals.carbs),
@@ -195,8 +208,8 @@ export default function ProgressPage() {
       <div className="px-4 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/dashboard" className="text-sm hover:opacity-70 transition-opacity" style={{ color: GOLD }}>
-              &larr; Dashboard
+            <Link href="/dashboard" className="text-[11px] uppercase tracking-[0.15em] font-semibold hover:opacity-70 transition-opacity" style={{ color: GOLD_LIGHT }}>
+              &larr; Daily Record
             </Link>
             <h1
               className="text-2xl font-bold mt-1 uppercase tracking-widest"
@@ -274,10 +287,10 @@ export default function ProgressPage() {
                 : 'No data yet'}
             </p>
             {calorieData.length > 0 ? (
-              <div className="h-56 overflow-x-auto">
+              <div className="h-56 overflow-x-auto cursor-pointer">
                 <div style={{ minWidth: '100%', width: calorieData.length * BAR_PPP, height: '100%' }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={calorieData} barSize={32}>
+                    <BarChart data={calorieData} barSize={32} onClick={handleChartClick}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
                       <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
                       <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
@@ -329,6 +342,7 @@ export default function ProgressPage() {
 
               const chartData = filtered.map((w) => ({
                 date: formatDate(w.trained_at),
+                isoDate: toIsoDate(w.trained_at),
                 volume: w.total_volume_lbs || 0,
                 calBurned: w.estimated_cal_burned,
                 distance: w.distance_miles ? Number(w.distance_miles) : null,
@@ -342,10 +356,10 @@ export default function ProgressPage() {
                   {/* Volume chart */}
                   <div>
                     <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>{filtered.length} sessions — Volume</p>
-                    <div className="h-48 overflow-x-auto">
+                    <div className="h-48 overflow-x-auto cursor-pointer">
                       <div style={{ minWidth: '100%', width: chartData.length * BAR_PPP, height: '100%' }}>
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={chartData} barSize={32}>
+                          <BarChart data={chartData} barSize={32} onClick={handleChartClick}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
                             <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
                             <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={50} />
@@ -361,10 +375,10 @@ export default function ProgressPage() {
                   {hasCalData && (
                     <div>
                       <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>Calories Burned</p>
-                      <div className="h-48 overflow-x-auto">
+                      <div className="h-48 overflow-x-auto cursor-pointer">
                         <div style={{ minWidth: '100%', width: chartData.filter((w) => w.calBurned != null).length * BAR_PPP, height: '100%' }}>
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData.filter((w) => w.calBurned != null)} barSize={32}>
+                            <BarChart data={chartData.filter((w) => w.calBurned != null)} barSize={32} onClick={handleChartClick}>
                               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
                               <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
                               <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />

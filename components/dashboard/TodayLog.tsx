@@ -130,7 +130,7 @@ export default function TodayLog({ userId, entries, onEdit, onUpdate }: TodayLog
                     <button
                       type="button"
                       onClick={() => selectMode ? toggleSelect(entry.id) : onEdit(entry)}
-                      className="flex items-center justify-between gap-3 flex-1 text-left min-w-0 py-1.5 border-b last:border-0"
+                      className="food-row-hover flex items-center justify-between gap-3 flex-1 text-left min-w-0 py-1.5 border-b last:border-0 rounded-md px-2 -mx-2 cursor-pointer transition-colors"
                       style={{ borderColor: 'rgba(180,160,120,0.12)' }}
                     >
                       <div className="flex flex-col flex-1 min-w-0">

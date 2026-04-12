@@ -1,6 +1,6 @@
 # CLAUDE_CONTEXT.md — Pantheon
 
-**Last updated:** Session 9 (2026-04-12)
+**Last updated:** Session 10 (2026-04-12)
 **Production:** https://pantheon-woad.vercel.app
 **Deploy:** `npx vercel --prod --yes` (no git remote)
 
@@ -108,7 +108,9 @@ scripts/
 - **Supabase client:** `lib/supabase/client.ts` is a singleton. Server routes use `lib/supabase/server.ts` (service role).
 - **Edit modal pattern:** Standalone component with `fixed inset-0 z-[60] bg-black/70`. Props: `item, onSaved, onDeleted, onClose`. Dashboard manages selection state. See FoodEntryEditModal and WorkoutEditModal.
 - **Score caching:** localStorage key `pantheon_score_cache_${dateStr}`, 30-min TTL. Auto-calculates on mount and date change.
-- **Date navigation:** `selectedDate` state in dashboard, default `getTodayLA()`. Passed to hooks, ScoreCard, CoachPanel. `shiftDate()` for day arithmetic. `selectedDateNoon(dateStr)` helper in CoachPanel for action timestamps.
+- **Date navigation:** `selectedDate` state in dashboard, default `getTodayLA()`. Reads `?date=` URL param via `useSearchParams` on mount. Passed to hooks, ScoreCard, CoachPanel. `shiftDate()` for day arithmetic. `selectedDateNoon(dateStr)` helper in CoachPanel for action timestamps.
+- **Chart drillthrough:** Progress page bar charts navigate to `/dashboard?date=YYYY-MM-DD` on click. Chart data includes `isoDate` field. Handler on `<BarChart onClick>`, not individual `<Bar>`.
+- **Meal row hover:** `.food-row-hover` CSS class in globals.css. Gold highlight `rgba(200,160,60,0.12)` on hover.
 - **Score algorithm:** 5 weighted components (protein 30%, calories 25%, workout 20%, trend 15%, macros 10%). GROSS calories vs target, not net.
 - **TDEE:** `avg_daily_calories + (lbs_per_week_loss * 500)`. Gate: 14 weight readings + 10 food log days.
 - **DAY_TYPE_ADJUSTMENTS:** lift (+200 cal, +50g carbs), zone2 (0, 0), rest (-150 cal, -30g carbs).
@@ -135,3 +137,4 @@ scripts/
 | 7 | Progress page marble/gold restyle, chart width scaling, CoachPanel restyle, SaveMealModal portal fix, Log Food button fix |
 | 8 | Restyle 8 remaining dark modals to marble/gold, portion scaler in FoodEntryEditModal |
 | 9 | Past-day navigation: date picker, parameterized hooks, date-keyed score cache, coach timestamps |
+| 10 | UX: date nav text labels, meal row hover highlight, chart drillthrough to dashboard, home button |
