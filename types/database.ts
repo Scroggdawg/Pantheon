@@ -203,3 +203,82 @@ export const DAY_TYPE_ADJUSTMENTS: Record<DayType, { calories: number; carbs_g: 
   zone2: { calories: 0, carbs_g: 0, emoji: '🫀', label: 'Zone 2 / BJJ' },
   rest: { calories: -150, carbs_g: -30, emoji: '😴', label: 'Rest Day' },
 }
+
+// Provisions arc (migration 008) — recipes, meal plans, shopping lists
+export type RecipeSource = 'user' | 'ai_generated' | 'imported'
+export type MealPlanStatus = 'draft' | 'active' | 'archived'
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+export type MealEntryStatus = 'planned' | 'eaten' | 'skipped' | 'swapped'
+export type ShoppingListStatus = 'draft' | 'sent_to_agent' | 'cart_filled' | 'ordered' | 'delivered'
+
+export interface RecipeIngredient {
+  name: string
+  qty: number
+  unit: string
+  notes?: string | null
+}
+
+export interface Recipe {
+  id: string
+  name: string
+  servings: number
+  cuisine: string | null
+  protein_type: string | null
+  calories: number | null
+  protein_g: number | null
+  carbs_g: number | null
+  fat_g: number | null
+  ingredients: RecipeIngredient[]
+  notes: string | null
+  source: RecipeSource
+  created_at: string
+  updated_at: string
+}
+
+export interface MealPlan {
+  id: string
+  plan_date_start: string
+  plan_date_end: string
+  daily_target_macros: {
+    calories?: number
+    protein_g?: number
+    carbs_g?: number
+    fat_g?: number
+  } | null
+  status: MealPlanStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface MealPlanEntry {
+  id: string
+  plan_id: string
+  recipe_id: string | null
+  meal_date: string
+  slot: MealSlot
+  servings: number
+  status: MealEntryStatus
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ShoppingListItem {
+  name: string
+  qty: number
+  unit: string
+  category?: string | null
+  checked?: boolean
+}
+
+export interface ShoppingList {
+  id: string
+  plan_id: string
+  generated_at: string
+  items: ShoppingListItem[]
+  status: ShoppingListStatus
+  cart_url: string | null
+  order_total: number | null
+  created_at: string
+  updated_at: string
+}

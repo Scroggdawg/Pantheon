@@ -43,3 +43,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# supabase CLI link state (project-ref, pooler-url, version probes)
+/supabase/.temp/
