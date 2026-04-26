@@ -1,7 +1,7 @@
 # CLAUDE_CONTEXT.md — Pantheon
 
-**Last updated:** Session 10 (2026-04-12)
-**Production:** https://pantheon-woad.vercel.app
+**Last updated:** Session 15 (2026-04-13)
+**Production:** https://pantheon.guru (canonical), https://pantheon-woad.vercel.app
 **Deploy:** `npx vercel --prod --yes` (no git remote)
 
 ---
@@ -33,7 +33,7 @@ app/
   dashboard/
     page.tsx                  — Main dashboard (marble/gold theme)
     layout.tsx                — Dashboard sub-layout
-  progress/page.tsx           — Charts, trends, workout history
+  progress/page.tsx           — Overview strip, Roman Wheel, DayDetailPanel
   api/
     auth/login/route.ts       — Cookie auth (password: "gospurs")
     user/route.ts             — User profile CRUD
@@ -44,7 +44,11 @@ app/
       score/route.ts          — 5-component score + Claude verdict
       daily-plan/route.ts     — Remaining-day meal plan generator
       coach/route.ts          — Conversational coach with 11 action types
-    wyze/sync/route.ts        — Wyze Scale X weight sync
+    auth/withings/route.ts     — Withings OAuth redirect
+      auth/withings/callback/route.ts — Withings token exchange + upsert
+    withings/sync/route.ts     — Withings scale sync (fetch measurements → weight_readings)
+    withings/status/route.ts   — Withings connection status check
+    wyze/sync/route.ts        — Wyze Scale X weight sync (legacy, replaced by Withings)
 
 components/
   ui/
@@ -58,6 +62,8 @@ components/
     DailyPlanPanel.tsx        — AI meal plan with re-roll
     SundayCheckinCard.tsx     — TDEE gate + weekly dismiss
     WorkoutEditModal.tsx      — Edit/delete workout sessions
+  progress/
+    DayDetailPanel.tsx        — 3 accordion panels (calories, workouts, weight) + modals
   logging/
     VoiceLogger.tsx           — Web Speech API + voice corrections
     WorkoutLogger.tsx         — Text/image workout logging + HEIC
@@ -95,6 +101,7 @@ supabase/migrations/
   003_workout_image_url.sql   — image_url column
   004_workout_calories.sql    — Calorie estimation columns
   005_yield_servings.sql      — yield_servings on saved_meals
+  006_withings_tokens.sql     — Withings OAuth token storage
 
 scripts/
   backup.ts                   — Export all Supabase data to JSON
@@ -109,16 +116,20 @@ scripts/
 - **Edit modal pattern:** Standalone component with `fixed inset-0 z-[60] bg-black/70`. Props: `item, onSaved, onDeleted, onClose`. Dashboard manages selection state. See FoodEntryEditModal and WorkoutEditModal.
 - **Score caching:** localStorage key `pantheon_score_cache_${dateStr}`, 30-min TTL. Auto-calculates on mount and date change.
 - **Date navigation:** `selectedDate` state in dashboard, default `getTodayLA()`. Reads `?date=` URL param via `useSearchParams` on mount. Passed to hooks, ScoreCard, CoachPanel. `shiftDate()` for day arithmetic. `selectedDateNoon(dateStr)` helper in CoachPanel for action timestamps.
-- **Chart drillthrough:** Progress page bar charts navigate to `/dashboard?date=YYYY-MM-DD` on click. Chart data includes `isoDate` field. Handler on `<BarChart onClick>`, not individual `<Bar>`.
-- **Meal row hover:** `.food-row-hover` CSS class in globals.css. Gold highlight `rgba(200,160,60,0.12)` on hover.
+- **Meal row hover:** `.food-row-hover` CSS class in globals.css. Gold highlight `rgba(200,160,60,0.12)` on hover. Used in TodayLog and DayDetailPanel.
 - **Score algorithm:** 5 weighted components (protein 30%, calories 25%, workout 20%, trend 15%, macros 10%). GROSS calories vs target, not net.
 - **TDEE:** `avg_daily_calories + (lbs_per_week_loss * 500)`. Gate: 14 weight readings + 10 food log days.
 - **DAY_TYPE_ADJUSTMENTS:** lift (+200 cal, +50g carbs), zone2 (0, 0), rest (-150 cal, -30g carbs).
 - **Recipe portions:** `saved_meals.yield_servings` (default 1). Macros scale by `servings / yield_servings`.
 - **Coach actions:** 11 types. Food edits have two modes: `reparse` (new food) and `scale` (quantity change). System prompt includes entry IDs for targeting.
 - **Visual theme:** Marble/gold Greco-Roman. GlassPanel for cards. Gold palette (#a47c16, #c9a03c, #e8c048). Cinzel font for Roman numerals. Both dashboard and progress page use this theme.
-- **Chart width:** `overflow-x-auto` wrapper + inner div with `minWidth: '100%', width: data.length * PPP`. BAR_PPP=48, LINE_PPP=60. `barSize={32}` on BarCharts.
-- **Portal for modals inside GlassPanel:** GlassPanel's `backdropFilter` creates a containing block that traps `fixed` children. Use `createPortal(jsx, document.body)` for modals rendered inside GlassPanel (e.g., SaveMealModal in TodayLog).
+- **Chart width:** `overflow-x-auto` wrapper + inner div with `minWidth: '100%', width: data.length * PPP`. LINE_PPP=60 in DayDetailPanel for weight trend chart.
+- **Portal for modals inside GlassPanel:** GlassPanel's `backdropFilter` creates a containing block that traps `fixed` children. Use `createPortal(jsx, document.body)` for modals rendered inside GlassPanel (e.g., SaveMealModal in TodayLog, edit modals in DayDetailPanel).
+- **Progress page architecture:** Three layers — Overview Strip (bar charts + weight line), Roman Wheel (draggable date navigator, 90-day range, oldest-first), DayDetailPanel (3 accordion panels). No Recharts in main page, only in DayDetailPanel Panel C.
+- **Overview strip charts:** CalorieBars (14-day `dates.slice(-14)`, selected date gold, others 30% opacity), WorkoutBars (colored by session type: zone2=green, lift=purple, bjj=amber), WeightLine (90-day polyline with highlighted dot). State: `calByDay: Record<string, number>`, `workoutByDay: Record<string, string[]>`.
+- **DayDetailPanel transitions:** Stale-while-revalidate — old data stays visible during fetch, thin 2px gold pulsing loading bar as indicator. No spinner guard.
+- **Roman Wheel drag:** `newIndex = startIndex - Math.round(dragDelta / SLOT_WIDTH)`. Drag left → newer dates. Document-level pointer listeners during drag. Snap: `0.22s cubic-bezier(0.25,0.8,0.25,1)`.
+- **DayDetailPanel accordion:** All three panels open by default. `openPanels` is a `Set<string>`. Each panel: GlassPanel with chevron header (rotates on open/close). Data fetched per-day via `useEffect([userId, selectedDate])`.
 
 ## Critical Open Issue
 
@@ -138,3 +149,7 @@ scripts/
 | 8 | Restyle 8 remaining dark modals to marble/gold, portion scaler in FoodEntryEditModal |
 | 9 | Past-day navigation: date picker, parameterized hooks, date-keyed score cache, coach timestamps |
 | 10 | UX: date nav text labels, meal row hover highlight, chart drillthrough to dashboard, home button |
+| 12 | Progress page full rebuild: overview strip (SVG sparklines), Roman Wheel (draggable date nav), DayDetailPanel (3 accordion panels with per-day CRUD) |
+| 13 | Overview strip visual upgrade (bar charts, workout type colors, weight dot), DayDetailPanel smooth transitions (stale-while-revalidate) |
+| 14 | Added ← PANTHEON nav link to progress page header (right side) |
+| 15 | Withings Body+ scale integration: OAuth flow, token storage, measurement sync, dashboard wiring |

@@ -1,46 +1,42 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import { createClient } from '@/lib/supabase/client'
-import WorkoutEditModal from '@/components/dashboard/WorkoutEditModal'
 import GlassPanel from '@/components/ui/GlassPanel'
 import MarbleBackground from '@/components/ui/MarbleBackground'
+import DayDetailPanel from '@/components/progress/DayDetailPanel'
 import Link from 'next/link'
-import type { WorkoutSession } from '@/types/database'
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
-} from 'recharts'
-
-type TimeRange = '7d' | '30d' | '90d' | 'all'
 
 const GOLD = '#a47c16'
 const GOLD_LIGHT = '#c9a03c'
 const TEXT_DARK = '#3d3225'
 const TEXT_MID = '#5a4a32'
-const BAR_PPP = 48   // pixels per data point for bar charts
-const LINE_PPP = 60  // pixels per data point for line charts
 
-function SectionDivider() {
-  return (
-    <div className="flex items-center justify-center gap-3 py-1">
-      <div className="h-px flex-1" style={{ background: `linear-gradient(to right, transparent, ${GOLD_LIGHT}44, transparent)` }} />
-      <span style={{ color: `${GOLD_LIGHT}88`, fontSize: 10 }}>&#10022;</span>
-      <div className="h-px flex-1" style={{ background: `linear-gradient(to right, transparent, ${GOLD_LIGHT}44, transparent)` }} />
-    </div>
-  )
+const SLOT_WIDTH = 74
+const VISIBLE_DAYS = 90
+
+const monthFmt = new Intl.DateTimeFormat('en-US', { month: 'short' })
+
+function getTodayLA(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date())
+}
+
+function toRoman(num: number): string {
+  const vals: [number, string][] = [
+    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+    [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
+  ]
+  let result = ''
+  for (const [value, numeral] of vals) {
+    while (num >= value) {
+      result += numeral
+      num -= value
+    }
+  }
+  return result
 }
 
 function daysAgo(days: number): string {
@@ -59,105 +55,203 @@ function toIsoDate(dateStr: string): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+/** Oldest first: index 0 = VISIBLE_DAYS-1 days ago, last index = today */
+function generateDates(): string[] {
+  const dates: string[] = []
+  const today = getTodayLA()
+  for (let i = VISIBLE_DAYS - 1; i >= 0; i--) {
+    const d = new Date(`${today}T12:00:00`)
+    d.setDate(d.getDate() - i)
+    dates.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
+  }
+  return dates
+}
+
+const WORKOUT_COLORS: Record<string, string> = {
+  zone2: '#4a9e5e',
+  lift: '#7e57c2',
+  bjj: '#d4a017',
+  other: GOLD_LIGHT,
+}
+
+function CalorieBars({ dates, calByDay, selectedDate }: { dates: string[]; calByDay: Record<string, number>; selectedDate: string }) {
+  const window14 = dates.slice(-14)
+  const values = window14.map(d => calByDay[d] || 0)
+  const max = Math.max(...values, 1)
+  const barW = 100 / 14
+  const gap = 1
+
+  return (
+    <svg width={100} height={48} className="block">
+      {window14.map((date, i) => {
+        const val = values[i]
+        const h = Math.max((val / max) * 44, val > 0 ? 2 : 0)
+        const isSelected = date === selectedDate
+        return (
+          <rect
+            key={date}
+            x={i * barW + gap / 2}
+            y={48 - h}
+            width={barW - gap}
+            height={h}
+            rx={1}
+            fill={GOLD_LIGHT}
+            opacity={isSelected ? 1 : 0.3}
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
+function WorkoutBars({ dates, workoutByDay, selectedDate }: { dates: string[]; workoutByDay: Record<string, string[]>; selectedDate: string }) {
+  const window14 = dates.slice(-14)
+  const barW = 100 / 14
+  const gap = 1
+
+  return (
+    <svg width={100} height={48} className="block">
+      {window14.map((date, i) => {
+        const sessions = workoutByDay[date] || []
+        if (sessions.length === 0) return null
+        const color = WORKOUT_COLORS[sessions[0]] || WORKOUT_COLORS.other
+        const isSelected = date === selectedDate
+        return (
+          <rect
+            key={date}
+            x={i * barW + gap / 2}
+            y={4}
+            width={barW - gap}
+            height={44}
+            rx={1}
+            fill={color}
+            opacity={isSelected ? 1 : 0.3}
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
+function WeightLine({ data, selectedDate }: { data: { isoDate: string; weight: number }[]; selectedDate: string }) {
+  if (data.length < 2) return null
+  const weights = data.map(d => d.weight)
+  const min = Math.min(...weights)
+  const max = Math.max(...weights)
+  const range = max - min || 1
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * 100
+    const y = 48 - ((d.weight - min) / range) * 44 - 2
+    return { x, y, isoDate: d.isoDate }
+  })
+
+  const polyPoints = points.map(p => `${p.x},${p.y}`).join(' ')
+  const highlight = points.find(p => p.isoDate === selectedDate)
+
+  return (
+    <svg width={100} height={48} className="block">
+      <polyline
+        points={polyPoints}
+        fill="none"
+        stroke={GOLD_LIGHT}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {highlight && (
+        <circle cx={highlight.x} cy={highlight.y} r={3.5} fill={GOLD} stroke="white" strokeWidth={1.5} />
+      )}
+    </svg>
+  )
+}
+
 export default function ProgressPage() {
   const router = useRouter()
   const { user, userId, loading: userLoading } = useUser()
-  const [range, setRange] = useState<TimeRange>('30d')
 
-  const [weightData, setWeightData] = useState<{ date: string; weight: number; bodyFat?: number }[]>([])
-  const [calorieData, setCalorieData] = useState<{ date: string; isoDate: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
-  const [workoutData, setWorkoutData] = useState<WorkoutSession[]>([])
-  const [bodyCompData, setBodyCompData] = useState<{ date: string; bodyFat?: number; muscle?: number; water?: number }[]>([])
-  const [workoutFilter, setWorkoutFilter] = useState<string>('all')
-  const [editingWorkout, setEditingWorkout] = useState<WorkoutSession | null>(null)
+  const [selectedDate, setSelectedDate] = useState(getTodayLA)
+  const [sparkWeights, setSparkWeights] = useState<{ date: string; weight: number; isoDate: string }[]>([])
+  const [calByDay, setCalByDay] = useState<Record<string, number>>({})
+  const [workoutByDay, setWorkoutByDay] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(true)
 
+  // Wheel drag state
+  const [isDragging, setIsDragging] = useState(false)
+  const [wheelDragOffset, setWheelDragOffset] = useState(0)
+  const dragStartX = useRef(0)
+  const dragStartIndex = useRef(0)
+  const wheelDragOffsetRef = useRef(0)
+  const hasDragged = useRef(false)
+  const wheelRef = useRef<HTMLDivElement>(null)
+
   const supabase = createClient()
+  const dates = useRef(generateDates()).current
 
-  // Recharts onClick provides activePayload at runtime but its types don't expose it
-  function handleChartClick(state: unknown) {
-    const s = state as { activePayload?: { payload?: Record<string, unknown> }[] } | null
-    const iso = s?.activePayload?.[0]?.payload?.isoDate as string | undefined
-    if (iso) router.push(`/dashboard?date=${iso}`)
-  }
+  const selectedIndex = dates.indexOf(selectedDate)
+  const effectiveIndex = selectedIndex >= 0 ? selectedIndex : dates.length - 1
 
+  // Visual center during drag (float)
+  const visualCenter = isDragging
+    ? dragStartIndex.current - wheelDragOffset / SLOT_WIDTH
+    : effectiveIndex
+
+  // Fetch 90-day data for sparklines + weight trend
   useEffect(() => {
     if (!userId) return
     setLoading(true)
 
-    const since = range === 'all' ? '2020-01-01' : daysAgo(range === '7d' ? 7 : range === '30d' ? 30 : 90)
+    const since = daysAgo(VISIBLE_DAYS)
 
     async function fetchAll() {
       const [weights, foodLogs, workouts] = await Promise.all([
         supabase
           .from('weight_readings')
-          .select('measured_at, weight_lbs, body_fat_pct, muscle_mass_lbs, water_pct')
+          .select('measured_at, weight_lbs')
           .eq('user_id', userId!)
           .gte('measured_at', since)
           .order('measured_at', { ascending: true }),
         supabase
           .from('food_log_entries')
-          .select('logged_at, total_calories, total_protein_g, total_carbs_g, total_fat_g')
+          .select('logged_at, total_calories')
           .eq('user_id', userId!)
           .gte('logged_at', since)
           .order('logged_at', { ascending: true }),
         supabase
           .from('workout_sessions')
-          .select('*')
+          .select('trained_at, session_type')
           .eq('user_id', userId!)
           .gte('trained_at', since)
           .order('trained_at', { ascending: true }),
       ])
 
-      // Weight trend
       if (weights.data) {
-        const wData = weights.data as { measured_at: string; weight_lbs: number; body_fat_pct: number | null; muscle_mass_lbs: number | null; water_pct: number | null }[]
-        setWeightData(
-          wData.map((w) => ({
-            date: formatDate(w.measured_at),
-            weight: Number(w.weight_lbs),
-            bodyFat: w.body_fat_pct ? Number(w.body_fat_pct) : undefined,
-          }))
-        )
-        setBodyCompData(
-          wData
-            .filter((w) => w.body_fat_pct || w.muscle_mass_lbs || w.water_pct)
-            .map((w) => ({
-              date: formatDate(w.measured_at),
-              bodyFat: w.body_fat_pct ? Number(w.body_fat_pct) : undefined,
-              muscle: w.muscle_mass_lbs ? Number(w.muscle_mass_lbs) : undefined,
-              water: w.water_pct ? Number(w.water_pct) : undefined,
-            }))
-        )
+        const wData = weights.data as { measured_at: string; weight_lbs: number }[]
+        setSparkWeights(wData.map(w => ({
+          date: formatDate(w.measured_at),
+          weight: Number(w.weight_lbs),
+          isoDate: toIsoDate(w.measured_at),
+        })))
       }
 
-      // Aggregate food logs by day
       if (foodLogs.data) {
-        const fData = foodLogs.data as { logged_at: string; total_calories: number; total_protein_g: number; total_carbs_g: number; total_fat_g: number }[]
-        const byDay: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {}
+        const fData = foodLogs.data as { logged_at: string; total_calories: number }[]
+        const byDay: Record<string, number> = {}
         for (const entry of fData) {
           const day = toIsoDate(entry.logged_at)
-          if (!byDay[day]) byDay[day] = { calories: 0, protein: 0, carbs: 0, fat: 0 }
-          byDay[day].calories += entry.total_calories
-          byDay[day].protein += entry.total_protein_g
-          byDay[day].carbs += entry.total_carbs_g
-          byDay[day].fat += entry.total_fat_g
+          byDay[day] = (byDay[day] || 0) + entry.total_calories
         }
-        setCalorieData(
-          Object.entries(byDay).map(([isoDate, vals]) => ({
-            date: formatDate(isoDate + 'T12:00:00'),
-            isoDate,
-            calories: Math.round(vals.calories),
-            protein: Math.round(vals.protein),
-            carbs: Math.round(vals.carbs),
-            fat: Math.round(vals.fat),
-          }))
-        )
+        setCalByDay(byDay)
       }
 
-      // Workouts
       if (workouts.data) {
-        setWorkoutData(workouts.data as WorkoutSession[])
+        const wData = workouts.data as { trained_at: string; session_type: string }[]
+        const byDay: Record<string, string[]> = {}
+        for (const w of wData) {
+          const day = toIsoDate(w.trained_at)
+          if (!byDay[day]) byDay[day] = []
+          byDay[day].push(w.session_type)
+        }
+        setWorkoutByDay(byDay)
       }
 
       setLoading(false)
@@ -165,20 +259,61 @@ export default function ProgressPage() {
 
     fetchAll()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, range])
+  }, [userId])
 
-  const refreshWorkouts = useCallback(async () => {
-    if (!userId) return
-    const since = range === 'all' ? '2020-01-01' : daysAgo(range === '7d' ? 7 : range === '30d' ? 30 : 90)
-    const { data } = await supabase
-      .from('workout_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('trained_at', since)
-      .order('trained_at', { ascending: true })
-    if (data) setWorkoutData(data as WorkoutSession[])
+  // Wheel drag: document-level listeners while dragging
+  useEffect(() => {
+    if (!isDragging) return
+
+    function onMove(e: PointerEvent) {
+      const delta = e.clientX - dragStartX.current
+      if (Math.abs(delta) > 5) hasDragged.current = true
+      wheelDragOffsetRef.current = delta
+      setWheelDragOffset(delta)
+    }
+
+    function onUp(e: PointerEvent) {
+      if (!hasDragged.current) {
+        // Tap: calculate which date was tapped from pointer position
+        const rect = wheelRef.current?.getBoundingClientRect()
+        if (rect) {
+          const centerX = rect.left + rect.width / 2
+          const slotsFromCenter = Math.round((e.clientX - centerX) / SLOT_WIDTH)
+          const tappedIndex = Math.max(0, Math.min(dates.length - 1, dragStartIndex.current + slotsFromCenter))
+          setSelectedDate(dates[tappedIndex])
+        }
+      } else {
+        // Drag: snap to nearest (Amendment 7)
+        const delta = wheelDragOffsetRef.current
+        const newIndex = Math.max(0, Math.min(dates.length - 1,
+          dragStartIndex.current - Math.round(delta / SLOT_WIDTH)
+        ))
+        setSelectedDate(dates[newIndex])
+      }
+
+      wheelDragOffsetRef.current = 0
+      setWheelDragOffset(0)
+      setIsDragging(false)
+    }
+
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+    return () => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, range])
+  }, [isDragging])
+
+  function handleWheelPointerDown(e: React.PointerEvent) {
+    e.preventDefault()
+    dragStartX.current = e.clientX
+    dragStartIndex.current = effectiveIndex
+    hasDragged.current = false
+    wheelDragOffsetRef.current = 0
+    setWheelDragOffset(0)
+    setIsDragging(true)
+  }
 
   if (userLoading) {
     return (
@@ -193,49 +328,31 @@ export default function ProgressPage() {
     return null
   }
 
-  const tooltipStyle = {
-    backgroundColor: 'rgba(255,252,245,0.95)',
-    border: '1px solid rgba(164,124,22,0.25)',
-    borderRadius: '0.5rem',
-    color: 'rgba(70,48,12,0.88)',
-    fontSize: 12,
-  }
+  // Wheel transform: center selected slot using left:50% + translateX
+  const wheelTranslateX = -(effectiveIndex * SLOT_WIDTH + SLOT_WIDTH / 2) + wheelDragOffset
 
   return (
     <div className="min-h-screen pb-12" style={{ backgroundColor: '#eae5de' }}>
       <MarbleBackground />
-      {/* Header */}
-      <div className="px-4 pt-6 pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <Link href="/dashboard" className="text-[11px] uppercase tracking-[0.15em] font-semibold hover:opacity-70 transition-opacity" style={{ color: GOLD_LIGHT }}>
-              &larr; Daily Record
-            </Link>
-            <h1
-              className="text-2xl font-bold mt-1 uppercase tracking-widest"
-              style={{ color: '#be9424', WebkitTextStroke: '0.6px rgba(70,42,4,0.28)' }}
-            >
-              PROGRESS
-            </h1>
-          </div>
-          {/* Time range selector */}
-          <div className="flex gap-3">
-            {(['7d', '30d', '90d', 'all'] as TimeRange[]).map((r) => (
-              <button
-                type="button"
-                key={r}
-                onClick={() => setRange(r)}
-                className="px-1 pb-1 text-xs font-semibold transition-colors"
-                style={{
-                  color: range === r ? '#5a3e08' : 'rgba(70,48,12,0.5)',
-                  borderBottom: range === r ? '3px solid rgba(165,128,32,0.72)' : '3px solid transparent',
-                }}
-              >
-                {r === 'all' ? 'All' : r}
-              </button>
-            ))}
-          </div>
-        </div>
+
+      {/* Sticky Nav */}
+      <div
+        className="sticky top-0 z-50 flex justify-between items-center px-4 py-3"
+        style={{ backgroundColor: 'rgba(234,229,222,0.95)' }}
+      >
+        <span
+          className="text-[11px] uppercase tracking-[0.15em] font-semibold opacity-100"
+          style={{ color: TEXT_DARK }}
+        >
+          PROGRESS
+        </span>
+        <Link
+          href="/dashboard"
+          className="text-[11px] uppercase tracking-[0.15em] font-semibold opacity-100 hover:opacity-70 transition-opacity"
+          style={{ color: GOLD_LIGHT }}
+        >
+          &larr; PANTHEON
+        </Link>
       </div>
 
       {loading ? (
@@ -244,265 +361,112 @@ export default function ProgressPage() {
         </div>
       ) : (
         <div className="space-y-4 px-4">
-          {/* 1. Weight Trend */}
-          <GlassPanel className="p-5">
-            <h2 className="text-sm font-semibold mb-1 uppercase tracking-wider" style={{ color: GOLD }}>Weight Trend</h2>
-            <p className="text-xs mb-4" style={{ color: 'rgba(70,48,12,0.58)' }}>
-              {weightData.length > 0
-                ? `${weightData[0].weight} → ${weightData[weightData.length - 1].weight} lbs`
-                : 'No data yet'}
-            </p>
-            {weightData.length > 1 ? (
-              <div className="h-48 overflow-x-auto">
-                <div style={{ minWidth: '100%', width: weightData.length * LINE_PPP, height: '100%' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={weightData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                      <YAxis
-                        domain={['dataMin - 1', 'dataMax + 1']}
-                        tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }}
-                        tickLine={false}
-                        width={40}
-                      />
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Line type="monotone" dataKey="weight" stroke={GOLD_LIGHT} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
+          {/* Overview Strip */}
+          <GlassPanel className="p-4">
+            <div className="grid grid-cols-3 relative">
+              <div className="text-center px-2">
+                <p className="text-[10px] uppercase tracking-wider mb-2" style={{ color: TEXT_MID }}>Calories</p>
+                <div className="flex justify-center mb-2">
+                  <CalorieBars dates={dates} calByDay={calByDay} selectedDate={selectedDate} />
                 </div>
+                <p className="text-sm font-bold" style={{ color: GOLD }}>
+                  {calByDay[selectedDate] ? Math.round(calByDay[selectedDate]).toLocaleString() : '\u2014'}
+                </p>
               </div>
-            ) : (
-              <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>Log weight to see your trend</p>
-            )}
-          </GlassPanel>
-
-          <SectionDivider />
-
-          {/* 2. Calories & Macros */}
-          <GlassPanel className="p-5">
-            <h2 className="text-sm font-semibold mb-1 uppercase tracking-wider" style={{ color: GOLD }}>Daily Calories & Macros</h2>
-            <p className="text-xs mb-4" style={{ color: 'rgba(70,48,12,0.58)' }}>
-              {calorieData.length > 0
-                ? `Avg ${Math.round(calorieData.reduce((s, d) => s + d.calories, 0) / calorieData.length)} cal/day`
-                : 'No data yet'}
-            </p>
-            {calorieData.length > 0 ? (
-              <div className="h-56 overflow-x-auto cursor-pointer">
-                <div style={{ minWidth: '100%', width: calorieData.length * BAR_PPP, height: '100%' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={calorieData} barSize={32} onClick={handleChartClick}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Legend
-                        wrapperStyle={{ fontSize: 11, color: 'rgba(70,48,12,0.6)' }}
-                      />
-                      <Bar dataKey="protein" stackId="macros" fill="#7836a8" name="Protein" />
-                      <Bar dataKey="carbs" stackId="macros" fill="#94680e" name="Carbs" />
-                      <Bar dataKey="fat" stackId="macros" fill="#8e261e" name="Fat" />
-                    </BarChart>
-                  </ResponsiveContainer>
+              <div className="absolute top-0 bottom-0 left-1/3 w-px" style={{ backgroundColor: 'rgba(164,124,22,0.15)' }} />
+              <div className="text-center px-2">
+                <p className="text-[10px] uppercase tracking-wider mb-2" style={{ color: TEXT_MID }}>Workouts</p>
+                <div className="flex justify-center mb-2">
+                  <WorkoutBars dates={dates} workoutByDay={workoutByDay} selectedDate={selectedDate} />
                 </div>
+                <p className="text-sm font-bold" style={{ color: GOLD }}>
+                  {Object.values(workoutByDay).reduce((sum, arr) => sum + arr.length, 0)}
+                </p>
               </div>
-            ) : (
-              <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>Log meals to see macro breakdown</p>
-            )}
-          </GlassPanel>
-
-          <SectionDivider />
-
-          {/* 3. Workout Section */}
-          <GlassPanel className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: GOLD }}>Workouts</h2>
-              <div className="flex gap-3">
-                {['all', 'zone2', 'lift', 'bjj'].map((f) => (
-                  <button
-                    type="button"
-                    key={f}
-                    onClick={() => setWorkoutFilter(f)}
-                    className="px-1 pb-1 text-xs font-semibold transition-colors"
-                    style={{
-                      color: workoutFilter === f ? '#5a3e08' : 'rgba(70,48,12,0.5)',
-                      borderBottom: workoutFilter === f ? '3px solid rgba(165,128,32,0.72)' : '3px solid transparent',
-                    }}
-                  >
-                    {f === 'all' ? 'All' : f === 'zone2' ? 'Zone 2' : f.charAt(0).toUpperCase() + f.slice(1)}
-                  </button>
-                ))}
+              <div className="absolute top-0 bottom-0 left-2/3 w-px" style={{ backgroundColor: 'rgba(164,124,22,0.15)' }} />
+              <div className="text-center px-2">
+                <p className="text-[10px] uppercase tracking-wider mb-2" style={{ color: TEXT_MID }}>Weight</p>
+                <div className="flex justify-center mb-2">
+                  <WeightLine data={sparkWeights} selectedDate={selectedDate} />
+                </div>
+                <p className="text-sm font-bold" style={{ color: GOLD }}>
+                  {sparkWeights.length > 0 ? sparkWeights[sparkWeights.length - 1].weight.toFixed(1) : '\u2014'}
+                </p>
               </div>
             </div>
-
-            {(() => {
-              const filtered = workoutFilter === 'all' ? workoutData : workoutData.filter((w) => w.session_type === workoutFilter)
-              if (filtered.length === 0) {
-                return <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>No workout data{workoutFilter !== 'all' ? ` for ${workoutFilter}` : ''}</p>
-              }
-
-              const chartData = filtered.map((w) => ({
-                date: formatDate(w.trained_at),
-                isoDate: toIsoDate(w.trained_at),
-                volume: w.total_volume_lbs || 0,
-                calBurned: w.estimated_cal_burned,
-                distance: w.distance_miles ? Number(w.distance_miles) : null,
-              }))
-
-              const hasCalData = chartData.some((w) => w.calBurned != null)
-              const hasDistData = chartData.some((w) => w.distance != null)
-
-              return (
-                <div className="space-y-6">
-                  {/* Volume chart */}
-                  <div>
-                    <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>{filtered.length} sessions — Volume</p>
-                    <div className="h-48 overflow-x-auto cursor-pointer">
-                      <div style={{ minWidth: '100%', width: chartData.length * BAR_PPP, height: '100%' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={chartData} barSize={32} onClick={handleChartClick}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={50} />
-                            <Tooltip contentStyle={tooltipStyle} />
-                            <Bar dataKey="volume" fill="#a78bfa" name="Volume (lbs)" radius={[4, 4, 0, 0]} />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Calories burned chart */}
-                  {hasCalData && (
-                    <div>
-                      <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>Calories Burned</p>
-                      <div className="h-48 overflow-x-auto cursor-pointer">
-                        <div style={{ minWidth: '100%', width: chartData.filter((w) => w.calBurned != null).length * BAR_PPP, height: '100%' }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData.filter((w) => w.calBurned != null)} barSize={32} onClick={handleChartClick}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                              <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={45} />
-                              <Tooltip contentStyle={tooltipStyle} />
-                              <Bar dataKey="calBurned" fill="#f97316" name="Cal Burned" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Distance chart (only if data exists) */}
-                  {hasDistData && (
-                    <div>
-                      <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>Distance (miles)</p>
-                      <div className="h-48 overflow-x-auto">
-                        <div style={{ minWidth: '100%', width: chartData.filter((w) => w.distance != null).length * LINE_PPP, height: '100%' }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={chartData.filter((w) => w.distance != null)}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                              <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={40} />
-                              <Tooltip contentStyle={tooltipStyle} />
-                              <Line type="monotone" dataKey="distance" stroke="#34d399" strokeWidth={2} dot={{ r: 2 }} name="Miles" />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Workout history table */}
-                  <div>
-                    <p className="text-xs mb-2" style={{ color: 'rgba(70,48,12,0.58)' }}>History — tap a row to edit</p>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr style={{ color: 'rgba(70,48,12,0.5)', borderBottom: '1px solid rgba(165,128,32,0.2)' }}>
-                            <th className="text-left py-2 pr-2">Date</th>
-                            <th className="text-left py-2 pr-2">Type</th>
-                            <th className="text-right py-2 pr-2">Time</th>
-                            <th className="text-right py-2 pr-2">Min</th>
-                            <th className="text-right py-2 pr-2">Mi</th>
-                            <th className="text-left py-2 pr-2">Notes</th>
-                            <th className="text-right py-2 pr-2">Cal</th>
-                            <th className="text-right py-2">Source</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filtered.map((w) => {
-                            const noteText = w.workout_notes || ''
-                            const truncated = noteText.length > 20 ? noteText.slice(0, 20) + '…' : noteText
-                            return (
-                              <tr
-                                key={w.id}
-                                onClick={() => setEditingWorkout(w)}
-                                className="cursor-pointer transition-colors hover:bg-amber-50/40"
-                                style={{ borderBottom: '1px solid rgba(165,128,32,0.15)' }}
-                              >
-                                <td className="py-2 pr-2" style={{ color: TEXT_DARK }}>{formatDate(w.trained_at)}</td>
-                                <td className="py-2 pr-2 capitalize" style={{ color: TEXT_MID }}>{w.session_type}</td>
-                                <td className="py-2 pr-2 text-right" style={{ color: TEXT_MID }}>
-                                  {new Date(w.trained_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                                </td>
-                                <td className="py-2 pr-2 text-right" style={{ color: TEXT_MID }}>{w.duration_min ?? '—'}</td>
-                                <td className="py-2 pr-2 text-right" style={{ color: TEXT_MID }}>{w.distance_miles ? Number(w.distance_miles).toFixed(1) : '—'}</td>
-                                <td className="py-2 pr-2" style={{ color: 'rgba(70,48,12,0.5)' }}>{truncated || '—'}</td>
-                                <td className="py-2 pr-2 text-right" style={{ color: TEXT_DARK }}>{w.estimated_cal_burned ?? '—'}</td>
-                                <td className="py-2 text-right" style={{ color: 'rgba(70,48,12,0.5)' }}>
-                                  {w.cal_estimate_method === 'user_override' ? 'Your Entry' : w.cal_estimate_method === 'apple_health' ? 'Apple Health' : w.estimated_cal_burned != null ? 'Estimated' : '—'}
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )
-            })()}
           </GlassPanel>
 
-          <SectionDivider />
+          {/* Roman Wheel */}
+          <GlassPanel className="py-3">
+            <div
+              ref={wheelRef}
+              className="relative h-[72px] touch-none select-none cursor-grab active:cursor-grabbing overflow-hidden"
+              onPointerDown={handleWheelPointerDown}
+            >
+              <div
+                className="absolute top-0 h-full flex items-center"
+                style={{
+                  left: '50%',
+                  transform: `translateX(${wheelTranslateX}px)`,
+                  transition: isDragging ? 'none' : 'transform 0.22s cubic-bezier(0.25,0.8,0.25,1)',
+                }}
+              >
+                {dates.map((date, i) => {
+                  const dist = Math.abs(i - visualCenter)
+                  const fontSize = dist < 0.5 ? 20 : dist < 1.5 ? 14 : 12
+                  const opacity = dist < 0.5 ? 1 : dist < 1.5 ? 0.7 : dist < 2.5 ? 0.4 : 0.25
+                  const isCenter = dist < 0.5
+                  const d = new Date(`${date}T12:00:00`)
+                  const dayNum = d.getDate()
+                  const month = monthFmt.format(d)
 
-          {/* 4. Body Composition */}
-          <GlassPanel className="p-5">
-            <h2 className="text-sm font-semibold mb-1 uppercase tracking-wider" style={{ color: GOLD }}>Body Composition</h2>
-            <p className="text-xs mb-4" style={{ color: 'rgba(70,48,12,0.58)' }}>
-              {bodyCompData.length > 0 ? 'From scale readings' : 'No body comp data yet'}
-            </p>
-            {bodyCompData.length > 1 ? (
-              <div className="h-48 overflow-x-auto">
-                <div style={{ minWidth: '100%', width: bodyCompData.length * LINE_PPP, height: '100%' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={bodyCompData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: 'rgba(70,48,12,0.5)' }} tickLine={false} width={40} />
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(70,48,12,0.6)' }} />
-                      <Area type="monotone" dataKey="bodyFat" stroke="#f87171" fill="#f87171" fillOpacity={0.15} name="Body Fat %" />
-                      <Area type="monotone" dataKey="water" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.15} name="Water %" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+                  return (
+                    <div
+                      key={date}
+                      className="flex flex-col items-center justify-center shrink-0"
+                      style={{
+                        width: SLOT_WIDTH,
+                        opacity,
+                        transition: isDragging ? 'none' : 'opacity 0.22s ease',
+                      }}
+                    >
+                      <span
+                        className="font-bold tracking-wide"
+                        style={{
+                          fontSize,
+                          color: isCenter ? GOLD : TEXT_DARK,
+                          transition: isDragging ? 'none' : 'font-size 0.22s ease, color 0.22s ease',
+                          fontFamily: 'var(--font-cinzel), serif',
+                        }}
+                      >
+                        {toRoman(dayNum)}
+                      </span>
+                      <span
+                        className="text-[10px] uppercase tracking-wider mt-0.5"
+                        style={{ color: TEXT_MID, opacity: isCenter ? 1 : 0.6 }}
+                      >
+                        {month}
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
-            ) : (
-              <p className="text-center py-8 text-sm" style={{ color: 'rgba(70,48,12,0.4)' }}>
-                Use a smart scale to track body composition
-              </p>
-            )}
-          </GlassPanel>
-        </div>
-      )}
 
-      {editingWorkout && (
-        <WorkoutEditModal
-          workout={editingWorkout}
-          onSaved={() => { refreshWorkouts(); setEditingWorkout(null) }}
-          onDeleted={() => { refreshWorkouts(); setEditingWorkout(null) }}
-          onClose={() => setEditingWorkout(null)}
-        />
+              {/* Center indicator line */}
+              <div
+                className="absolute top-0 bottom-0 left-1/2 w-[2px] -translate-x-1/2 pointer-events-none"
+                style={{ background: `linear-gradient(to bottom, transparent, ${GOLD_LIGHT}, transparent)` }}
+              />
+            </div>
+          </GlassPanel>
+
+          {/* Day Detail Panels */}
+          <DayDetailPanel
+            selectedDate={selectedDate}
+            userId={userId!}
+            weightTrendData={sparkWeights}
+          />
+        </div>
       )}
     </div>
   )

@@ -2,7 +2,7 @@ export type DayType = 'lift' | 'zone2' | 'rest'
 export type LogMethod = 'voice' | 'photo' | 'barcode' | 'quick' | 'manual' | 'ocr'
 export type SessionType = 'lift' | 'bjj' | 'zone2' | 'other'
 export type Confidence = 'low' | 'medium' | 'high'
-export type WeightSource = 'wyze_sync' | 'manual'
+export type WeightSource = 'wyze_sync' | 'manual' | 'withings'
 export type CalEstimateMethod = 'MET_estimate' | 'user_override' | 'apple_health'
 
 export interface User {

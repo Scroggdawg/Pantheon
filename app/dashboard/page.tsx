@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
@@ -109,6 +109,39 @@ export default function DashboardPage() {
   const [editingWorkout, setEditingWorkout] = useState<WorkoutSession | null>(null)
   const [editingEntry, setEditingEntry] = useState<FoodLogEntry | null>(null)
   const [syncing, setSyncing] = useState(false)
+  const [withingsConnected, setWithingsConnected] = useState(false)
+  const [showWithingsBanner, setShowWithingsBanner] = useState(false)
+
+  // Check Withings connection status on mount + auto-sync if stale
+  useEffect(() => {
+    fetch('/api/withings/status')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.connected) return
+        setWithingsConnected(true)
+        const staleMs = 6 * 60 * 60 * 1000
+        const isStale = !latest?.measured_at || (Date.now() - new Date(latest.measured_at).getTime() > staleMs)
+        if (isStale) {
+          fetch('/api/withings/sync', { method: 'POST' })
+            .then(r => r.json())
+            .then(d => { if (!d.error) refreshWeight() })
+            .catch(() => {})
+        }
+      })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Handle ?withings=connected callback
+  useEffect(() => {
+    if (searchParams.get('withings') === 'connected') {
+      setWithingsConnected(true)
+      setShowWithingsBanner(true)
+      router.replace('/dashboard')
+      const t = setTimeout(() => setShowWithingsBanner(false), 3000)
+      return () => clearTimeout(t)
+    }
+  }, [searchParams, router])
 
   const handleLogComplete = useCallback(() => {
     refreshLog()
@@ -124,13 +157,14 @@ export default function DashboardPage() {
 
   async function handleSync() {
     if (syncing) return
+    if (!withingsConnected) {
+      // Not connected — start OAuth flow
+      window.location.href = '/api/auth/withings'
+      return
+    }
     setSyncing(true)
     try {
-      const res = await fetch('/api/wyze/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId }),
-      })
+      const res = await fetch('/api/withings/sync', { method: 'POST' })
       const data = await res.json()
       if (!data.error) refreshWeight()
     } finally {
@@ -290,6 +324,15 @@ export default function DashboardPage() {
         {/* Sunday Check-in */}
         <SundayCheckinCard userId={userId!} />
 
+        {/* Withings connected banner */}
+        {showWithingsBanner && (
+          <div className="text-center mb-2">
+            <span className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: GOLD_LIGHT }}>
+              Withings connected ✓
+            </span>
+          </div>
+        )}
+
         {/* Calories + Weight Grid */}
         <div className="grid grid-cols-2 gap-3 mb-3">
           <GlassPanel className="p-4">
@@ -311,7 +354,7 @@ export default function DashboardPage() {
                 <p className="text-[10px] mt-1" style={{ color: TEXT_MUTED }}>
                   lbs &middot;{' '}
                   <button type="button" onClick={handleSync} className="underline" style={{ color: TEXT_MUTED }}>
-                    {syncing ? 'syncing\u2026' : 'sync'}
+                    {syncing ? 'syncing\u2026' : withingsConnected ? 'sync' : 'connect scale'}
                   </button>
                   {' \u00b7 '}
                   <button type="button" onClick={() => setShowManualWeight(true)} className="underline" style={{ color: TEXT_MUTED }}>
@@ -324,7 +367,7 @@ export default function DashboardPage() {
                 <p className="text-lg italic" style={{ color: TEXT_MUTED }}>&mdash;</p>
                 <p className="text-[10px] mt-1" style={{ color: TEXT_MUTED }}>
                   <button type="button" onClick={handleSync} className="underline" style={{ color: TEXT_MUTED }}>
-                    {syncing ? 'syncing\u2026' : 'sync'}
+                    {syncing ? 'syncing\u2026' : withingsConnected ? 'sync' : 'connect scale'}
                   </button>
                   {' \u00b7 '}
                   <button type="button" onClick={() => setShowManualWeight(true)} className="underline" style={{ color: TEXT_MUTED }}>
