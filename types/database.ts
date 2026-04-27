@@ -204,11 +204,15 @@ export const DAY_TYPE_ADJUSTMENTS: Record<DayType, { calories: number; carbs_g: 
   rest: { calories: -150, carbs_g: -30, emoji: '😴', label: 'Rest Day' },
 }
 
-// Provisions arc (migration 008) — recipes, meal plans, shopping lists
+// Provisions arc (migration 008 + 009) — recipes, meal plans, shopping lists,
+// products, user preferences.
 export type RecipeSource = 'user' | 'ai_generated' | 'imported'
-export type MealPlanStatus = 'draft' | 'active' | 'archived'
+export type MealPlanStatus = 'in_hole' | 'on_deck' | 'up' | 'archived'
 export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack'
 export type MealEntryStatus = 'planned' | 'eaten' | 'skipped' | 'swapped'
+export type EntrySourceType = 'recipe' | 'product'
+export type ProductFulfillmentSource =
+  | 'amazon_fresh' | 'amazon_prime' | 'whole_foods' | 'manual'
 export type ShoppingListStatus = 'draft' | 'sent_to_agent' | 'cart_filled' | 'ordered' | 'delivered'
 
 export interface RecipeIngredient {
@@ -216,6 +220,9 @@ export interface RecipeIngredient {
   qty: number
   unit: string
   notes?: string | null
+  // Migration 009: optional, indicates how the user expects to obtain
+  // this ingredient. JSON-only — no schema change to recipes table.
+  fulfillment_source?: 'product' | 'manual' | null
 }
 
 export interface Recipe {
@@ -246,6 +253,10 @@ export interface MealPlan {
     fat_g?: number
   } | null
   status: MealPlanStatus
+  // Migration 009: batch lifecycle metadata.
+  batch_position: number | null
+  cook_date: string | null
+  order_date: string | null
   created_at: string
   updated_at: string
 }
@@ -253,11 +264,62 @@ export interface MealPlan {
 export interface MealPlanEntry {
   id: string
   plan_id: string
-  recipe_id: string | null
+  // Migration 009: polymorphic source pointer replaces recipe_id.
+  // source_id references either recipes.id or products.id depending
+  // on source_type. No FK enforcement; validated at the API layer.
+  source_type: EntrySourceType
+  source_id: string
   meal_date: string
   slot: MealSlot
   servings: number
+  // Migration 009: when true, reroll-slot will reject swaps.
+  locked: boolean
   status: MealEntryStatus
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+// Migration 009: product catalog used by generate-meal-plan
+// alongside recipes. Macros are per-serving.
+export interface Product {
+  id: string
+  name: string
+  brand: string | null
+  unit: string
+  serving_size_g: number | null
+  calories_per_serving: number
+  protein_g_per_serving: number
+  fat_g_per_serving: number
+  carbs_g_per_serving: number
+  fiber_g_per_serving: number | null
+  fulfillment_source: ProductFulfillmentSource
+  barcode: string | null
+  product_url: string | null
+  notes: string | null
+  tracks_inventory: boolean
+  servings_per_unit: number | null
+  created_at: string
+  updated_at: string
+}
+
+// Migration 009: singleton row. Auto-created on first GET of
+// /api/user-preferences.
+export interface UserPreferences {
+  id: string
+  daily_target_macros: {
+    calories?: number
+    protein_g?: number
+    carbs_g?: number
+    fat_g?: number
+  } | null
+  cuisine_likes: string[]
+  cuisine_dislikes: string[]
+  protein_likes: string[]
+  protein_dislikes: string[]
+  excluded_ingredients: string[]
+  default_servings: number
+  default_batch_days: number
   notes: string | null
   created_at: string
   updated_at: string
