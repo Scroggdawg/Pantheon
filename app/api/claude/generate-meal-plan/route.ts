@@ -201,7 +201,15 @@ export async function POST(request: Request) {
       return Response.json({ error: `entries insert: ${entriesErr.message}` }, { status: 500 })
     }
 
-    return Response.json({ plan, entries: entries ?? [] })
+    if (generated.warnings.length > 0) {
+      console.warn('[generate-meal-plan] warnings:', generated.warnings)
+    }
+
+    return Response.json({
+      plan,
+      entries: entries ?? [],
+      warnings: generated.warnings,
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     console.error('[generate-meal-plan] FULL ERROR:', message)
