@@ -204,7 +204,14 @@ export default function DashboardPage() {
       <div className="relative z-10 px-4 pt-12 pb-32">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="flex justify-end mb-2">
+          <div className="flex justify-between mb-2">
+            <Link
+              href="/provisions"
+              className="text-[11px] uppercase tracking-[0.15em] font-semibold"
+              style={{ color: GOLD_LIGHT }}
+            >
+              Provisions &rarr;
+            </Link>
             <Link
               href="/progress"
               className="text-[11px] uppercase tracking-[0.15em] font-semibold"
