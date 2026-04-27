@@ -52,6 +52,27 @@ function validateIngredients(v: unknown): { ok: true; value: RecipeIngredient[] 
   return { ok: true, value: out }
 }
 
+export async function GET() {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('recipes')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('[api/recipes] select error:', error.message)
+      return Response.json({ error: error.message }, { status: 500 })
+    }
+
+    return Response.json(data ?? [])
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('[api/recipes] GET FULL ERROR:', message)
+    return Response.json({ error: message }, { status: 500 })
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as IncomingBody

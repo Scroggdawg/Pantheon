@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
-import { createClient } from '@/lib/supabase/client'
 import MarbleBackground from '@/components/ui/MarbleBackground'
 import { AddRecipePanel } from '@/components/provisions/AddRecipePanel'
 import type { Recipe } from '@/types/database'
@@ -18,7 +17,6 @@ const TEXT_MUTED = '#8a7a60'
 export default function ProvisionsPage() {
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
-  const supabase = createClient()
 
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,19 +25,21 @@ export default function ProvisionsPage() {
   const fetchRecipes = useCallback(async () => {
     setLoading(true)
     setError('')
-    const { data, error: fetchError } = await supabase
-      .from('recipes')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (fetchError) {
-      setError(fetchError.message)
+    const res = await fetch('/api/recipes')
+    if (!res.ok) {
+      let msg = `Failed to fetch recipes (${res.status})`
+      try {
+        const body = await res.json()
+        if (body && typeof body.error === 'string') msg = body.error
+      } catch {}
+      setError(msg)
       setLoading(false)
       return
     }
+    const data = await res.json()
     setRecipes((data ?? []) as Recipe[])
     setLoading(false)
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     if (!user) return
