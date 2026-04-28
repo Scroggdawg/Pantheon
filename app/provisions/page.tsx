@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
 import MarbleBackground from '@/components/ui/MarbleBackground'
+import SectionDivider from '@/components/ui/SectionDivider'
 import { AddRecipePanel } from '@/components/provisions/AddRecipePanel'
+import PlanView from '@/components/provisions/PlanView'
 import type { Recipe } from '@/types/database'
 
 const GOLD = '#a47c16'
@@ -83,23 +85,21 @@ export default function ProvisionsPage() {
         </Link>
       </div>
 
-      <div className="space-y-6 px-4 pt-2">
+      <div className="relative z-10 space-y-6 px-4 pt-2">
+        <SectionDivider label="This Week" />
+
+        <PlanView
+          recipes={recipes}
+          recipesLoading={loading}
+          userReady={!!user}
+        />
+
+        <SectionDivider label="Recipe Library" />
+
         <AddRecipePanel onSaved={fetchRecipes} />
 
         {/* Recipe Library */}
         <div>
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h2
-              className="text-[11px] uppercase tracking-[0.15em] font-semibold"
-              style={{ color: TEXT_DARK }}
-            >
-              Recipe Library
-            </h2>
-            <span className="text-[11px]" style={{ color: TEXT_MUTED }}>
-              {recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}
-            </span>
-          </div>
-
           {loading ? (
             <div className="flex items-center justify-center py-10">
               <div
