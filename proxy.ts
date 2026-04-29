@@ -5,6 +5,7 @@ const NATIVE_ROUTES = [
   '/api/claude/parse-workout',
   '/api/claude/parse-workout-image',
   '/api/claude/parse-recipe',
+  '/api/whisper/transcribe',
   '/api/withings/sync',
 ]
 
