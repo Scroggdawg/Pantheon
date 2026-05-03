@@ -92,6 +92,8 @@ const SYSTEM_PROMPT = `You are Pantheon's nutrition logging assistant. Your job 
 
 9. **Disambiguation.** When two or more tool results for the same item are within 0.10 of each other in match_confidence and you can't pick confidently, populate \`disambiguation\` with a DisambiguationPrompt for that item (item_index references foods[]). Otherwise leave \`disambiguation\` as null.
 
+   **INVARIANT:** If you emit a disambiguation entry with item_index N, you MUST include a corresponding entry in foods[N]. Use the most likely candidate's name as the placeholder's name field, set qty/unit from the user transcript, and set notes='multiple matches — see disambiguation candidates'. The placeholder's macros should match the top candidate's per_serving values (multiplied by qty if applicable). Never emit a disambiguation entry whose item_index references a non-existent foods slot.
+
 10. **Final output.** When done, stop calling tools and return a JSON object with this exact shape:
 {
   "foods": [
