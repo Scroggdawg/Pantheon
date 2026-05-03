@@ -196,6 +196,7 @@ export interface ToolCallLogEntry {
   args: Record<string, unknown>
   result_summary: string
   duration_ms: number
+  cache_hit?: boolean
 }
 
 export interface ParseMealTelemetry {
@@ -206,6 +207,7 @@ export interface ParseMealTelemetry {
   output_tokens: number
   stop_reason: string | null
   tool_call_log: ToolCallLogEntry[]
+  cache_hits: number
 }
 
 export interface ParseMealPipelineResult {
@@ -277,12 +279,18 @@ export async function runParseMealPipeline(
             out = { error: `${err.name}: ${err.message}` }
           }
           const dt = Date.now() - t0
+          const cacheHit =
+            tu.name === 'search_food_database' &&
+            typeof out === 'object' &&
+            out !== null &&
+            (out as { _cache_hit?: boolean })._cache_hit === true
           toolCallLog.push({
             iter: it,
             tool: tu.name,
             args: tu.input as Record<string, unknown>,
             result_summary: summarizeToolResult(tu.name, out),
             duration_ms: dt,
+            cache_hit: cacheHit,
           })
           toolResults.push({
             type: 'tool_result',
@@ -303,6 +311,7 @@ export async function runParseMealPipeline(
 
   const latencyMs = Date.now() - started
   const parsed = extractFinalJson(finalText)
+  const cacheHits = toolCallLog.filter((e) => e.cache_hit === true).length
 
   return {
     result: parsed,
@@ -315,6 +324,7 @@ export async function runParseMealPipeline(
       output_tokens: outputTokensTotal,
       stop_reason: stopReason,
       tool_call_log: toolCallLog,
+      cache_hits: cacheHits,
     },
   }
 }

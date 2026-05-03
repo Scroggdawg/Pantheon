@@ -46,7 +46,15 @@ export async function POST(request: Request) {
         { status: 502 },
       )
     }
-    return Response.json(result)
+    return Response.json({
+      ...result,
+      _telemetry: {
+        latency_ms: telemetry.latency_ms,
+        tool_calls: telemetry.tool_calls,
+        iters: telemetry.iters,
+        cache_hits: telemetry.cache_hits,
+      },
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     const stack = error instanceof Error ? error.stack : undefined

@@ -7,7 +7,11 @@
 // Barcode-first: when a UPC is supplied, OFF + USDA Branded by-UPC lookups
 // run before any text search; UPC hits are scored with name_sim = 1.0.
 
+import { createHash } from 'crypto'
+
 import type { Tool } from '@anthropic-ai/sdk/resources/messages'
+
+import { createClient } from '@/lib/supabase/server'
 
 import {
   BRAND_MATCH_DIFFERENT,
@@ -428,15 +432,90 @@ function perUserServing(
 }
 
 // ---------------------------------------------------------------------
+// Cache layer (S26 Step 4b)
+// ---------------------------------------------------------------------
+
+const CACHE_TTL_DAYS = 30
+
+function buildCacheKey(query: string, brand: string | undefined, barcode: string | undefined): string {
+  const keyParts = [
+    query.toLowerCase().trim(),
+    (brand ?? '').toLowerCase().trim(),
+    barcode ?? '',
+    'food_database',
+  ]
+  return createHash('sha256').update(keyParts.join(':')).digest('hex')
+}
+
+async function cacheLookup(
+  query: string,
+  brand: string | undefined,
+  barcode: string | undefined,
+): Promise<{ hit: boolean; data: { results: FoodSearchResult[] } | null }> {
+  try {
+    const queryKey = buildCacheKey(query, brand, barcode)
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('food_query_cache')
+      .select('response, expires_at')
+      .eq('query_key', queryKey)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle()
+    if (error || !data) return { hit: false, data: null }
+    return { hit: true, data: data.response as { results: FoodSearchResult[] } }
+  } catch (e) {
+    console.error('[search-food-database] cache lookup failed:', e)
+    return { hit: false, data: null }
+  }
+}
+
+async function cacheWrite(
+  query: string,
+  brand: string | undefined,
+  barcode: string | undefined,
+  response: { results: FoodSearchResult[] },
+): Promise<void> {
+  try {
+    const queryKey = buildCacheKey(query, brand, barcode)
+    const expiresAt = new Date(
+      Date.now() + CACHE_TTL_DAYS * 24 * 60 * 60 * 1000,
+    ).toISOString()
+    const supabase = await createClient()
+    const { error } = await supabase.from('food_query_cache').upsert(
+      {
+        query_key: queryKey,
+        query_text: query.toLowerCase().trim(),
+        response,
+        cached_at: new Date().toISOString(),
+        expires_at: expiresAt,
+      },
+      { onConflict: 'query_key' },
+    )
+    if (error) console.error('[search-food-database] cache write failed:', error.message)
+  } catch (e) {
+    console.error('[search-food-database] cache write failed:', e)
+  }
+}
+
+// ---------------------------------------------------------------------
 // Main entry point
 // ---------------------------------------------------------------------
 
 export async function searchFoodDatabase(
   input: SearchFoodDatabaseInput,
-): Promise<{ results: FoodSearchResult[] }> {
+): Promise<{ results: FoodSearchResult[]; _cache_hit?: boolean }> {
   const { query, brand, barcode, serving_amount, serving_unit } = input
   const dataset = input.dataset ?? 'all'
   const limit = input.limit ?? 5
+
+  // ---- Cache lookup ----
+  const cached = await cacheLookup(query, brand, barcode)
+  if (cached.hit && cached.data) {
+    console.log(`[search-food-database] cache_hit=true query='${query}'`)
+    return { ...cached.data, _cache_hit: true }
+  }
+  console.log(`[search-food-database] cache_hit=false query='${query}'`)
+
   const userBrandProvided = Boolean(brand)
   const rawCandidates: RawCandidate[] = []
 
@@ -531,7 +610,12 @@ export async function searchFoodDatabase(
   }
 
   scored.sort((a, b) => b.match_confidence.score - a.match_confidence.score)
-  return { results: scored.slice(0, limit) }
+  const finalResponse = { results: scored.slice(0, limit) }
+
+  // ---- Cache write (best-effort, awaited for serverless correctness) ----
+  await cacheWrite(query, brand, barcode, finalResponse)
+
+  return finalResponse
 }
 
 // ---------- Anthropic tool schema ----------
