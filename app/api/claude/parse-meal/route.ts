@@ -1,10 +1,15 @@
 // S26 Step 4e — pre-pipeline transcript-level response cache.
+// S26 Step 4f — library shortcut between cache lookup and Sonnet.
 //
-// Lookup before runParseMealPipeline; on hit, return cached
-// ParsedMealResponse without invoking Anthropic synthesis.
-// On miss, run normal pipeline and write result to cache.
-// Cache busts on library-write paths (saved_meals, products).
+// Order of operations:
+//   1. Response cache lookup (Step 4e — exact-transcript hash)
+//   2. Library shortcut (Step 4f — high-confidence library hit)
+//   3. Sonnet synthesis (existing fallback path)
+//
+// Both shortcuts return ~100-200ms. Sonnet path runs ~7-19s and
+// writes its result to the response cache on success.
 
+import { tryLibraryShortcut } from '@/lib/claude/parse-meal-library-shortcut'
 import { runParseMealPipeline, summarizeToolCalls } from '@/lib/claude/parse-meal-pipeline'
 import {
   lookupResponseCache,
@@ -42,12 +47,41 @@ export async function POST(request: Request) {
         type: 'parse_meal_telemetry',
         latency_ms: cacheLookupMs,
         response_cache_hit: true,
+        library_shortcut_hit: false,
       })
       return Response.json({
         ...cachedResponse,
         _telemetry: {
           latency_ms: cacheLookupMs,
           response_cache_hit: true,
+          library_shortcut_hit: false,
+          tool_calls: 0,
+          iters: 0,
+          cache_hits: 0,
+        },
+      })
+    }
+
+    // Step 4f — library shortcut
+    const shortcutStarted = Date.now()
+    const shortcut = await tryLibraryShortcut(supabase, userId, transcript)
+    const shortcutLookupMs = Date.now() - shortcutStarted
+
+    if (shortcut?.hit) {
+      console.log({
+        type: 'parse_meal_telemetry',
+        latency_ms: shortcutLookupMs,
+        library_shortcut_hit: true,
+        library_shortcut_top_score: shortcut.top_score,
+        library_shortcut_gap: shortcut.gap,
+        response_cache_hit: false,
+      })
+      return Response.json({
+        ...shortcut.response,
+        _telemetry: {
+          latency_ms: shortcutLookupMs,
+          library_shortcut_hit: true,
+          response_cache_hit: false,
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
@@ -69,6 +103,8 @@ export async function POST(request: Request) {
       tool_calls_summary: summarizeToolCalls(telemetry.tool_call_log),
       stop_reason: telemetry.stop_reason,
       response_cache_hit: false,
+      library_shortcut_hit: false,
+      library_shortcut_top_score: shortcut?.top_score,
     })
 
     if (!result) {
@@ -90,6 +126,7 @@ export async function POST(request: Request) {
         iters: telemetry.iters,
         cache_hits: telemetry.cache_hits,
         response_cache_hit: false,
+        library_shortcut_hit: false,
       },
     })
   } catch (error) {

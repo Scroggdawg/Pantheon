@@ -1,9 +1,13 @@
 // S26 Step 4e — transcript-level response cache for parse-meal.
 //
 // Caches the full ParsedMealResponse keyed by sha256(user_id +
-// ':' + normalized_transcript). Normalization is lowercase + trim
-// only (no punctuation/whitespace squashing — preserve user
-// intent at this layer). 90-day TTL.
+// ':' + normalized_transcript). 90-day TTL.
+//
+// S26 Step 4f — normalization extended to strip terminal/internal
+// punctuation and collapse whitespace, so voice-to-text variants
+// like "double espresso." and "double espresso" hit the same key.
+// Pre-Step-4f cache rows still match if their original transcript
+// had no punctuation; otherwise they age out via 90-day TTL.
 //
 // Lookups happen BEFORE the Anthropic synthesis call, so a cache
 // hit avoids the Sonnet round-trip entirely (~10s → ~100ms).
@@ -19,7 +23,11 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ParsedMealResponse } from '@/types/database'
 
 function normalizeTranscript(transcript: string): string {
-  return transcript.toLowerCase().trim()
+  return transcript
+    .toLowerCase()
+    .replace(/[.,!?;:]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 export function computeCacheKey(userId: string, transcript: string): string {
