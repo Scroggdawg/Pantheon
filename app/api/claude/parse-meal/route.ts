@@ -1,15 +1,23 @@
 // S26 Step 4e — pre-pipeline transcript-level response cache.
-// S26 Step 4f — library shortcut between cache lookup and Sonnet.
+// S26 Step 4f — single-hit library shortcut.
+// S26 Step 4g — multi-hit library candidates mode.
 //
 // Order of operations:
 //   1. Response cache lookup (Step 4e — exact-transcript hash)
-//   2. Library shortcut (Step 4f — high-confidence library hit)
-//   3. Sonnet synthesis (existing fallback path)
+//   2. Library shortcut single-hit (Step 4f — high-confidence)
+//   3. Library candidates mode (Step 4g — 2+ plausible matches)
+//   4. Sonnet synthesis (existing fallback path)
 //
-// Both shortcuts return ~100-200ms. Sonnet path runs ~7-19s and
+// Layers 1-3 return ~100-200ms. Sonnet path runs ~7-19s and
 // writes its result to the response cache on success.
+// Layers 2+3 do NOT write cache — library lookups are already
+// fast and a candidates-mode response isn't the user's final
+// pick.
 
-import { tryLibraryShortcut } from '@/lib/claude/parse-meal-library-shortcut'
+import {
+  tryLibraryCandidates,
+  tryLibraryShortcut,
+} from '@/lib/claude/parse-meal-library-shortcut'
 import { runParseMealPipeline, summarizeToolCalls } from '@/lib/claude/parse-meal-pipeline'
 import {
   lookupResponseCache,
@@ -48,6 +56,7 @@ export async function POST(request: Request) {
         latency_ms: cacheLookupMs,
         response_cache_hit: true,
         library_shortcut_hit: false,
+        library_candidates_hit: false,
       })
       return Response.json({
         ...cachedResponse,
@@ -55,6 +64,7 @@ export async function POST(request: Request) {
           latency_ms: cacheLookupMs,
           response_cache_hit: true,
           library_shortcut_hit: false,
+          library_candidates_hit: false,
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
@@ -62,7 +72,7 @@ export async function POST(request: Request) {
       })
     }
 
-    // Step 4f — library shortcut
+    // Step 4f — library shortcut (single high-confidence hit)
     const shortcutStarted = Date.now()
     const shortcut = await tryLibraryShortcut(supabase, userId, transcript)
     const shortcutLookupMs = Date.now() - shortcutStarted
@@ -74,6 +84,7 @@ export async function POST(request: Request) {
         library_shortcut_hit: true,
         library_shortcut_top_score: shortcut.top_score,
         library_shortcut_gap: shortcut.gap,
+        library_candidates_hit: false,
         response_cache_hit: false,
       })
       return Response.json({
@@ -81,6 +92,36 @@ export async function POST(request: Request) {
         _telemetry: {
           latency_ms: shortcutLookupMs,
           library_shortcut_hit: true,
+          library_candidates_hit: false,
+          response_cache_hit: false,
+          tool_calls: 0,
+          iters: 0,
+          cache_hits: 0,
+        },
+      })
+    }
+
+    // Step 4g — library candidates mode (2+ plausible matches)
+    const candidatesStarted = Date.now()
+    const candidates = await tryLibraryCandidates(supabase, userId, transcript)
+    const candidatesLookupMs = Date.now() - candidatesStarted
+
+    if (candidates?.hit) {
+      console.log({
+        type: 'parse_meal_telemetry',
+        latency_ms: candidatesLookupMs,
+        library_candidates_hit: true,
+        library_candidates_count: candidates.candidate_count,
+        library_candidates_top_score: candidates.top_score,
+        library_shortcut_hit: false,
+        response_cache_hit: false,
+      })
+      return Response.json({
+        ...candidates.response,
+        _telemetry: {
+          latency_ms: candidatesLookupMs,
+          library_candidates_hit: true,
+          library_shortcut_hit: false,
           response_cache_hit: false,
           tool_calls: 0,
           iters: 0,
@@ -105,6 +146,7 @@ export async function POST(request: Request) {
       response_cache_hit: false,
       library_shortcut_hit: false,
       library_shortcut_top_score: shortcut?.top_score,
+      library_candidates_hit: false,
     })
 
     if (!result) {

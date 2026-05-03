@@ -214,7 +214,13 @@ function productToCandidate(row: ProductRow, score: number): LibrarySearchResult
     carbs_g: row.carbs_g_per_serving,
     fat_g: row.fat_g_per_serving,
   }
-  const displayName = row.brand ? `${row.brand} ${row.name}` : row.name
+  // S26 Step 4g — only prepend brand when name doesn't already
+  // start with it (e.g. "Yasso" + "Yasso Greek Yogurt Bar..." →
+  // no duplicate prefix). Case-insensitive comparison.
+  const displayName =
+    row.brand && !row.name.toLowerCase().startsWith(row.brand.toLowerCase())
+      ? `${row.brand} ${row.name}`
+      : row.name
   return {
     library_id: `lib:product:${row.id}`,
     source: 'product',
@@ -292,7 +298,11 @@ export async function searchUserLibrary(
     matches.push(savedMealToCandidate(m, score))
   }
   for (const p of products) {
-    const displayName = p.brand ? `${p.brand} ${p.name}` : p.name
+    // S26 Step 4g — same brand-prefix-dedup logic as productToCandidate
+    const displayName =
+      p.brand && !p.name.toLowerCase().startsWith(p.brand.toLowerCase())
+        ? `${p.brand} ${p.name}`
+        : p.name
     const score = libraryNameSimilarity(input.query, displayName, [])
     if (score < minScore) continue
     matches.push(productToCandidate(p, score))
