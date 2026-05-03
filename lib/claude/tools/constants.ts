@@ -42,7 +42,6 @@ export const OFF_PRODUCT_URL = 'https://world.openfoodfacts.org/api/v2/product/{
 export const USER_AGENT = 'Pantheon/1.0 (luke@scrog.dev)'
 
 // ----- Anthropic model -----
-// Matches Step 2 prototype which validated 21 cases on this model.
 export const CLAUDE_MODEL = 'claude-sonnet-4-5'
 export const CLAUDE_MAX_TOKENS = 4096
 export const PARSE_MEAL_MAX_ITERS = 10

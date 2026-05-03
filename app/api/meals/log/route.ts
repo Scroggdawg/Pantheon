@@ -12,6 +12,7 @@
 // real BEGIN/COMMIT, so we DELETE the inserted row on failure (best-effort
 // compensation; surfaced in the response if compensation itself fails).
 
+import { bustResponseCacheForUser } from '@/lib/claude/parse-meal-response-cache'
 import { createClient } from '@/lib/supabase/server'
 import type { DayType, FoodItem, LogMethod } from '@/types/database'
 
@@ -144,6 +145,13 @@ export async function POST(request: Request) {
       return bad(500, `saved_meals step failed AND food_log compensation failed: ${message} / ${delErr.message}`)
     }
     return bad(500, `saved_meals step failed (food_log_entries rolled back): ${message}`)
+  }
+
+  // S26 Step 4e — bust user's parse-meal response cache when their
+  // library changes (saved_meals upsert). Best-effort; helper logs
+  // its own warnings on failure and does not throw.
+  if (savedMealAction !== 'none') {
+    await bustResponseCacheForUser(supabase, body.user_id)
   }
 
   return Response.json({

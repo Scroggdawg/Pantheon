@@ -1,9 +1,15 @@
-// S26 Step 3 — calls runParseMealPipeline directly so we can surface
-// telemetry (tokens, latency, tool-call summary) into Vercel Functions
-// logs. parseMeal() wrapper in lib/claude/claude.ts is gone; library
-// context is resolved here from the single-tenant users row.
+// S26 Step 4e — pre-pipeline transcript-level response cache.
+//
+// Lookup before runParseMealPipeline; on hit, return cached
+// ParsedMealResponse without invoking Anthropic synthesis.
+// On miss, run normal pipeline and write result to cache.
+// Cache busts on library-write paths (saved_meals, products).
 
 import { runParseMealPipeline, summarizeToolCalls } from '@/lib/claude/parse-meal-pipeline'
+import {
+  lookupResponseCache,
+  writeResponseCache,
+} from '@/lib/claude/parse-meal-response-cache'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
@@ -24,10 +30,34 @@ export async function POST(request: Request) {
       console.error('[parse-meal] failed to resolve user:', userErr?.message)
       return Response.json({ error: 'no user' }, { status: 500 })
     }
+    const userId = userRow.id
+
+    // Step 4e — response cache lookup
+    const cacheStarted = Date.now()
+    const cachedResponse = await lookupResponseCache(supabase, userId, transcript)
+    const cacheLookupMs = Date.now() - cacheStarted
+
+    if (cachedResponse) {
+      console.log({
+        type: 'parse_meal_telemetry',
+        latency_ms: cacheLookupMs,
+        response_cache_hit: true,
+      })
+      return Response.json({
+        ...cachedResponse,
+        _telemetry: {
+          latency_ms: cacheLookupMs,
+          response_cache_hit: true,
+          tool_calls: 0,
+          iters: 0,
+          cache_hits: 0,
+        },
+      })
+    }
 
     console.log('[parse-meal] Parsing:', transcript)
     const { result, telemetry } = await runParseMealPipeline(transcript, {
-      library: { userId: userRow.id, supabase },
+      library: { userId, supabase },
     })
 
     console.log({
@@ -38,6 +68,7 @@ export async function POST(request: Request) {
       iters: telemetry.iters,
       tool_calls_summary: summarizeToolCalls(telemetry.tool_call_log),
       stop_reason: telemetry.stop_reason,
+      response_cache_hit: false,
     })
 
     if (!result) {
@@ -46,6 +77,11 @@ export async function POST(request: Request) {
         { status: 502 },
       )
     }
+
+    // Step 4e — response cache write (best-effort, awaited for
+    // serverless correctness)
+    await writeResponseCache(supabase, userId, transcript, result)
+
     return Response.json({
       ...result,
       _telemetry: {
@@ -53,6 +89,7 @@ export async function POST(request: Request) {
         tool_calls: telemetry.tool_calls,
         iters: telemetry.iters,
         cache_hits: telemetry.cache_hits,
+        response_cache_hit: false,
       },
     })
   } catch (error) {
