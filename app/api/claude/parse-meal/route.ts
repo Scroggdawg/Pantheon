@@ -53,8 +53,6 @@ export async function POST(request: Request) {
         tool_calls: telemetry.tool_calls,
         iters: telemetry.iters,
         cache_hits: telemetry.cache_hits,
-        escalated: telemetry.escalated,
-        models_used: Array.from(new Set(telemetry.per_iter_model)),
       },
     })
   } catch (error) {
