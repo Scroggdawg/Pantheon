@@ -8,7 +8,7 @@
 
 ## What This Is
 
-AI-native nutrition and body composition tracker. Voice/text food logging, workout tracking, weight sync (Wyze Scale X), Greek God Bod scoring, AI coaching with full CRUD. Single-user app for Luke Scroggins.
+AI-native nutrition and body composition tracker. Voice/text food logging, workout tracking, weight sync (Withings Body+), Greek God Bod scoring, AI coaching with full CRUD. Single-user app for Luke Scroggins.
 
 ## Stack
 
@@ -48,7 +48,6 @@ app/
       auth/withings/callback/route.ts — Withings token exchange + upsert
     withings/sync/route.ts     — Withings scale sync (fetch measurements → weight_readings)
     withings/status/route.ts   — Withings connection status check
-    wyze/sync/route.ts        — Wyze Scale X weight sync (legacy, replaced by Withings)
 
 components/
   ui/
@@ -86,10 +85,10 @@ lib/
   claude/workout.ts           — Workout parse response types
   supabase/client.ts          — Browser client (singleton)
   supabase/server.ts          — Server client (service role)
-  supabase/proxy.ts           — Auth middleware
   corrections/corrections.ts  — Phonetic distance + correction logic
-  wyze/wyze.ts                — Wyze API (auth, scale data, MD5)
   seed.ts                     — Test data seeder
+
+(Auth proxy lives at repo root: /proxy.ts — Next.js 16 file convention.)
 
 types/
   database.ts                 — All DB types + DAY_TYPE_ADJUSTMENTS

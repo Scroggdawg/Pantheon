@@ -7,6 +7,10 @@ const NATIVE_ROUTES = [
   '/api/claude/parse-recipe',
   '/api/whisper/transcribe',
   '/api/withings/sync',
+  // Pre-gated for Step 6 (camera lane). Routes are empty 404 stubs today;
+  // gating now means Step 6 ships gated by default rather than retrofitted.
+  '/api/food/barcode',
+  '/api/food/search',
 ]
 
 const NATIVE_SECRET_HEADER = 'x-pantheon-native-secret'
