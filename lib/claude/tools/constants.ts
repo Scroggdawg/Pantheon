@@ -41,9 +41,15 @@ export const OFF_PRODUCT_URL = 'https://world.openfoodfacts.org/api/v2/product/{
 // Required by OFF terms; courtesy header for USDA
 export const USER_AGENT = 'Pantheon/1.0 (luke@scrog.dev)'
 
-// ----- Anthropic model -----
-// Matches Step 2 prototype which validated 21 cases on this model.
-export const CLAUDE_MODEL = 'claude-sonnet-4-5'
+// ----- Anthropic models (S26 Step 4c tiered routing) -----
+// FAST handles tool dispatch + simple synthesis (library hits, single-
+// candidate database hits). SMART takes over for disambig or
+// synthesis-heavy cases. See parse-meal-pipeline shouldEscalate().
+export const CLAUDE_MODEL_FAST = 'claude-haiku-4-5-20251001'
+export const CLAUDE_MODEL_SMART = 'claude-sonnet-4-5'
+// Backwards-compat alias for any external referencer (Step 2 prototype
+// validated 21 cases on Sonnet, kept as the SMART default).
+export const CLAUDE_MODEL = CLAUDE_MODEL_SMART
 export const CLAUDE_MAX_TOKENS = 4096
 export const PARSE_MEAL_MAX_ITERS = 10
 

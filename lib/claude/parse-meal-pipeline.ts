@@ -17,7 +17,8 @@ import type { ParsedMealResponse } from '@/types/database'
 
 import {
   CLAUDE_MAX_TOKENS,
-  CLAUDE_MODEL,
+  CLAUDE_MODEL_FAST,
+  CLAUDE_MODEL_SMART,
   PARSE_MEAL_MAX_ITERS,
 } from './tools/constants'
 import {
@@ -197,6 +198,7 @@ export interface ToolCallLogEntry {
   result_summary: string
   duration_ms: number
   cache_hit?: boolean
+  model: string
 }
 
 export interface ParseMealTelemetry {
@@ -208,12 +210,98 @@ export interface ParseMealTelemetry {
   stop_reason: string | null
   tool_call_log: ToolCallLogEntry[]
   cache_hits: number
+  per_iter_model: string[]
+  escalated: boolean
+  escalated_at_iter: number | null
 }
 
 export interface ParseMealPipelineResult {
   result: ParsedMealResponse | null
   final_text: string
   telemetry: ParseMealTelemetry
+}
+
+// ---------------------------------------------------------------------
+// Tiered routing — should this iter's tool results escalate to SMART?
+// (S26 Step 4c)
+//
+// Triggers (any of):
+//   1. Disambig zone — two+ candidates within 0.10 score gap above
+//      CONFIDENCE_MEDIUM_THRESHOLD (0.60). Applied to BOTH library and
+//      database results.
+//   2. No good database match — zero database candidates with score
+//      >= 0.65.
+//   3. Library ambiguity — 2+ library results with label='high' AND
+//      score >= 0.85 across all library calls in this iter.
+//   4. Macro-math mismatch — top database candidate has a warning
+//      matching /^macro_math_mismatch_/.
+//
+// Library suppression: if exactly one library result hits label='high'
+// AND score >= 0.85, skip database trigger evaluation (the clean
+// library hit moots database results per system prompt rule 1).
+// ---------------------------------------------------------------------
+
+interface ToolDispatchInfo {
+  tool: string
+  out: unknown
+}
+
+function shouldEscalate(dispatches: ToolDispatchInfo[]): boolean {
+  type Result = {
+    match_confidence?: { score?: number; label?: string; warnings?: string[] }
+  }
+  const getResults = (out: unknown): Result[] => {
+    if (!out || typeof out !== 'object') return []
+    const r = (out as { results?: unknown }).results
+    return Array.isArray(r) ? (r as Result[]) : []
+  }
+  const score = (r: Result) => r.match_confidence?.score ?? 0
+  const label = (r: Result) => r.match_confidence?.label ?? ''
+  const warnings = (r: Result) => r.match_confidence?.warnings ?? []
+
+  const libraryDispatches = dispatches.filter((d) => d.tool === 'search_user_library')
+  const databaseDispatches = dispatches.filter((d) => d.tool === 'search_food_database')
+
+  // Criterion 3: library ambiguity — count high-label library hits
+  let totalHighLib = 0
+  for (const d of libraryDispatches) {
+    for (const r of getResults(d.out)) {
+      if (label(r) === 'high' && score(r) >= 0.85) totalHighLib += 1
+    }
+  }
+  if (totalHighLib >= 2) return true
+
+  // Library disambig zone (criterion 1 applied to library)
+  for (const d of libraryDispatches) {
+    const sorted = getResults(d.out)
+      .slice()
+      .sort((a, b) => score(b) - score(a))
+    if (sorted.length >= 2 && score(sorted[0]) >= 0.6 && score(sorted[1]) >= 0.6) {
+      if (score(sorted[0]) - score(sorted[1]) < 0.1) return true
+    }
+  }
+
+  // Library suppression: single clean high hit moots database triggers
+  if (totalHighLib === 1) return false
+
+  // Database-side criteria 1, 2, 4
+  for (const d of databaseDispatches) {
+    const sorted = getResults(d.out)
+      .slice()
+      .sort((a, b) => score(b) - score(a))
+    // Criterion 2 (strict): no results at all
+    if (sorted.length === 0) return true
+    // Criterion 4: macro_math_mismatch on top candidate
+    if (warnings(sorted[0]).some((w) => /^macro_math_mismatch_/.test(w))) return true
+    // Criterion 2: no candidate above 0.65
+    if (!sorted.some((r) => score(r) >= 0.65)) return true
+    // Criterion 1: top two within 0.10 gap, both above 0.60
+    if (sorted.length >= 2 && score(sorted[0]) >= 0.6 && score(sorted[1]) >= 0.6) {
+      if (score(sorted[0]) - score(sorted[1]) < 0.1) return true
+    }
+  }
+
+  return false
 }
 
 // ---------------------------------------------------------------------
@@ -242,9 +330,20 @@ export async function runParseMealPipeline(
   let it = 0
   const started = Date.now()
 
+  // Tiered routing state (S26 Step 4c). Start on FAST; sticky escalate
+  // to SMART when shouldEscalate() returns true on this iter's tool
+  // results.
+  let currentModel = CLAUDE_MODEL_FAST
+  let escalated = false
+  let escalatedAtIter: number | null = null
+  const perIterModel: string[] = []
+
   for (it = 0; it < maxIters; it++) {
+    const iterModel = currentModel
+    perIterModel.push(iterModel)
+
     const resp: Message = await client.messages.create({
-      model: CLAUDE_MODEL,
+      model: iterModel,
       max_tokens: CLAUDE_MAX_TOKENS,
       system: SYSTEM_PROMPT,
       tools: TOOLS,
@@ -267,6 +366,7 @@ export async function runParseMealPipeline(
 
     if (resp.stop_reason === 'tool_use') {
       const toolResults: ToolResultBlockParam[] = []
+      const dispatchesThisIter: ToolDispatchInfo[] = []
       for (const block of resp.content) {
         if (block.type === 'tool_use') {
           const tu = block as ToolUseBlock
@@ -291,7 +391,9 @@ export async function runParseMealPipeline(
             result_summary: summarizeToolResult(tu.name, out),
             duration_ms: dt,
             cache_hit: cacheHit,
+            model: iterModel,
           })
+          dispatchesThisIter.push({ tool: tu.name, out })
           toolResults.push({
             type: 'tool_result',
             tool_use_id: tu.id,
@@ -300,6 +402,12 @@ export async function runParseMealPipeline(
         } else if (block.type === 'text') {
           finalText += (block as TextBlock).text + '\n'
         }
+      }
+      // Sticky escalation: once SMART, stay SMART for the rest of the request.
+      if (!escalated && shouldEscalate(dispatchesThisIter)) {
+        currentModel = CLAUDE_MODEL_SMART
+        escalated = true
+        escalatedAtIter = it
       }
       messages.push({ role: 'user', content: toolResults })
       continue
@@ -325,6 +433,9 @@ export async function runParseMealPipeline(
       stop_reason: stopReason,
       tool_call_log: toolCallLog,
       cache_hits: cacheHits,
+      per_iter_model: perIterModel,
+      escalated,
+      escalated_at_iter: escalatedAtIter,
     },
   }
 }
