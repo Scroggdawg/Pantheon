@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useVoiceCorrections } from '@/hooks/useVoiceCorrections'
+import { hourToMealLabel } from '@/lib/utils/meal-label'
 import { SaveMealModal } from './SaveMealModal'
 import type { ParsedMealResponse, FoodItem, DayType } from '@/types/database'
 
@@ -71,7 +72,7 @@ export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
 
     const { error: dbError } = await supabase.from('food_log_entries').insert({
       user_id: userId,
-      meal_label: parsed.meal_label,
+      meal_label: hourToMealLabel(new Date().getHours()),
       day_type: dayType,
       foods_json: editedFoods,
       total_calories: totals.calories,
@@ -234,7 +235,7 @@ export function TextLogModal({ userId, dayType, onComplete, onClose }: Props) {
           <SaveMealModal
             userId={userId}
             foods={editedFoods}
-            defaultName={parsed?.meal_label || ''}
+            defaultName={parsed?.foods[0]?.name ?? ''}
             onSaved={() => { setShowSaveMeal(false); onComplete() }}
             onClose={() => setShowSaveMeal(false)}
           />

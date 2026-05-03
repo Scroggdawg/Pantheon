@@ -26,6 +26,30 @@ export interface User {
   created_at: string
 }
 
+// S26 Step 3 — V2 contract for parse-meal pipeline output. The new tool-using
+// pipeline (search_user_library + search_food_database) populates every field
+// here on every new entry. Historical food_log_entries.foods_json rows
+// pre-S26 lack source / source_ref / match_confidence — readers iterating
+// FoodLogEntry.foods_json must coerce defensively (treat missing source as
+// "user_recited" with no confidence object).
+//
+// The legacy `confidence?: Confidence` (string enum) field is dropped from
+// the type. Historical jsonb rows that have it persist with the field
+// ignored at the TS layer; nothing reads it today.
+export type FoodItemSource =
+  | 'library'           // tool returned a saved_meals or products row the LLM accepted
+  | 'database_exact'    // USDA/OFF hit with high match_confidence
+  | 'database_estimated' // USDA/OFF hit, scaled or low-confidence
+  | 'user_recited'      // user gave macros directly in transcript ("a 200-cal protein bar")
+  | 'llm_estimated'     // pure LLM estimate, no tool hit
+  | 'quick_add'         // bare-numbers entry, no name attached
+
+export interface MatchConfidence {
+  score: number              // 0..1
+  label: 'high' | 'medium' | 'low'
+  warnings: string[]         // human-readable notes ("macro_math_off", "brand_mismatch", etc.)
+}
+
 export interface FoodItem {
   name: string
   qty: number
@@ -34,8 +58,34 @@ export interface FoodItem {
   protein_g: number
   carbs_g: number
   fat_g: number
-  confidence?: Confidence
+  // V2 fields. Optional at the type level for historical-row compat (see
+  // header note above); the new pipeline always populates them.
+  source?: FoodItemSource
+  source_ref?: string | null  // "lib:saved_meal_id", "lib:product_id", "usda:fdcId", "off:upc"
+  match_confidence?: MatchConfidence
   notes?: string | null
+}
+
+// V2 disambiguation surface. When the parse pipeline finds multiple
+// plausible matches for an item and can't auto-pick, it emits a
+// DisambiguationPrompt for that item; native UI surfaces an inline picker.
+export interface DisambiguationCandidate {
+  name: string
+  source: FoodItemSource
+  source_ref: string
+  per_serving: {
+    calories: number
+    protein_g: number
+    carbs_g: number
+    fat_g: number
+  }
+  match_confidence: MatchConfidence
+}
+
+export interface DisambiguationPrompt {
+  item_index: number          // index into ParsedMealResponse.foods[]
+  query_used: string          // the LLM's query string for this item
+  candidates: DisambiguationCandidate[]
 }
 
 export interface FoodLogEntry {
@@ -180,14 +230,24 @@ export interface WorkoutExercise {
   is_pr: boolean
 }
 
+// S26 Step 3 — V2 contract. meal_label dropped (was dead per
+// log-food.tsx:122 in native; slot is the source of truth post-S25
+// redesign). disambiguation added per design doc §6.
 export interface ParsedMealResponse {
   foods: FoodItem[]
   total_calories: number
   total_protein_g: number
   total_carbs_g: number
   total_fat_g: number
-  meal_label: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+  // Free-form copy from the LLM when input is too vague to parse
+  // confidently (e.g. "small bowl of cereal" with no specifics).
+  // Native surfaces this as a prompt to refine the input.
   clarification_needed: string | null
+  // null when the LLM auto-picked confidently for every item;
+  // populated when one or more items had multiple plausible
+  // matches the LLM couldn't resolve. Native surfaces an inline
+  // picker per item per design doc §6.
+  disambiguation: DisambiguationPrompt[] | null
 }
 
 export interface VoiceCorrection {

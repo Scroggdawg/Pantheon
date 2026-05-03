@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useVoiceCorrections } from '@/hooks/useVoiceCorrections'
+import { hourToMealLabel } from '@/lib/utils/meal-label'
 import { SaveMealModal } from './SaveMealModal'
 import type { ParsedMealResponse, FoodItem, DayType } from '@/types/database'
 
@@ -160,7 +161,7 @@ export function VoiceLogger({ userId, dayType, onComplete, onClose }: Props) {
 
     const { error } = await supabase.from('food_log_entries').insert({
       user_id: userId,
-      meal_label: parsed.meal_label,
+      meal_label: hourToMealLabel(new Date().getHours()),
       day_type: dayType,
       foods_json: editedFoods,
       total_calories: totals.calories,
@@ -312,10 +313,6 @@ export function VoiceLogger({ userId, dayType, onComplete, onClose }: Props) {
               </div>
             )}
 
-            <div className="text-sm font-medium uppercase tracking-wider" style={{ color: 'rgba(70,48,12,0.5)' }}>
-              {parsed.meal_label}
-            </div>
-
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {editedFoods.map((food, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.35)' }}>
@@ -422,7 +419,7 @@ export function VoiceLogger({ userId, dayType, onComplete, onClose }: Props) {
           <SaveMealModal
             userId={userId}
             foods={editedFoods}
-            defaultName={parsed?.meal_label || ''}
+            defaultName={parsed?.foods[0]?.name ?? ''}
             onSaved={() => { setShowSaveMeal(false); onComplete() }}
             onClose={() => setShowSaveMeal(false)}
           />

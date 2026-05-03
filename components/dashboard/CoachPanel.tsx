@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { hourToMealLabel } from '@/lib/utils/meal-label'
 import type { DayType } from '@/types/database'
 
 interface CoachMessage {
@@ -92,7 +93,7 @@ export default function CoachPanel({
         await supabase.from('food_log_entries').insert({
           user_id: userId,
           logged_at: selectedDateNoon(selectedDate),
-          meal_label: parsed.meal_label,
+          meal_label: hourToMealLabel(new Date().getHours()),
           day_type: dayType,
           foods_json: parsed.foods,
           total_calories: parsed.total_calories,

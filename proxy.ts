@@ -7,6 +7,9 @@ const NATIVE_ROUTES = [
   '/api/claude/parse-recipe',
   '/api/whisper/transcribe',
   '/api/withings/sync',
+  // S26 Step 3: native meal-log writer that drives the conditional
+  // saved_meals auto-promote (per V15 H0 Q1 option c).
+  '/api/meals/log',
   // Pre-gated for Step 6 (camera lane). Routes are empty 404 stubs today;
   // gating now means Step 6 ships gated by default rather than retrofitted.
   '/api/food/barcode',
