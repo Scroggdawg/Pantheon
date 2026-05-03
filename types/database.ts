@@ -44,6 +44,14 @@ export type FoodItemSource =
   | 'llm_estimated'     // pure LLM estimate, no tool hit
   | 'quick_add'         // bare-numbers entry, no name attached
 
+// S26 Step 4d — per-food classifier state for the candidates-first
+// architecture. Populated by the pipeline-side classifier; legacy rows
+// from before Step 4d will not have this field set.
+//   auto_commit  — top match cleared the score + gap + token-overlap gates
+//   candidates   — multiple plausible matches; surface the top 3 for user pick
+//   unresolved   — no match above the floor; user must re-input or quick-add
+export type FoodItemState = 'auto_commit' | 'candidates' | 'unresolved'
+
 export interface MatchConfidence {
   score: number              // 0..1
   label: 'high' | 'medium' | 'low'
@@ -64,6 +72,12 @@ export interface FoodItem {
   source_ref?: string | null  // "lib:saved_meal_id", "lib:product_id", "usda:fdcId", "off:upc"
   match_confidence?: MatchConfidence
   notes?: string | null
+  // S26 Step 4d — candidates-first fields. Populated by the new
+  // pipeline classifier; absent on pre-Step-4d rows. `candidates` is
+  // populated when state is 'candidates' or 'unresolved' to give the
+  // native UI options to surface inline.
+  state?: FoodItemState
+  candidates?: DisambiguationCandidate[]
 }
 
 // V2 disambiguation surface. When the parse pipeline finds multiple

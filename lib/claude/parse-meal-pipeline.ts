@@ -148,6 +148,25 @@ Wrap the JSON in \`\`\`json fences in your final response so it can be parsed.
 const TOOLS: Tool[] = [SEARCH_USER_LIBRARY_TOOL, SEARCH_FOOD_DATABASE_TOOL]
 
 // ---------------------------------------------------------------------
+// S26 Step 4d Phase 1a — enumeration prompt for the candidates-first
+// architecture. Validated in P0.5 (10/10 pass on Haiku 4.5; avg 781ms).
+// Final line ("If a brand is detected...") added per V15 ruling P1a.2
+// to prevent label/brand redundancy seen in P0.5 probes (c) and (e).
+//
+// Phase 1a: exported but NOT yet wired. P1b will replace the SYSTEM_PROMPT
+// loop with a forced report_food_items call using this prompt.
+// ---------------------------------------------------------------------
+export const ENUMERATION_SYSTEM_PROMPT = `Read the transcript and identify each food item mentioned.
+Call report_food_items exactly once with the structured list.
+Each item needs label, qty, and unit. Brand and barcode are optional.
+Don't invent foods not mentioned; don't skip foods that are mentioned.
+Treat 'a' or 'an' as qty=1.
+Treat plurals like 'eggs' as countable; the qty is the number specified (e.g. '3 eggs' → qty=3).
+For countable items without an explicit unit, use unit="" (empty string).
+For mass/volume units (cup, tbsp, oz, g, slice, strip), use the unit as stated.
+If a brand is detected, populate the brand field; do not duplicate it in label.`
+
+// ---------------------------------------------------------------------
 // Tool dispatch
 // ---------------------------------------------------------------------
 
