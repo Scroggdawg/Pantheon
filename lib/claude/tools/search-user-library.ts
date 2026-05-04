@@ -14,6 +14,7 @@
 import type { Tool } from '@anthropic-ai/sdk/resources/messages'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { applyBrandAliases } from '@/lib/brand-voice-aliases'
 import type { FoodItem } from '@/types/database'
 
 import { confidenceLabel, type ConfidenceLabel } from './constants'
@@ -263,6 +264,22 @@ export async function searchUserLibrary(
   const minScore = input.min_score ?? 0.7
   const limit = Math.min(input.limit ?? 3, 10)
 
+  // S26 Step 4i — apply BRAND_VOICE_ALIASES substitution before
+  // scoring so voice-mangled brand queries ("yes so bar") resolve
+  // to the canonical brand ("yasso bar") and score normally via
+  // the existing token-based libraryNameSimilarity.
+  const { substituted: searchQuery, aliasApplied } = applyBrandAliases(input.query)
+  if (aliasApplied) {
+    console.log(
+      '[search_user_library] alias_applied:',
+      aliasApplied,
+      'original:',
+      input.query,
+      'substituted:',
+      searchQuery,
+    )
+  }
+
   // Fetch all rows (single-tenant; saved_meals is small per-user, products is
   // global but bounded). Score in TS via libraryNameSimilarity. Server-side
   // ilike pre-filter could be added later if row counts grow.
@@ -293,7 +310,7 @@ export async function searchUserLibrary(
   const matches: LibrarySearchResult[] = []
   for (const m of meals) {
     const aliases = m.tags ?? []
-    const score = libraryNameSimilarity(input.query, m.name ?? '', aliases)
+    const score = libraryNameSimilarity(searchQuery, m.name ?? '', aliases)
     if (score < minScore) continue
     matches.push(savedMealToCandidate(m, score))
   }
@@ -303,7 +320,7 @@ export async function searchUserLibrary(
       p.brand && !p.name.toLowerCase().startsWith(p.brand.toLowerCase())
         ? `${p.brand} ${p.name}`
         : p.name
-    const score = libraryNameSimilarity(input.query, displayName, [])
+    const score = libraryNameSimilarity(searchQuery, displayName, [])
     if (score < minScore) continue
     matches.push(productToCandidate(p, score))
   }
