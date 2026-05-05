@@ -98,7 +98,7 @@ export interface SearchFoodDatabaseInput {
   limit?: number
 }
 
-interface RawCandidate {
+export interface RawCandidate {
   _raw_brand: string | null
   id: string
   name: string
@@ -242,7 +242,7 @@ interface UsdaFood {
   foodNutrients?: UsdaFoodNutrient[]
 }
 
-function usdaFoodToCandidate(food: UsdaFood): RawCandidate {
+export function usdaFoodToCandidate(food: UsdaFood): RawCandidate {
   const nuts: Record<number, number> = {}
   for (const n of food.foodNutrients ?? []) {
     if (n.nutrientId !== undefined && n.value !== undefined) {
@@ -259,11 +259,18 @@ function usdaFoodToCandidate(food: UsdaFood): RawCandidate {
   }
   const servingSize = food.servingSize
   const servingUnit = (food.servingSizeUnit ?? '').toLowerCase()
-  const servingG: number = servingUnit === 'g' && servingSize ? servingSize : 100
+  // Brick B: accept 'ml' alongside 'g'. USDA reports liquids with
+  // servingSizeUnit='ml' (coconut water, juices, milk, sodas);
+  // pre-fix this branch was 'g'-only, leaving servingG=100 and
+  // per_serving silently equal to per_100g for all liquid branded
+  // entries. ~1% accurate density approximation for water-based
+  // beverages — the foods Luke actually logs in ml.
+  const servingIsWeightOrVolume = servingUnit === 'g' || servingUnit === 'ml'
+  const servingG: number = servingIsWeightOrVolume && servingSize ? servingSize : 100
   const scaleFromPer100g = (v: number | null) =>
     v == null ? null : Math.round(v * (servingG / 100) * 100) / 100
   const perServing: FoodMacros =
-    servingUnit === 'g' && servingSize
+    servingIsWeightOrVolume && servingSize
       ? {
           kcal: scaleFromPer100g(per100g.kcal),
           protein_g: scaleFromPer100g(per100g.protein_g),
