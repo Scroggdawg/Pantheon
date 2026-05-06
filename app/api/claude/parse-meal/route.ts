@@ -16,6 +16,7 @@
 
 import {
   tryLibraryCandidates,
+  tryLibrarySegmentedShortcut,
   tryLibraryShortcut,
 } from '@/lib/claude/parse-meal-library-shortcut'
 import { runParseMealPipeline, summarizeToolCalls } from '@/lib/claude/parse-meal-pipeline'
@@ -101,6 +102,37 @@ export async function POST(request: Request) {
       })
     }
 
+    // Step 4f.5 — segmented library shortcut (multi-item utterance fast path)
+    const segStarted = Date.now()
+    const segmented = await tryLibrarySegmentedShortcut(supabase, userId, transcript)
+    const segLookupMs = Date.now() - segStarted
+
+    if (segmented?.hit) {
+      console.log({
+        type: 'parse_meal_telemetry',
+        latency_ms: segLookupMs,
+        library_segmented_hit: true,
+        library_segmented_segment_count: segmented.segment_count,
+        library_segmented_segment_scores: segmented.segment_scores,
+        library_shortcut_hit: false,
+        library_candidates_hit: false,
+        response_cache_hit: false,
+      })
+      return Response.json({
+        ...segmented.response,
+        _telemetry: {
+          latency_ms: segLookupMs,
+          library_segmented_hit: true,
+          library_shortcut_hit: false,
+          library_candidates_hit: false,
+          response_cache_hit: false,
+          tool_calls: 0,
+          iters: 0,
+          cache_hits: 0,
+        },
+      })
+    }
+
     // Step 4g — library candidates mode (2+ plausible matches)
     const candidatesStarted = Date.now()
     const candidates = await tryLibraryCandidates(supabase, userId, transcript)
@@ -114,6 +146,7 @@ export async function POST(request: Request) {
         library_candidates_count: candidates.candidate_count,
         library_candidates_top_score: candidates.top_score,
         library_shortcut_hit: false,
+        library_segmented_hit: false,
         response_cache_hit: false,
       })
       return Response.json({
@@ -146,6 +179,7 @@ export async function POST(request: Request) {
       response_cache_hit: false,
       library_shortcut_hit: false,
       library_shortcut_top_score: shortcut?.top_score,
+      library_segmented_hit: false,
       library_candidates_hit: false,
     })
 
