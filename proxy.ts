@@ -7,9 +7,13 @@ const NATIVE_ROUTES = [
   '/api/claude/parse-recipe',
   '/api/whisper/transcribe',
   '/api/withings/sync',
-  // S26 Step 3: native meal-log writer that drives the conditional
-  // saved_meals auto-promote (per V15 H0 Q1 option c).
+  // S26 Step 3: native meal-log writer (post-Op-FASTRAK-Alpha.6 ships
+  // increment-only — auto-promote create path moved to /api/saved_meals/heart).
   '/api/meals/log',
+  // Op FASTRAK Alpha.6 — heart-icon save/un-save handler. POST hearts a
+  // food_log_entries row (creates saved_meal or flips is_favorite=true);
+  // DELETE un-hearts (flips is_favorite=false).
+  '/api/saved_meals/heart',
   // Pre-gated for Step 6 (camera lane). Routes are empty 404 stubs today;
   // gating now means Step 6 ships gated by default rather than retrofitted.
   '/api/food/barcode',
