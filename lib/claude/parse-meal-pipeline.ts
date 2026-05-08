@@ -266,10 +266,40 @@ export async function runParseMealPipeline(
     }
 
     if (resp.stop_reason === 'tool_use') {
-      const toolResults: ToolResultBlockParam[] = []
+      // Op FASTRAK Alpha.1 — parallel tool dispatch.
+      //
+      // Pre-Alpha.1 this loop awaited each block's dispatchTool() in source
+      // order, even though Anthropic's docs explicitly say batched tool_use
+      // blocks are independent and intended to run concurrently. Sequential
+      // dispatch left multi-second savings on the table per iter for the
+      // multi-item parses that empirically dominate Pantheon's tail latency
+      // (the screenshot meal: 22 tool calls across 6 iters, ~12-18s of the
+      // 60s budget spent in the dispatcher alone).
+      //
+      // Three discipline points preserved verbatim from pre-Alpha.1:
+      //   1. Text blocks accumulate into finalText with a trailing '\n'
+      //      (separator from the next iter's response). This differs from
+      //      the end_turn branch's no-newline append above; do NOT collapse.
+      //   2. Errors stay isolated per-task: each promise body has its own
+      //      try/catch returning { error: ... } so a single failure cannot
+      //      reject Promise.all and kill the whole iter.
+      //   3. Per-call timing is captured INSIDE each promise so the
+      //      duration_ms field reflects actual tool latency, not
+      //      wall-clock-from-Promise.all-start.
+
+      // 1. Pre-pass: synchronous text-block accumulation.
       for (const block of resp.content) {
-        if (block.type === 'tool_use') {
-          const tu = block as ToolUseBlock
+        if (block.type === 'text') finalText += (block as TextBlock).text + '\n'
+      }
+
+      // 2. Parallel dispatch over tool_use blocks. Promise.all preserves
+      //    array order in its resolution, so iterating `dispatched` later
+      //    matches the source order of tool_use blocks in resp.content.
+      const toolUseBlocks = resp.content.filter(
+        (b): b is ToolUseBlock => b.type === 'tool_use',
+      )
+      const dispatched = await Promise.all(
+        toolUseBlocks.map(async (tu) => {
           const t0 = Date.now()
           let out: unknown
           try {
@@ -278,29 +308,33 @@ export async function runParseMealPipeline(
             const err = e as Error
             out = { error: `${err.name}: ${err.message}` }
           }
-          const dt = Date.now() - t0
           const cacheHit =
             tu.name === 'search_food_database' &&
             typeof out === 'object' &&
             out !== null &&
             (out as { _cache_hit?: boolean })._cache_hit === true
-          toolCallLog.push({
-            iter: it,
-            tool: tu.name,
-            args: tu.input as Record<string, unknown>,
-            result_summary: summarizeToolResult(tu.name, out),
-            duration_ms: dt,
-            cache_hit: cacheHit,
-          })
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: tu.id,
-            content: JSON.stringify(out),
-          })
-        } else if (block.type === 'text') {
-          finalText += (block as TextBlock).text + '\n'
-        }
+          return { tu, out, duration_ms: Date.now() - t0, cache_hit: cacheHit }
+        }),
+      )
+
+      // 3. Post-pass: push log + tool_results in original block order.
+      const toolResults: ToolResultBlockParam[] = []
+      for (const { tu, out, duration_ms, cache_hit } of dispatched) {
+        toolCallLog.push({
+          iter: it,
+          tool: tu.name,
+          args: tu.input as Record<string, unknown>,
+          result_summary: summarizeToolResult(tu.name, out),
+          duration_ms,
+          cache_hit,
+        })
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: tu.id,
+          content: JSON.stringify(out),
+        })
       }
+
       messages.push({ role: 'user', content: toolResults })
       continue
     }
