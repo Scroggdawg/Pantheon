@@ -94,7 +94,7 @@ export default function DashboardPage() {
   })
   const isToday = selectedDate === getTodayLA()
   const datePickerRef = useRef<HTMLInputElement>(null)
-  const { entries, totals, refresh: refreshLog } = useDailyLog(userId, selectedDate)
+  const { entries, totals, favorites, refresh: refreshLog } = useDailyLog(userId, selectedDate)
   const { readings, latest, refresh: refreshWeight } = useWeightTrend(userId)
   const { workouts, refresh: refreshWorkouts } = useTodayWorkouts(userId, selectedDate)
 
@@ -107,7 +107,7 @@ export default function DashboardPage() {
   const [showCoach, setShowCoach] = useState(false)
   const [showFoodMenu, setShowFoodMenu] = useState(false)
   const [editingWorkout, setEditingWorkout] = useState<WorkoutSession | null>(null)
-  const [editingEntry, setEditingEntry] = useState<FoodLogEntry | null>(null)
+  const [editingEntry, setEditingEntry] = useState<{ entry: FoodLogEntry; focusFoodIndex?: number } | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [withingsConnected, setWithingsConnected] = useState(false)
   const [showWithingsBanner, setShowWithingsBanner] = useState(false)
@@ -435,7 +435,13 @@ export default function DashboardPage() {
         {/* Meals Section */}
         <SectionDivider label="Meals" />
         <GlassPanel className="p-4 mb-4">
-          <TodayLog userId={userId!} entries={entries} onEdit={setEditingEntry} onUpdate={refreshLog} />
+          <TodayLog
+            userId={userId!}
+            entries={entries}
+            favorites={favorites}
+            onEdit={(entry, focusFoodIndex) => setEditingEntry({ entry, focusFoodIndex })}
+            onUpdate={refreshLog}
+          />
         </GlassPanel>
 
         {/* Sessions Section */}
@@ -640,7 +646,8 @@ export default function DashboardPage() {
 
       {editingEntry && (
         <FoodEntryEditModal
-          entry={editingEntry}
+          entry={editingEntry.entry}
+          focusFoodIndex={editingEntry.focusFoodIndex}
           onSaved={() => { refreshLog(); setEditingEntry(null) }}
           onDeleted={() => { refreshLog(); setEditingEntry(null) }}
           onClose={() => setEditingEntry(null)}

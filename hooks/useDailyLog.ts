@@ -2,10 +2,12 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { FoodLogEntry } from '@/types/database'
+import { buildFavorites, emptyFavorites, type Favorites } from '@/lib/favorites'
+import type { FoodItem, FoodLogEntry } from '@/types/database'
 
 export function useDailyLog(userId: string | null, dateStr?: string) {
   const [entries, setEntries] = useState<FoodLogEntry[]>([])
+  const [favorites, setFavorites] = useState<Favorites>(emptyFavorites())
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -18,15 +20,29 @@ export function useDailyLog(userId: string | null, dateStr?: string) {
     const startOfDay = `${today}T00:00:00`
     const endOfDay = `${today}T23:59:59`
 
-    const { data } = await supabase
-      .from('food_log_entries')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('logged_at', startOfDay)
-      .lte('logged_at', endOfDay)
-      .order('logged_at', { ascending: true })
+    // Op FASTRAK Alpha.6 Sub-fix F — fetch entries + favorites in parallel.
+    // Favorites Set drives per-food heart state in TodayLog (rendered cards).
+    const [entriesRes, favsRes] = await Promise.all([
+      supabase
+        .from('food_log_entries')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('logged_at', startOfDay)
+        .lte('logged_at', endOfDay)
+        .order('logged_at', { ascending: true }),
+      supabase
+        .from('saved_meals')
+        .select('id, name, foods_json')
+        .eq('user_id', userId)
+        .eq('is_favorite', true),
+    ])
 
-    setEntries(data || [])
+    setEntries(entriesRes.data || [])
+    setFavorites(
+      buildFavorites(
+        (favsRes.data ?? []) as Array<{ id: string; name: string | null; foods_json: FoodItem[] | null }>,
+      ),
+    )
     setLoading(false)
   }, [userId, today, supabase])
 
@@ -49,5 +65,5 @@ export function useDailyLog(userId: string | null, dateStr?: string) {
     await refresh()
   }
 
-  return { entries, totals, loading, refresh, deleteEntry }
+  return { entries, totals, favorites, loading, refresh, deleteEntry }
 }

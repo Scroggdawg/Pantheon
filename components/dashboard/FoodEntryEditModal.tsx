@@ -1,11 +1,15 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { FoodLogEntry, FoodItem } from '@/types/database'
 
 interface FoodEntryEditModalProps {
   entry: FoodLogEntry
+  /** Op FASTRAK Alpha.6 Sub-fix F — index of the food the user tapped on
+   *  the dashboard card. Modal scrolls to + briefly highlights that row
+   *  on mount. Undefined falls back to no-focus default. */
+  focusFoodIndex?: number
   onSaved: () => void
   onDeleted: () => void
   onClose: () => void
@@ -33,6 +37,7 @@ const SCALE_PRESETS = [
 
 export default function FoodEntryEditModal({
   entry,
+  focusFoodIndex,
   onSaved,
   onDeleted,
   onClose,
@@ -47,6 +52,21 @@ export default function FoodEntryEditModal({
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const supabase = createClient()
+  const focusedRowRef = useRef<HTMLDivElement | null>(null)
+
+  // Op FASTRAK Alpha.6 Sub-fix F — on mount, scroll the focused food row
+  // into view and pulse a gold border to draw the eye. ~1.5s pulse via
+  // CSS transition; the inline style flips when the timeout fires.
+  const [pulseFocus, setPulseFocus] = useState(focusFoodIndex !== undefined)
+  useEffect(() => {
+    if (focusFoodIndex === undefined) return
+    const el = focusedRowRef.current
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    const t = setTimeout(() => setPulseFocus(false), 1500)
+    return () => clearTimeout(t)
+  }, [focusFoodIndex])
 
   function applyScale(pct: number) {
     const ratio = pct / 100
@@ -208,36 +228,50 @@ export default function FoodEntryEditModal({
 
         {/* Foods */}
         <div className="space-y-2 max-h-64 overflow-y-auto mb-4">
-          {editFoods.map((food, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.35)' }}>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate" style={{ color: '#3d3225' }}>{food.name}</div>
-                <div className="text-xs" style={{ color: 'rgba(70,48,12,0.5)' }}>
-                  {food.calories} cal · {food.protein_g}P · {food.carbs_g}C · {food.fat_g}F
-                </div>
-              </div>
-              <input
-                type="number"
-                value={food.qty}
-                onChange={(e) => updateQty(i, Number(e.target.value))}
-                className="w-16 rounded px-2 py-1 text-center text-sm focus:outline-none focus:ring-1"
-                style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
-                min={0}
-                step={0.5}
-              />
-              <span className="text-xs" style={{ color: 'rgba(70,48,12,0.5)' }}>{food.unit}</span>
-              <button
-                type="button"
-                onClick={() => removeFood(i)}
-                className="shrink-0 ml-1 hover:opacity-70 transition-opacity"
-                style={{ color: 'rgba(70,48,12,0.35)' }}
+          {editFoods.map((food, i) => {
+            const isFocused = i === focusFoodIndex && pulseFocus
+            return (
+              <div
+                key={i}
+                ref={i === focusFoodIndex ? focusedRowRef : undefined}
+                className="flex items-center gap-3 rounded-lg p-3 transition-all duration-500"
+                style={{
+                  background: 'rgba(255,255,255,0.35)',
+                  border: isFocused
+                    ? '2px solid rgba(201,160,60,0.7)'
+                    : '2px solid transparent',
+                  boxShadow: isFocused ? '0 0 0 3px rgba(201,160,60,0.15)' : 'none',
+                }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          ))}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate" style={{ color: '#3d3225' }}>{food.name}</div>
+                  <div className="text-xs" style={{ color: 'rgba(70,48,12,0.5)' }}>
+                    {food.calories} cal · {food.protein_g}P · {food.carbs_g}C · {food.fat_g}F
+                  </div>
+                </div>
+                <input
+                  type="number"
+                  value={food.qty}
+                  onChange={(e) => updateQty(i, Number(e.target.value))}
+                  className="w-16 rounded px-2 py-1 text-center text-sm focus:outline-none focus:ring-1"
+                  style={{ ...inputStyle, '--tw-ring-color': 'rgba(164,124,22,0.4)' } as React.CSSProperties}
+                  min={0}
+                  step={0.5}
+                />
+                <span className="text-xs" style={{ color: 'rgba(70,48,12,0.5)' }}>{food.unit}</span>
+                <button
+                  type="button"
+                  onClick={() => removeFood(i)}
+                  className="shrink-0 ml-1 hover:opacity-70 transition-opacity"
+                  style={{ color: 'rgba(70,48,12,0.35)' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )
+          })}
         </div>
 
         {/* Totals */}
