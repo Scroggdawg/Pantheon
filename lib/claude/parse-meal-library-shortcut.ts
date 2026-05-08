@@ -365,7 +365,33 @@ function stripFillerTokens(segment: string): string {
     .trim()
 }
 
-export function segmentTranscript(transcript: string): string[] {
+// Op FASTRAK Alpha.4.1 — segmenter now emits stripped+original pairs.
+//
+// Pre-Alpha.4.1 segmentTranscript returned only the stripped form, which
+// was correct for library matching (filler tokens like "a", "of", "ounce"
+// add noise to similarity scoring). Alpha.4 then reused the stripped
+// form as the LLM input for partial-resolve sub-transcripts — but the
+// LLM needs natural-language fragments, not filler-stripped tokens. The
+// replay script (Alpha.8) caught a real regression on "Double espresso,
+// with half an ounce of half and half, …" where the unresolved fragment
+// "with half an ounce of half and half" got stripped down to "with half
+// half half" before reaching the LLM. The LLM couldn't make sense of
+// that and returned no parseable JSON.
+//
+// Fix: track BOTH forms.
+//   - stripped: filler-removed, used for library similarity scoring.
+//   - original: composite-allowlist-restored + trimmed, used for LLM
+//               input + telemetry display.
+//
+// The "original" form preserves natural English exactly as the user said
+// it (modulo composite allowlist restoration), without dropping fillers
+// or normalizing written numbers. That's what the LLM tool-loop wants.
+export interface TranscriptSegment {
+  stripped: string
+  original: string
+}
+
+export function segmentTranscript(transcript: string): TranscriptSegment[] {
   let work = transcript
 
   // 1. Protect composite items from " and " split
@@ -384,7 +410,7 @@ export function segmentTranscript(transcript: string): string[] {
   // 3. Within each sentence, split on ", " or " and " (whitespace-bounded,
   //    case-insensitive on " and "). Skip " with ", " then ", " plus ", and
   //    bare comma per Brick D delimiter set.
-  const allSegments: string[] = []
+  const allSegments: TranscriptSegment[] = []
   for (const sentence of sentenceParts) {
     const parts = sentence.split(/(?:,\s+|\s+and\s+)/i)
     for (let p of parts) {
@@ -395,13 +421,18 @@ export function segmentTranscript(transcript: string): string[] {
       // 5. Trim trailing periods + whitespace, drop empty
       p = p.replace(/\.\s*$/, '').trim()
       if (p.length === 0) continue
-      // 6. Apply written-number → digit normalization
+      // 5a. Capture the natural-language form RIGHT HERE — after composite
+      //     restore + trim, BEFORE number normalization or filler stripping.
+      //     This is what the LLM wants to see for partial-resolve.
+      const original = p
+      // 6. Apply written-number → digit normalization (matching-side only)
       const numbersNormalized = normalizeWrittenNumbers(p)
-      // 7. Strip filler tokens (articles, quantifiers, units) so library
-      //    matching scores against the substantive food name only.
+      // 7. Strip filler tokens (matching-side only). Library matching
+      //    scores against the substantive food name; LLM input doesn't
+      //    need this aggressive cleanup.
       const stripped = stripFillerTokens(numbersNormalized)
       if (stripped.length === 0) continue
-      allSegments.push(stripped)
+      allSegments.push({ stripped, original })
     }
   }
 
@@ -429,13 +460,15 @@ export function segmentTranscript(transcript: string): string[] {
 
 export interface ResolvedSegment {
   food: FoodItem
-  segment: string
+  segment: string           // stripped form (used for library matching)
+  original_segment: string  // natural-language form (post-Alpha.4.1: telemetry display + LLM input on partial cases)
   position: number
   score: number
 }
 
 export interface UnresolvedSegment {
-  segment: string
+  segment: string           // stripped form (kept for telemetry parity with ResolvedSegment)
+  original_segment: string  // natural-language form — what the route's partial-resolve hands to the LLM
   position: number
 }
 
@@ -456,26 +489,30 @@ export async function tryLibrarySegmentedShortcut(
   // path takes over without double work.
   if (segments.length < 2) return null
 
-  // Search each segment in parallel.
+  // Search each segment in parallel using the STRIPPED form (which is
+  // what the library similarity scorer expects — filler-removed,
+  // written-numbers-normalized).
   const segmentResults = await Promise.all(
     segments.map((seg) =>
-      searchUserLibrary({ query: seg, limit: 2 }, { userId, supabase }),
+      searchUserLibrary({ query: seg.stripped, limit: 2 }, { userId, supabase }),
     ),
   )
 
   // Per-segment classification. Same threshold gates as the pre-Alpha.4
   // all-or-nothing path (score >= 0.85, gap >= 0.15). Failures land in
   // `unresolved` with their original position so the route can preserve
-  // user-perceived order during merge.
+  // user-perceived order during merge. Both stripped + original forms
+  // propagate (Alpha.4.1) so the route's partial-resolve LLM input gets
+  // the natural-language fragment, not the filler-stripped one.
   const resolved: ResolvedSegment[] = []
   const unresolved: UnresolvedSegment[] = []
 
   for (let i = 0; i < segments.length; i++) {
-    const segment = segments[i]
+    const seg = segments[i]
     const r = segmentResults[i].results
 
     if (r.length === 0) {
-      unresolved.push({ segment, position: i })
+      unresolved.push({ segment: seg.stripped, original_segment: seg.original, position: i })
       continue
     }
     const top = r[0]
@@ -483,11 +520,11 @@ export async function tryLibrarySegmentedShortcut(
     const topScore = top.match_confidence.score
     const secondScore = second?.match_confidence.score ?? 0
     if (topScore < SEGMENT_SHORTCUT_SCORE_THRESHOLD) {
-      unresolved.push({ segment, position: i })
+      unresolved.push({ segment: seg.stripped, original_segment: seg.original, position: i })
       continue
     }
     if (second && topScore - secondScore < SEGMENT_SHORTCUT_GAP_THRESHOLD) {
-      unresolved.push({ segment, position: i })
+      unresolved.push({ segment: seg.stripped, original_segment: seg.original, position: i })
       continue
     }
 
@@ -509,7 +546,8 @@ export async function tryLibrarySegmentedShortcut(
         },
         notes: null,
       },
-      segment,
+      segment: seg.stripped,
+      original_segment: seg.original,
       position: i,
       score: topScore,
     })

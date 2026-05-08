@@ -143,9 +143,15 @@ async function main() {
     console.log(`  transcript: "${c.transcript}"`)
     console.log(`  notes: ${c.notes ?? '-'}`)
 
-    // Segmenter output (independent of shortcut decision)
+    // Segmenter output (independent of shortcut decision).
+    // Post-Alpha.4.1 the shape is { stripped, original } pairs.
     const segs = segmentTranscript(c.transcript)
-    console.log(`  segments (${segs.length}): ${JSON.stringify(segs)}`)
+    console.log(
+      `  segments (${segs.length}): ${JSON.stringify(segs.map((s) => s.stripped))}`,
+    )
+    console.log(
+      `  originals:        ${JSON.stringify(segs.map((s) => s.original))}`,
+    )
 
     // Shortcut decision + latency.
     // Post-Alpha.4 the helper returns { resolved, unresolved, segment_count }

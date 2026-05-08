@@ -177,21 +177,26 @@ export async function POST(request: Request) {
       // PARTIAL RESOLVE — run LLM pipeline on the unresolved subset only,
       // then merge with library-resolved foods by position.
       //
-      // Sub-transcript shape: comma-joined unresolved segments. Phase 0
-      // §7 considered passing the full transcript with <resolved>
-      // annotations to preserve cross-item context, but for v1 we keep
-      // the simpler "send only what's unresolved" path. Multi-item food
-      // transcripts rarely have cross-item context that matters
-      // semantically; if regression surfaces on a real case, switch to
-      // annotated-full.
+      // Sub-transcript shape: comma-joined unresolved ORIGINAL segments
+      // (Alpha.4.1 fix — pre-fix this used the stripped form, which the
+      // LLM couldn't parse on cases where filler removal degraded the
+      // fragment into gibberish; the replay script caught the regression
+      // on "Double espresso, with half an ounce of half and half, …" →
+      // "with half half half"). Phase 0 §7 considered passing the full
+      // transcript with <resolved> annotations to preserve cross-item
+      // context; we keep the "send only unresolved fragments, in their
+      // natural-language form" path. If a real cross-item-context case
+      // surfaces, switch to annotated-full.
       const subTranscript = segmented.unresolved
-        .map((u) => u.segment)
+        .map((u) => u.original_segment)
         .join(', ')
 
       console.log('[parse-meal] Alpha.4 partial-resolve:', {
         resolved_count: segmented.resolved.length,
         unresolved_count: segmented.unresolved.length,
         sub_transcript: subTranscript,
+        resolved_originals: segmented.resolved.map((r) => r.original_segment),
+        unresolved_originals: segmented.unresolved.map((u) => u.original_segment),
       })
 
       const llmStarted = Date.now()
