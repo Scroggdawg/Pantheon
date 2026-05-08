@@ -53,6 +53,18 @@ export async function POST(request: Request) {
 
   const supabase = await createClient()
 
+  // Op FASTRAK Alpha.7 — classify library_source_ref + extract the
+  // saved_meal UUID up front. Single source of truth, used by both the
+  // food_log_entries insert (saved_meal_id column) and the auto-promote
+  // block below. The 'created' path (new saved_meal) backfills the audit
+  // column via best-effort UPDATE after the saved_meals INSERT succeeds.
+  const isSavedMealRef = body.library_source_ref?.startsWith('lib:saved_meal:') ?? false
+  const isProductRef = body.library_source_ref?.startsWith('lib:product:') ?? false
+  const noLibraryRef = body.library_source_ref == null || body.library_source_ref === ''
+  const savedMealRefUuid: string | null = isSavedMealRef
+    ? body.library_source_ref!.slice('lib:saved_meal:'.length)
+    : null
+
   // ---- 1. Insert the food_log_entries row ----
   const { data: logRow, error: logErr } = await supabase
     .from('food_log_entries')
@@ -68,6 +80,7 @@ export async function POST(request: Request) {
       log_method: body.log_method,
       raw_input_text: body.raw_input_text,
       claude_parse_json: body.claude_parse_json,
+      saved_meal_id: savedMealRefUuid,
     })
     .select('id')
     .single()
@@ -80,13 +93,10 @@ export async function POST(request: Request) {
   // ---- 2. Conditional auto-promote ----
   let savedMealId: string | null = null
   let savedMealAction: SavedMealAction = 'none'
-  const isSavedMealRef = body.library_source_ref?.startsWith('lib:saved_meal:') ?? false
-  const isProductRef = body.library_source_ref?.startsWith('lib:product:') ?? false
-  const noLibraryRef = body.library_source_ref == null || body.library_source_ref === ''
 
   try {
     if (isSavedMealRef) {
-      const uuid = body.library_source_ref!.slice('lib:saved_meal:'.length)
+      const uuid = savedMealRefUuid!
       const { data: existing, error: getErr } = await supabase
         .from('saved_meals')
         .select('times_logged')
@@ -145,6 +155,25 @@ export async function POST(request: Request) {
       return bad(500, `saved_meals step failed AND food_log compensation failed: ${message} / ${delErr.message}`)
     }
     return bad(500, `saved_meals step failed (food_log_entries rolled back): ${message}`)
+  }
+
+  // Op FASTRAK Alpha.7 — backfill saved_meal_id on the food_log_entries
+  // row when auto-promote created a NEW saved_meal. The insert at step 1
+  // populated saved_meal_id only for the 'incremented' path (where the
+  // UUID was known up front). The 'created' path produces the UUID
+  // post-insert, so we update here. Best-effort: a missed backfill leaves
+  // a NULL audit-trail value but doesn't break the user's logged meal.
+  if (savedMealAction === 'created' && savedMealId) {
+    const { error: backfillErr } = await supabase
+      .from('food_log_entries')
+      .update({ saved_meal_id: savedMealId })
+      .eq('id', logRow.id)
+    if (backfillErr) {
+      console.warn(
+        '[meals/log] Alpha.7 saved_meal_id backfill failed:',
+        backfillErr.message,
+      )
+    }
   }
 
   // S26 Step 4e — bust user's parse-meal response cache when their
