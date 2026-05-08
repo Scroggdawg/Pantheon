@@ -43,7 +43,7 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
       .from('saved_meals')
       .select('*')
       .eq('user_id', userId)
-      .order('is_staple', { ascending: false })
+      .order('is_favorite', { ascending: false })
       .order('times_logged', { ascending: false })
 
     setMeals(data || [])
@@ -56,7 +56,7 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
         .from('saved_meals')
         .select('*')
         .eq('user_id', userId)
-        .order('is_staple', { ascending: false })
+        .order('is_favorite', { ascending: false })
         .order('times_logged', { ascending: false })
 
       setMeals(data || [])
@@ -226,12 +226,12 @@ export function QuickSelectModal({ userId, dayType, onComplete, onClose }: Props
                     <div className="mt-1 text-xs" style={{ color: 'rgba(70,48,12,0.45)' }}>
                       {perServingP}P · {perServingC}C · {perServingF}F
                       {yieldSrv > 1 && <span className="ml-1">per serving ({yieldSrv} srv)</span>}
-                      {meal.is_staple && (
+                      {meal.is_favorite && (
                         <span
                           className="ml-2 rounded px-1.5 py-0.5"
                           style={{ background: 'rgba(201,160,60,0.15)', color: '#a47c16' }}
                         >
-                          staple
+                          favorite
                         </span>
                       )}
                     </div>

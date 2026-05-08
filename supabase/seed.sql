@@ -5,7 +5,7 @@
 -- Note: This needs to be run AFTER the user has been created via onboarding.
 -- Alternatively, use the seed script at /lib/seed.ts which auto-detects the user.
 
-INSERT INTO saved_meals (user_id, name, foods_json, total_calories, total_protein_g, total_carbs_g, total_fat_g, tags, is_staple) VALUES
+INSERT INTO saved_meals (user_id, name, foods_json, total_calories, total_protein_g, total_carbs_g, total_fat_g, tags, is_favorite) VALUES
 -- Egg & Bacon Breakfast
 ((SELECT id FROM users LIMIT 1), 'Egg & Bacon Breakfast', '[{"name":"Eggs","qty":3,"unit":"large","calories":210,"protein_g":18,"carbs_g":1,"fat_g":15},{"name":"Bacon","qty":3,"unit":"strips","calories":180,"protein_g":10,"carbs_g":1,"fat_g":15}]', 390, 28, 2, 30, ARRAY['breakfast'], true),
 

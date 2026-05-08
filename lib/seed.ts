@@ -25,7 +25,7 @@ const STAPLE_MEALS = [
       { name: 'Bacon', qty: 3, unit: 'strips', calories: 180, protein_g: 10, carbs_g: 1, fat_g: 15 },
     ],
     total_calories: 390, total_protein_g: 28, total_carbs_g: 2, total_fat_g: 30,
-    tags: ['breakfast'], is_staple: true,
+    tags: ['breakfast'], is_favorite: true,
   },
   {
     name: 'Egg White Scramble',
@@ -35,7 +35,7 @@ const STAPLE_MEALS = [
       { name: 'Feta cheese', qty: 1, unit: 'oz', calories: 70, protein_g: 9, carbs_g: 1, fat_g: 5 },
     ],
     total_calories: 213, total_protein_g: 38, total_carbs_g: 4, total_fat_g: 5,
-    tags: ['breakfast'], is_staple: true,
+    tags: ['breakfast'], is_favorite: true,
   },
   {
     name: 'Protein Shake',
@@ -44,7 +44,7 @@ const STAPLE_MEALS = [
       { name: 'Water', qty: 12, unit: 'oz', calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
     ],
     total_calories: 130, total_protein_g: 25, total_carbs_g: 5, total_fat_g: 2,
-    tags: ['breakfast', 'snack'], is_staple: true,
+    tags: ['breakfast', 'snack'], is_favorite: true,
   },
   {
     name: 'Greek Yogurt Bowl',
@@ -55,7 +55,7 @@ const STAPLE_MEALS = [
       { name: 'Almonds (sliced)', qty: 0.5, unit: 'oz', calories: 14, protein_g: 1, carbs_g: 0, fat_g: 3 },
     ],
     total_calories: 207, total_protein_g: 20, total_carbs_g: 25, total_fat_g: 3,
-    tags: ['breakfast', 'snack'], is_staple: true,
+    tags: ['breakfast', 'snack'], is_favorite: true,
   },
   {
     name: 'Chicken Rice Bowl',
@@ -65,7 +65,7 @@ const STAPLE_MEALS = [
       { name: 'Steamed broccoli', qty: 1, unit: 'cup', calories: 22, protein_g: 1, carbs_g: 4, fat_g: 0 },
     ],
     total_calories: 472, total_protein_g: 48, total_carbs_g: 52, total_fat_g: 8,
-    tags: ['lunch', 'dinner', 'meal-prep'], is_staple: true,
+    tags: ['lunch', 'dinner', 'meal-prep'], is_favorite: true,
   },
   {
     name: 'Larb (Thai Chicken)',
@@ -75,7 +75,7 @@ const STAPLE_MEALS = [
       { name: 'Toasted rice powder', qty: 1, unit: 'tbsp', calories: 36, protein_g: 1, carbs_g: 8, fat_g: 0 },
     ],
     total_calories: 366, total_protein_g: 40, total_carbs_g: 12, total_fat_g: 18,
-    tags: ['lunch', 'dinner'], is_staple: true,
+    tags: ['lunch', 'dinner'], is_favorite: true,
   },
   {
     name: 'Poke Bowl',
@@ -86,7 +86,7 @@ const STAPLE_MEALS = [
       { name: 'Avocado', qty: 0.25, unit: 'whole', calories: 60, protein_g: 1, carbs_g: 3, fat_g: 5 },
     ],
     total_calories: 494, total_protein_g: 38, total_carbs_g: 55, total_fat_g: 14,
-    tags: ['lunch', 'dinner'], is_staple: true,
+    tags: ['lunch', 'dinner'], is_favorite: true,
   },
   {
     name: 'Salmon Nigiri 6pc',
@@ -94,7 +94,7 @@ const STAPLE_MEALS = [
       { name: 'Salmon nigiri', qty: 6, unit: 'pieces', calories: 292, protein_g: 18, carbs_g: 36, fat_g: 8 },
     ],
     total_calories: 292, total_protein_g: 18, total_carbs_g: 36, total_fat_g: 8,
-    tags: ['lunch', 'dinner', 'sushi'], is_staple: true,
+    tags: ['lunch', 'dinner', 'sushi'], is_favorite: true,
   },
   {
     name: 'Spicy Tuna Roll',
@@ -102,7 +102,7 @@ const STAPLE_MEALS = [
       { name: 'Spicy tuna roll', qty: 8, unit: 'pieces', calories: 380, protein_g: 20, carbs_g: 48, fat_g: 12 },
     ],
     total_calories: 380, total_protein_g: 20, total_carbs_g: 48, total_fat_g: 12,
-    tags: ['lunch', 'dinner', 'sushi'], is_staple: true,
+    tags: ['lunch', 'dinner', 'sushi'], is_favorite: true,
   },
   {
     name: 'Salad with Chicken',
@@ -112,7 +112,7 @@ const STAPLE_MEALS = [
       { name: 'Olive oil & lemon dressing', qty: 1, unit: 'tbsp', calories: 121, protein_g: 0, carbs_g: 1, fat_g: 13 },
     ],
     total_calories: 374, total_protein_g: 44, total_carbs_g: 10, total_fat_g: 18,
-    tags: ['lunch', 'dinner'], is_staple: true,
+    tags: ['lunch', 'dinner'], is_favorite: true,
   },
   {
     name: 'Chicken Shawarma Wrap',
@@ -122,7 +122,7 @@ const STAPLE_MEALS = [
       { name: 'Tahini sauce', qty: 1, unit: 'tbsp', calories: 89, protein_g: 3, carbs_g: 3, fat_g: 8 },
     ],
     total_calories: 464, total_protein_g: 38, total_carbs_g: 42, total_fat_g: 16,
-    tags: ['lunch', 'dinner'], is_staple: true,
+    tags: ['lunch', 'dinner'], is_favorite: true,
   },
   {
     name: 'Cottage Cheese Bowl',
@@ -132,7 +132,7 @@ const STAPLE_MEALS = [
       { name: 'Everything bagel seasoning', qty: 0.5, unit: 'tsp', calories: 5, protein_g: 0, carbs_g: 1, fat_g: 0 },
     ],
     total_calories: 221, total_protein_g: 25, total_carbs_g: 18, total_fat_g: 5,
-    tags: ['breakfast', 'snack'], is_staple: true,
+    tags: ['breakfast', 'snack'], is_favorite: true,
   },
 ]
 

@@ -131,7 +131,7 @@ export async function POST(request: Request) {
           times_logged: 1,
           last_logged_at: new Date().toISOString(),
           yield_servings: 1,
-          is_staple: false,
+          is_favorite: false,
           tags: [],
         })
         .select('id')

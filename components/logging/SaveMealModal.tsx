@@ -52,7 +52,7 @@ export function SaveMealModal({ userId, foods, defaultName, onSaved, onClose }: 
         total_fat_g: totals.fat,
         yield_servings: Math.max(1, parseInt(yieldServings) || 1),
         tags: tagList,
-        is_staple: false,
+        is_favorite: false,
       })
 
       if (error) {
