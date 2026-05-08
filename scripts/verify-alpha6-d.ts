@@ -49,12 +49,11 @@ const USER_ID = 'f1fc7a56-f4c1-4332-9cd1-b7622e782986'
 function tierFor(r: LibrarySearchResult): number {
   if (r.source === 'saved_meal' && r.is_favorite) return 1
   if (r.source === 'hourly_go_to') return 2
-  if (r.source === 'recent') return 3
-  return 4
+  return 3
 }
 
 function tierName(t: number): string {
-  return ['', 'FAV', 'HRLY', 'RCNT', 'BASE'][t] ?? '?'
+  return ['', 'FAV', 'HRLY', 'BASE'][t] ?? '?'
 }
 
 function fmt(r: LibrarySearchResult): string {
@@ -87,8 +86,8 @@ async function main() {
   const banana = await searchUserLibrary({ query: 'banana', limit: 10 }, ctx)
   for (const r of banana.results) console.log(fmt(r))
 
-  // Query 3: "guacamole" — only in recent_foods (logged once via USDA).
-  // Expect tier 3 only.
+  // Query 3: "guacamole" — logged once via USDA. Post-Sub-fix-D.1
+  // (recent_foods dropped) appears at tier 2 via hourly_go_tos.
   console.log('\nQuery: "guacamole"')
   const guac = await searchUserLibrary({ query: 'guacamole', limit: 10 }, ctx)
   for (const r of guac.results) console.log(fmt(r))
@@ -99,7 +98,8 @@ async function main() {
   const espresso = await searchUserLibrary({ query: 'double espresso', limit: 10 }, ctx)
   for (const r of espresso.results) console.log(fmt(r))
 
-  // Query 5: "shrimp fajitas" — only in recent_foods (USDA-sourced).
+  // Query 5: "shrimp fajitas" — USDA-sourced single log. Post-Sub-fix-D.1
+  // appears at tier 2 via hourly_go_tos.
   console.log('\nQuery: "shrimp fajitas"')
   const fajitas = await searchUserLibrary({ query: 'shrimp fajitas', limit: 10 }, ctx)
   for (const r of fajitas.results) console.log(fmt(r))
