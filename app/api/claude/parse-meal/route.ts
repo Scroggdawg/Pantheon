@@ -27,9 +27,24 @@ import {
 import { createClient } from '@/lib/supabase/server'
 import type { FoodItem } from '@/types/database'
 
+// Op FASTRAK Alpha.3 layer 3 — accept whisper telemetry forwarded from
+// the transcribe route (via the native client; web uses Web Speech API
+// and never has whisper data) and merge into _telemetry. Fields are
+// namespaced (whisper_*) so they can't collide with parse-meal's own
+// telemetry fields. All four are optional — pre-Alpha.3 clients omit
+// the wrapper entirely; older food_log_entries simply lack these fields.
+interface WhisperTelemetry {
+  whisper_audio_duration_ms?: number
+  whisper_latency_ms?: number
+  whisper_prompt_tokens?: number
+  whisper_prompt_truncated?: boolean
+}
+
 export async function POST(request: Request) {
   try {
-    const { transcript } = await request.json()
+    const body = await request.json()
+    const transcript = body?.transcript
+    const whisperTelemetry: WhisperTelemetry = body?.whisper_telemetry ?? {}
 
     if (!transcript || typeof transcript !== 'string') {
       return Response.json({ error: 'transcript is required' }, { status: 400 })
@@ -70,6 +85,7 @@ export async function POST(request: Request) {
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
+          ...whisperTelemetry,
         },
       })
     }
@@ -99,6 +115,7 @@ export async function POST(request: Request) {
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
+          ...whisperTelemetry,
         },
       })
     }
@@ -151,6 +168,7 @@ export async function POST(request: Request) {
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
+          ...whisperTelemetry,
         },
       })
     }
@@ -256,6 +274,7 @@ export async function POST(request: Request) {
           library_segmented_partial_hit: true,
           library_segmented_resolved_count: segmented.resolved.length,
           library_segmented_unresolved_count: segmented.unresolved.length,
+          ...whisperTelemetry,
         },
       })
     }
@@ -287,6 +306,7 @@ export async function POST(request: Request) {
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
+          ...whisperTelemetry,
         },
       })
     }
@@ -331,6 +351,7 @@ export async function POST(request: Request) {
         cache_hits: telemetry.cache_hits,
         response_cache_hit: false,
         library_shortcut_hit: false,
+        ...whisperTelemetry,
       },
     })
   } catch (error) {
