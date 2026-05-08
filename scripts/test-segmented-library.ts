@@ -147,19 +147,36 @@ async function main() {
     const segs = segmentTranscript(c.transcript)
     console.log(`  segments (${segs.length}): ${JSON.stringify(segs)}`)
 
-    // Shortcut decision + latency
+    // Shortcut decision + latency.
+    // Post-Alpha.4 the helper returns { resolved, unresolved, segment_count }
+    // | null. "Full segmented hit" (old `hit: true`) maps to
+    // result !== null && result.unresolved.length === 0. Partial resolves
+    // (resolved.length > 0 && unresolved.length > 0) are a NEW case the
+    // pre-Alpha.4 cases below didn't anticipate; they show up here as
+    // partial telemetry but don't change the existing pass/fail semantics
+    // (test still asks "did all segments resolve via library shortcut?").
     const t0 = Date.now()
     const result = await tryLibrarySegmentedShortcut(supabase, userId, c.transcript)
     const dt = Date.now() - t0
 
-    const hit = result?.hit === true
-    console.log(`  segmented_hit: ${hit ? 'YES' : 'NO'}  [latency ${dt}ms]`)
+    const fullResolve = result !== null && result.unresolved.length === 0
+    const partial = result !== null && result.unresolved.length > 0
+    console.log(
+      `  segmented_full_resolve: ${fullResolve ? 'YES' : 'NO'}  `
+      + `${partial ? `(partial: ${result!.resolved.length}/${result!.segment_count})  ` : ''}`
+      + `[latency ${dt}ms]`,
+    )
 
-    if (hit) {
-      console.log(`  segment_scores: ${JSON.stringify(result!.segment_scores)}`)
-      console.log(`  total_calories: ${result!.response.total_calories}`)
-      console.log(`  foods (${result!.response.foods.length}):`)
-      for (const f of result!.response.foods) {
+    if (result !== null) {
+      const foods = result.resolved.map((r) => r.food)
+      const totalCalories = foods.reduce((acc, f) => acc + f.calories, 0)
+      console.log(`  resolved scores: ${JSON.stringify(result.resolved.map((r) => r.score))}`)
+      if (result.unresolved.length > 0) {
+        console.log(`  unresolved segments: ${JSON.stringify(result.unresolved.map((u) => u.segment))}`)
+      }
+      console.log(`  resolved total_calories: ${Math.round(totalCalories)}`)
+      console.log(`  resolved foods (${foods.length}):`)
+      for (const f of foods) {
         const score = f.match_confidence?.score ?? '?'
         console.log(
           `    - "${f.name}" cal=${f.calories} P=${f.protein_g} C=${f.carbs_g} F=${f.fat_g} `
@@ -168,12 +185,12 @@ async function main() {
       }
     }
 
-    const matched = hit === c.expectSegmented
+    const matched = fullResolve === c.expectSegmented
     if (matched) {
       console.log(`  ✓ matches expectation (segmented=${c.expectSegmented})`)
       pass += 1
     } else {
-      console.log(`  ✗ MISMATCH — expected segmented=${c.expectSegmented}, got ${hit}`)
+      console.log(`  ✗ MISMATCH — expected segmented=${c.expectSegmented}, got ${fullResolve}`)
       fail += 1
     }
     console.log()

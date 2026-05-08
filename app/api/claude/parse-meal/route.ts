@@ -25,6 +25,7 @@ import {
   writeResponseCache,
 } from '@/lib/claude/parse-meal-response-cache'
 import { createClient } from '@/lib/supabase/server'
+import type { FoodItem } from '@/types/database'
 
 export async function POST(request: Request) {
   try {
@@ -102,24 +103,45 @@ export async function POST(request: Request) {
       })
     }
 
-    // Step 4f.5 — segmented library shortcut (multi-item utterance fast path)
+    // Step 4f.5 + Op FASTRAK Alpha.4 — mixed-resolution segmented shortcut.
+    // Pre-Alpha.4 this returned only on full-resolve; now it returns
+    // resolved+unresolved arrays so the route can handle partial cases by
+    // running the LLM pipeline ONLY on the unresolved subset.
     const segStarted = Date.now()
     const segmented = await tryLibrarySegmentedShortcut(supabase, userId, transcript)
     const segLookupMs = Date.now() - segStarted
 
-    if (segmented?.hit) {
+    if (segmented && segmented.unresolved.length === 0) {
+      // FULL RESOLVE — same behavior as the pre-Alpha.4 happy path.
+      // Assemble ParsedMealResponse from resolved foods (sorted by
+      // position to preserve user-perceived ordering).
+      const sortedResolved = [...segmented.resolved].sort(
+        (a, b) => a.position - b.position,
+      )
+      const foods = sortedResolved.map((r) => r.food)
+      const totalCal = foods.reduce((acc, f) => acc + f.calories, 0)
+      const totalProt = foods.reduce((acc, f) => acc + f.protein_g, 0)
+      const totalCarbs = foods.reduce((acc, f) => acc + f.carbs_g, 0)
+      const totalFat = foods.reduce((acc, f) => acc + f.fat_g, 0)
+
       console.log({
         type: 'parse_meal_telemetry',
         latency_ms: segLookupMs,
         library_segmented_hit: true,
         library_segmented_segment_count: segmented.segment_count,
-        library_segmented_segment_scores: segmented.segment_scores,
+        library_segmented_segment_scores: sortedResolved.map((r) => r.score),
         library_shortcut_hit: false,
         library_candidates_hit: false,
         response_cache_hit: false,
       })
       return Response.json({
-        ...segmented.response,
+        foods,
+        total_calories: Math.round(totalCal),
+        total_protein_g: Math.round(totalProt * 100) / 100,
+        total_carbs_g: Math.round(totalCarbs * 100) / 100,
+        total_fat_g: Math.round(totalFat * 100) / 100,
+        clarification_needed: null,
+        disambiguation: null,
         _telemetry: {
           latency_ms: segLookupMs,
           library_segmented_hit: true,
@@ -132,6 +154,112 @@ export async function POST(request: Request) {
         },
       })
     }
+
+    if (segmented && segmented.resolved.length > 0 && segmented.unresolved.length > 0) {
+      // PARTIAL RESOLVE — run LLM pipeline on the unresolved subset only,
+      // then merge with library-resolved foods by position.
+      //
+      // Sub-transcript shape: comma-joined unresolved segments. Phase 0
+      // §7 considered passing the full transcript with <resolved>
+      // annotations to preserve cross-item context, but for v1 we keep
+      // the simpler "send only what's unresolved" path. Multi-item food
+      // transcripts rarely have cross-item context that matters
+      // semantically; if regression surfaces on a real case, switch to
+      // annotated-full.
+      const subTranscript = segmented.unresolved
+        .map((u) => u.segment)
+        .join(', ')
+
+      console.log('[parse-meal] Alpha.4 partial-resolve:', {
+        resolved_count: segmented.resolved.length,
+        unresolved_count: segmented.unresolved.length,
+        sub_transcript: subTranscript,
+      })
+
+      const llmStarted = Date.now()
+      const { result: llmResult, telemetry: llmTel } = await runParseMealPipeline(
+        subTranscript,
+        { library: { userId, supabase } },
+      )
+      const llmLatencyMs = Date.now() - llmStarted
+      const totalLatencyMs = segLookupMs + llmLatencyMs
+
+      if (!llmResult) {
+        // LLM step on the unresolved subset returned no parseable JSON.
+        // Surface as 502 (same shape as the all-LLM-fail case below).
+        return Response.json(
+          {
+            error: 'partial-resolve LLM step returned no parseable JSON',
+            telemetry: llmTel,
+          },
+          { status: 502 },
+        )
+      }
+
+      // Merge: resolved foods first (in position order), then LLM foods
+      // appended in their emit order. LLM cardinality may not match
+      // segment cardinality (one segment can decompose into multiple
+      // foods), so strict position-alignment isn't possible across the
+      // boundary; "library foods first, LLM foods after" is the
+      // pragmatic ordering that preserves user-perceived order on the
+      // common case.
+      const sortedResolved = [...segmented.resolved].sort(
+        (a, b) => a.position - b.position,
+      )
+      const foods: FoodItem[] = [
+        ...sortedResolved.map((r) => r.food),
+        ...llmResult.foods,
+      ]
+      const totalCal = foods.reduce((acc, f) => acc + f.calories, 0)
+      const totalProt = foods.reduce((acc, f) => acc + f.protein_g, 0)
+      const totalCarbs = foods.reduce((acc, f) => acc + f.carbs_g, 0)
+      const totalFat = foods.reduce((acc, f) => acc + f.fat_g, 0)
+
+      console.log({
+        type: 'parse_meal_telemetry',
+        latency_ms: totalLatencyMs,
+        library_segmented_partial_hit: true,
+        library_segmented_resolved_count: segmented.resolved.length,
+        library_segmented_unresolved_count: segmented.unresolved.length,
+        library_segmented_resolved_segments: sortedResolved.map((r) => r.segment),
+        library_segmented_unresolved_segments: segmented.unresolved.map(
+          (u) => u.segment,
+        ),
+        llm_iters: llmTel.iters,
+        llm_tool_calls: llmTel.tool_calls,
+        llm_cache_hits: llmTel.cache_hits,
+        response_cache_hit: false,
+        library_shortcut_hit: false,
+      })
+
+      // We do NOT writeResponseCache here. A cached response keyed on the
+      // FULL transcript that internally mixes library hits + LLM output
+      // is brittle: if the underlying saved_meal changes, the cached
+      // hit becomes stale, and re-resolving the library portion is
+      // already cheap (~100ms). Cache writes stay scoped to the
+      // pure-LLM path.
+      return Response.json({
+        foods,
+        total_calories: Math.round(totalCal),
+        total_protein_g: Math.round(totalProt * 100) / 100,
+        total_carbs_g: Math.round(totalCarbs * 100) / 100,
+        total_fat_g: Math.round(totalFat * 100) / 100,
+        clarification_needed: llmResult.clarification_needed ?? null,
+        disambiguation: llmResult.disambiguation ?? null,
+        _telemetry: {
+          latency_ms: totalLatencyMs,
+          tool_calls: llmTel.tool_calls,
+          iters: llmTel.iters,
+          cache_hits: llmTel.cache_hits,
+          response_cache_hit: false,
+          library_shortcut_hit: false,
+          library_segmented_partial_hit: true,
+          library_segmented_resolved_count: segmented.resolved.length,
+          library_segmented_unresolved_count: segmented.unresolved.length,
+        },
+      })
+    }
+    // segmented === null → fall through to 4g (candidates mode) below.
 
     // Step 4g — library candidates mode (2+ plausible matches)
     const candidatesStarted = Date.now()

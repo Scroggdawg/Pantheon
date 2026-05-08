@@ -408,11 +408,41 @@ export function segmentTranscript(transcript: string): string[] {
   return allSegments
 }
 
+// Op FASTRAK Alpha.4 — mixed-resolution segmented shortcut.
+//
+// Pre-Alpha.4 this helper required ALL segments to clear the single-hit
+// gate; ANY non-library segment killed the fast path for the entire
+// utterance. With a 3-entry library (post junk-cleanup), virtually no
+// multi-item meal could clear the all-or-nothing bar — so multi-item
+// parses paid full LLM cost on every item, even ones the library could
+// resolve in ~200ms.
+//
+// New shape: per-segment classification into resolved + unresolved
+// arrays. The route handler decides what to do:
+//   - All resolved (unresolved.length === 0): assemble ParsedMealResponse
+//     directly from `resolved`, return ~200ms (the pre-Alpha.4 happy
+//     path, no regression).
+//   - Partial (resolved.length > 0 && unresolved.length > 0): run LLM
+//     pipeline on unresolved subset only, merge by position.
+//   - Zero resolved: helper returns null (caller falls through to the
+//     existing 4g/Sonnet path unchanged — no overhead added).
+
+export interface ResolvedSegment {
+  food: FoodItem
+  segment: string
+  position: number
+  score: number
+}
+
+export interface UnresolvedSegment {
+  segment: string
+  position: number
+}
+
 export interface LibrarySegmentedShortcutResult {
-  response: ParsedMealResponse
-  hit: boolean
-  segment_count?: number
-  segment_scores?: number[]
+  resolved: ResolvedSegment[]
+  unresolved: UnresolvedSegment[]
+  segment_count: number
 }
 
 export async function tryLibrarySegmentedShortcut(
@@ -433,62 +463,66 @@ export async function tryLibrarySegmentedShortcut(
     ),
   )
 
-  // ALL segments must hit single high-confidence library entries
-  // (same gates as 4f single-hit). Any miss → return null and let
-  // the existing 4g + Sonnet path proceed unchanged.
-  const foods: FoodItem[] = []
-  const segmentScores: number[] = []
-  let totalCal = 0
-  let totalProt = 0
-  let totalCarbs = 0
-  let totalFat = 0
+  // Per-segment classification. Same threshold gates as the pre-Alpha.4
+  // all-or-nothing path (score >= 0.85, gap >= 0.15). Failures land in
+  // `unresolved` with their original position so the route can preserve
+  // user-perceived order during merge.
+  const resolved: ResolvedSegment[] = []
+  const unresolved: UnresolvedSegment[] = []
 
   for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i]
     const r = segmentResults[i].results
-    if (r.length === 0) return null
+
+    if (r.length === 0) {
+      unresolved.push({ segment, position: i })
+      continue
+    }
     const top = r[0]
     const second = r[1]
     const topScore = top.match_confidence.score
     const secondScore = second?.match_confidence.score ?? 0
-    if (topScore < SEGMENT_SHORTCUT_SCORE_THRESHOLD) return null
-    if (second && topScore - secondScore < SEGMENT_SHORTCUT_GAP_THRESHOLD) return null
+    if (topScore < SEGMENT_SHORTCUT_SCORE_THRESHOLD) {
+      unresolved.push({ segment, position: i })
+      continue
+    }
+    if (second && topScore - secondScore < SEGMENT_SHORTCUT_GAP_THRESHOLD) {
+      unresolved.push({ segment, position: i })
+      continue
+    }
 
-    segmentScores.push(topScore)
-    foods.push({
-      name: top.name,
-      qty: 1,
-      unit: 'serving',
-      calories: top.total.kcal,
-      protein_g: top.total.protein_g,
-      carbs_g: top.total.carbs_g,
-      fat_g: top.total.fat_g,
-      source: 'library',
-      source_ref: top.library_id,
-      match_confidence: {
-        score: topScore,
-        label: top.match_confidence.label,
-        warnings: [],
+    resolved.push({
+      food: {
+        name: top.name,
+        qty: 1,
+        unit: 'serving',
+        calories: top.total.kcal,
+        protein_g: top.total.protein_g,
+        carbs_g: top.total.carbs_g,
+        fat_g: top.total.fat_g,
+        source: 'library',
+        source_ref: top.library_id,
+        match_confidence: {
+          score: topScore,
+          label: top.match_confidence.label,
+          warnings: [],
+        },
+        notes: null,
       },
-      notes: null,
+      segment,
+      position: i,
+      score: topScore,
     })
-    totalCal += top.total.kcal
-    totalProt += top.total.protein_g
-    totalCarbs += top.total.carbs_g
-    totalFat += top.total.fat_g
   }
 
+  // Zero resolved → caller falls through to 4g/Sonnet unchanged. We
+  // signal this with null instead of a structurally-empty object so the
+  // existing route logic doesn't need a special "0 resolved" branch.
+  if (resolved.length === 0) return null
+
   return {
-    response: {
-      foods,
-      total_calories: Math.round(totalCal),
-      total_protein_g: Math.round(totalProt * 100) / 100,
-      total_carbs_g: Math.round(totalCarbs * 100) / 100,
-      total_fat_g: Math.round(totalFat * 100) / 100,
-      clarification_needed: null,
-      disambiguation: null,
-    },
-    hit: true,
+    resolved,
+    unresolved,
     segment_count: segments.length,
-    segment_scores: segmentScores,
   }
 }
