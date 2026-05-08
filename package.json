@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "backup": "npx tsx scripts/backup.ts"
+    "backup": "npx tsx scripts/backup.ts",
+    "replay": "npx tsx scripts/replay-parse.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.85.0",
