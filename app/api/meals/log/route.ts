@@ -176,10 +176,23 @@ export async function POST(request: Request) {
     }
   }
 
-  // S26 Step 4e — bust user's parse-meal response cache when their
-  // library changes (saved_meals upsert). Best-effort; helper logs
-  // its own warnings on failure and does not throw.
-  if (savedMealAction !== 'none') {
+  // S26 Step 4e + Op FASTRAK Alpha.5 — bust user's parse-meal response
+  // cache only when a NEW saved_meal was created (library state actually
+  // changed). Pre-Alpha.5 this fired on every log because savedMealAction
+  // is unreachable as 'none' under current auto-promote semantics — every
+  // meal log was wiping the user's response cache, so the 90-day TTL was
+  // meaningless and repeat-meal parses always missed cache.
+  //
+  // 'incremented' (re-log of an existing saved_meal) does not change
+  // library state and therefore must not invalidate cached responses.
+  // 'created' (novel saved_meal) genuinely mutates the library and must
+  // bust so the next parse surfaces the new entry. Best-effort; helper
+  // logs its own warnings on failure and does not throw.
+  //
+  // Post-Shape E (Alpha.6, future), 'created' becomes unreachable from
+  // this path — bust semantics relocate to the heart-icon save handler,
+  // preserving the same "bust on novel library write" pattern.
+  if (savedMealAction === 'created') {
     await bustResponseCacheForUser(supabase, body.user_id)
   }
 
