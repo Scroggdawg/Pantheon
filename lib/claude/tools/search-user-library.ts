@@ -1,6 +1,7 @@
-// search_user_library — looks up entries in the user's saved_meals table
-// (filtered by user_id) AND the global products catalog. Phase 3 wiring
-// against real Supabase.
+// search_user_library — looks up entries in the user's personal food
+// library (saved_meals + products catalog) PLUS Op FASTRAK Alpha.6
+// Sub-fix D additions: recent_foods + hourly_go_tos views as silent
+// matcher feeds.
 //
 // Per prototype semantics (V15 H2 mod #6): match_confidence = name_similarity
 // only — library/product entries are pre-validated, so brand_match and
@@ -10,6 +11,16 @@
 // Per V15 H0 Q6: saved_meals.total_* are per-batch totals; we divide by
 // yield_servings before exposing to the LLM (with yield_servings + raw
 // total_batch retained as metadata for completeness).
+//
+// Op FASTRAK Alpha.6 Sub-fix D — tier-priority sort with dedup:
+//   Tier 1: saved_meal + is_favorite=true (Favorites)
+//   Tier 2: hourly_go_to (Hourly Go-Tos at current hour)
+//   Tier 3: recent (Recents)
+//   Tier 4: saved_meal + is_favorite=false / product
+// Within tier: sort by match_confidence.score desc.
+// Dedup key: source_ref if present, else "name:<lower(name)>". The same
+// food appearing across multiple tiers (e.g., a saved_meal that's also
+// hourly-relevant) collapses to its highest-priority tier instance.
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -49,14 +60,16 @@ export interface LibraryMatchConfidence {
 }
 
 export interface LibrarySearchResult {
-  library_id: string                           // "lib:saved_meal:<uuid>" | "lib:product:<uuid>"
-  source: 'saved_meal' | 'product'
+  library_id: string                           // "lib:saved_meal:<uuid>" | "lib:product:<uuid>" | "lib:recent:<key>" | "lib:hourly_go_to:<key>"
+  source: 'saved_meal' | 'product' | 'recent' | 'hourly_go_to'
+  is_favorite: boolean                         // Op FASTRAK Alpha.6: only meaningful for saved_meal source; always false for product/recent/hourly_go_to
+  source_ref: string | null                    // Op FASTRAK Alpha.6: canonical identity for tier-merge dedup
   name: string
   aliases: string[]
   components: LibraryComponent[]
   total: LibraryTotal                          // per-serving (after yield_servings divide for saved_meals)
-  yield_servings: number                       // 1 for products
-  total_batch: LibraryTotal | null             // raw saved_meals totals (null for products)
+  yield_servings: number                       // 1 for products, recents, hourly_go_tos
+  total_batch: LibraryTotal | null             // raw saved_meals totals (null for products/recents/hourly_go_tos)
   times_logged: number | null
   last_logged_at: string | null
   match_confidence: LibraryMatchConfidence
@@ -149,6 +162,7 @@ interface SavedMealRow {
   times_logged: number | null
   last_logged_at: string | null
   tags: string[] | null
+  is_favorite: boolean | null
 }
 
 interface ProductRow {
@@ -163,6 +177,40 @@ interface ProductRow {
   carbs_g_per_serving: number
 }
 
+interface RecentFoodRow {
+  user_id: string
+  dedup_name: string
+  dedup_source_ref: string
+  name: string
+  source_ref: string | null
+  last_logged_at: string
+  log_count: number
+  calories: number | null
+  protein_g: number | null
+  carbs_g: number | null
+  fat_g: number | null
+  qty: number | null
+  unit: string | null
+}
+
+interface HourlyGoToRow {
+  user_id: string
+  target_hour: number
+  dedup_name: string
+  dedup_source_ref: string
+  name: string
+  source_ref: string | null
+  weight: number
+  total_logs: number
+  last_logged_at: string
+  calories: number | null
+  protein_g: number | null
+  carbs_g: number | null
+  fat_g: number | null
+  qty: number | null
+  unit: string | null
+}
+
 function savedMealToCandidate(row: SavedMealRow, score: number): LibrarySearchResult {
   const ys = row.yield_servings && row.yield_servings > 0 ? row.yield_servings : 1
   const totalBatch: LibraryTotal = {
@@ -171,7 +219,6 @@ function savedMealToCandidate(row: SavedMealRow, score: number): LibrarySearchRe
     carbs_g: Number(row.total_carbs_g ?? 0),
     fat_g: Number(row.total_fat_g ?? 0),
   }
-  // Per-serving (V15 H0 Q6)
   const perServing: LibraryTotal = {
     kcal: Math.round((totalBatch.kcal / ys) * 100) / 100,
     protein_g: Math.round((totalBatch.protein_g / ys) * 100) / 100,
@@ -188,9 +235,12 @@ function savedMealToCandidate(row: SavedMealRow, score: number): LibrarySearchRe
     fat_g: f.fat_g,
     source_ref: f.source_ref ?? 'unknown',
   }))
+  const libraryId = `lib:saved_meal:${row.id}`
   return {
-    library_id: `lib:saved_meal:${row.id}`,
+    library_id: libraryId,
     source: 'saved_meal',
+    is_favorite: row.is_favorite === true,
+    source_ref: libraryId,
     name: row.name ?? '',
     aliases: row.tags ?? [],
     components,
@@ -222,9 +272,12 @@ function productToCandidate(row: ProductRow, score: number): LibrarySearchResult
     row.brand && !row.name.toLowerCase().startsWith(row.brand.toLowerCase())
       ? `${row.brand} ${row.name}`
       : row.name
+  const libraryId = `lib:product:${row.id}`
   return {
-    library_id: `lib:product:${row.id}`,
+    library_id: libraryId,
     source: 'product',
+    is_favorite: false,
+    source_ref: libraryId,
     name: displayName,
     aliases: [],
     components: [
@@ -236,7 +289,7 @@ function productToCandidate(row: ProductRow, score: number): LibrarySearchResult
         protein_g: total.protein_g,
         carbs_g: total.carbs_g,
         fat_g: total.fat_g,
-        source_ref: `lib:product:${row.id}`,
+        source_ref: libraryId,
       },
     ],
     total,
@@ -251,6 +304,108 @@ function productToCandidate(row: ProductRow, score: number): LibrarySearchResult
       formula: 'library entries are pre-validated; match_confidence = name_similarity only',
     },
   }
+}
+
+// Op FASTRAK Alpha.6 — view-row mappers. Both project per-row macros
+// from the latest log instance per (user_id, dedup_name, dedup_source_ref)
+// group (migration 017). LibraryComponent + total derive from the
+// view's projected fields directly.
+function recentFoodToCandidate(row: RecentFoodRow, score: number): LibrarySearchResult {
+  const total: LibraryTotal = {
+    kcal: Number(row.calories ?? 0),
+    protein_g: Number(row.protein_g ?? 0),
+    carbs_g: Number(row.carbs_g ?? 0),
+    fat_g: Number(row.fat_g ?? 0),
+  }
+  const sourceRefForComponent = row.source_ref ?? `lib:recent:${row.dedup_name}`
+  return {
+    library_id: `lib:recent:${row.dedup_name}|${row.dedup_source_ref}`,
+    source: 'recent',
+    is_favorite: false,
+    source_ref: row.source_ref,
+    name: row.name,
+    aliases: [],
+    components: [
+      {
+        name: row.name,
+        qty: Number(row.qty ?? 1),
+        unit: row.unit ?? 'serving',
+        kcal: total.kcal,
+        protein_g: total.protein_g,
+        carbs_g: total.carbs_g,
+        fat_g: total.fat_g,
+        source_ref: sourceRefForComponent,
+      },
+    ],
+    total,
+    yield_servings: 1,
+    total_batch: null,
+    times_logged: row.log_count,
+    last_logged_at: row.last_logged_at,
+    match_confidence: {
+      score,
+      label: confidenceLabel(score),
+      components: { name_similarity: score },
+      formula: 'library entries are pre-validated; match_confidence = name_similarity only',
+    },
+  }
+}
+
+function hourlyGoToCandidate(row: HourlyGoToRow, score: number): LibrarySearchResult {
+  const total: LibraryTotal = {
+    kcal: Number(row.calories ?? 0),
+    protein_g: Number(row.protein_g ?? 0),
+    carbs_g: Number(row.carbs_g ?? 0),
+    fat_g: Number(row.fat_g ?? 0),
+  }
+  const sourceRefForComponent = row.source_ref ?? `lib:hourly_go_to:${row.dedup_name}`
+  return {
+    library_id: `lib:hourly_go_to:${row.dedup_name}|${row.dedup_source_ref}`,
+    source: 'hourly_go_to',
+    is_favorite: false,
+    source_ref: row.source_ref,
+    name: row.name,
+    aliases: [],
+    components: [
+      {
+        name: row.name,
+        qty: Number(row.qty ?? 1),
+        unit: row.unit ?? 'serving',
+        kcal: total.kcal,
+        protein_g: total.protein_g,
+        carbs_g: total.carbs_g,
+        fat_g: total.fat_g,
+        source_ref: sourceRefForComponent,
+      },
+    ],
+    total,
+    yield_servings: 1,
+    total_batch: null,
+    times_logged: row.total_logs,
+    last_logged_at: row.last_logged_at,
+    match_confidence: {
+      score,
+      label: confidenceLabel(score),
+      components: { name_similarity: score },
+      formula: 'library entries are pre-validated; match_confidence = name_similarity only',
+    },
+  }
+}
+
+// ---------------------------------------------------------------------
+// Tier-priority sort + dedup (Op FASTRAK Alpha.6 Sub-fix D)
+// ---------------------------------------------------------------------
+
+function tierFor(r: LibrarySearchResult): number {
+  if (r.source === 'saved_meal' && r.is_favorite) return 1
+  if (r.source === 'hourly_go_to') return 2
+  if (r.source === 'recent') return 3
+  return 4
+}
+
+function dedupKeyFor(r: LibrarySearchResult): string {
+  if (r.source_ref && r.source_ref.length > 0) return r.source_ref
+  return `name:${r.name.toLowerCase().trim()}`
 }
 
 // ---------------------------------------------------------------------
@@ -280,14 +435,17 @@ export async function searchUserLibrary(
     )
   }
 
-  // Fetch all rows (single-tenant; saved_meals is small per-user, products is
-  // global but bounded). Score in TS via libraryNameSimilarity. Server-side
-  // ilike pre-filter could be added later if row counts grow.
-  const [mealsRes, productsRes] = await Promise.all([
+  // Op FASTRAK Alpha.6 — current hour for hourly_go_tos query.
+  // Uses Date.now() at request time; the route layer (parse-meal) is
+  // the natural anchor for "what time is the user logging at." Replay
+  // script can override this if stable measurement becomes a need.
+  const currentHour = new Date().getUTCHours()
+
+  const [mealsRes, productsRes, recentsRes, hourlyRes] = await Promise.all([
     ctx.supabase
       .from('saved_meals')
       .select(
-        'id, name, foods_json, total_calories, total_protein_g, total_carbs_g, total_fat_g, yield_servings, times_logged, last_logged_at, tags',
+        'id, name, foods_json, total_calories, total_protein_g, total_carbs_g, total_fat_g, yield_servings, times_logged, last_logged_at, tags, is_favorite',
       )
       .eq('user_id', ctx.userId),
     ctx.supabase
@@ -295,6 +453,24 @@ export async function searchUserLibrary(
       .select(
         'id, name, brand, unit, serving_size_g, calories_per_serving, protein_g_per_serving, fat_g_per_serving, carbs_g_per_serving',
       ),
+    ctx.supabase
+      .from('recent_foods')
+      .select(
+        'user_id, dedup_name, dedup_source_ref, name, source_ref, last_logged_at, log_count, calories, protein_g, carbs_g, fat_g, qty, unit',
+      )
+      .eq('user_id', ctx.userId),
+    // No row limit on either view: at single-tenant scale row counts are
+    // bounded by O(unique foods per user). Limiting would clip low-weight
+    // (or older) rows that still pass min_score and break dedup parity
+    // with the corresponding recent_foods row. Revisit if a user crosses
+    // ~5k unique food entries.
+    ctx.supabase
+      .from('hourly_go_tos')
+      .select(
+        'user_id, target_hour, dedup_name, dedup_source_ref, name, source_ref, weight, total_logs, last_logged_at, calories, protein_g, carbs_g, fat_g, qty, unit',
+      )
+      .eq('user_id', ctx.userId)
+      .eq('target_hour', currentHour),
   ])
 
   if (mealsRes.error) {
@@ -303,9 +479,17 @@ export async function searchUserLibrary(
   if (productsRes.error) {
     console.error('[search_user_library] products query failed:', productsRes.error.message)
   }
+  if (recentsRes.error) {
+    console.error('[search_user_library] recent_foods query failed:', recentsRes.error.message)
+  }
+  if (hourlyRes.error) {
+    console.error('[search_user_library] hourly_go_tos query failed:', hourlyRes.error.message)
+  }
 
   const meals = (mealsRes.data ?? []) as SavedMealRow[]
   const products = (productsRes.data ?? []) as ProductRow[]
+  const recents = (recentsRes.data ?? []) as RecentFoodRow[]
+  const hourlies = (hourlyRes.data ?? []) as HourlyGoToRow[]
 
   const matches: LibrarySearchResult[] = []
   for (const m of meals) {
@@ -315,7 +499,6 @@ export async function searchUserLibrary(
     matches.push(savedMealToCandidate(m, score))
   }
   for (const p of products) {
-    // S26 Step 4g — same brand-prefix-dedup logic as productToCandidate
     const displayName =
       p.brand && !p.name.toLowerCase().startsWith(p.brand.toLowerCase())
         ? `${p.brand} ${p.name}`
@@ -324,9 +507,44 @@ export async function searchUserLibrary(
     if (score < minScore) continue
     matches.push(productToCandidate(p, score))
   }
+  for (const r of recents) {
+    const score = libraryNameSimilarity(searchQuery, r.name, [])
+    if (score < minScore) continue
+    matches.push(recentFoodToCandidate(r, score))
+  }
+  for (const h of hourlies) {
+    const score = libraryNameSimilarity(searchQuery, h.name, [])
+    if (score < minScore) continue
+    matches.push(hourlyGoToCandidate(h, score))
+  }
 
-  matches.sort((a, b) => b.match_confidence.score - a.match_confidence.score)
-  return { results: matches.slice(0, limit) }
+  // Op FASTRAK Alpha.6 — dedup by source_ref (or name fallback) keeping
+  // the highest-priority tier per group, then tier-asc + score-desc sort.
+  const grouped = new Map<string, LibrarySearchResult>()
+  for (const r of matches) {
+    const key = dedupKeyFor(r)
+    const existing = grouped.get(key)
+    if (!existing) {
+      grouped.set(key, r)
+      continue
+    }
+    const tierR = tierFor(r)
+    const tierE = tierFor(existing)
+    if (tierR < tierE) {
+      grouped.set(key, r)
+    } else if (tierR === tierE && r.match_confidence.score > existing.match_confidence.score) {
+      grouped.set(key, r)
+    }
+  }
+
+  const deduped = [...grouped.values()]
+  deduped.sort((a, b) => {
+    const tierDiff = tierFor(a) - tierFor(b)
+    if (tierDiff !== 0) return tierDiff
+    return b.match_confidence.score - a.match_confidence.score
+  })
+
+  return { results: deduped.slice(0, limit) }
 }
 
 // ---------- Anthropic tool schema ----------
@@ -335,10 +553,11 @@ export const SEARCH_USER_LIBRARY_TOOL: Tool = {
   name: 'search_user_library',
   description:
     "Search the user's personal food library for previously-logged or " +
-    'explicitly-saved entries (saved meals + product catalog). Library ' +
-    'entries reflect the user\'s own validated macros and accept multiple ' +
-    'aliases. Always call this BEFORE search_food_database for any food ' +
-    'that might be a recurring meal. Returns up to N results with ' +
+    'explicitly-saved entries. Returns matches across (in priority order): ' +
+    "favorited saved meals, hourly-relevant logged foods at the user's " +
+    'current hour, recently-logged foods, and the rest of saved meals + ' +
+    'product catalog. Always call this BEFORE search_food_database for any ' +
+    'food that might be a recurring meal. Returns up to N results with ' +
     'match_confidence based on name similarity to the query. The "total" ' +
     'field is per-serving; use it directly when scaling to user qty. ' +
     '"yield_servings" + "total_batch" are provided for transparency.',
