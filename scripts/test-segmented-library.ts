@@ -1,20 +1,25 @@
-// Brick D regression test for tryLibrarySegmentedShortcut.
+// Brick D regression test for tryLibrarySegmentedShortcut, refreshed
+// post-Op-FASTRAK-Alpha.6 (Sub-fix G — CASES rewrite).
 //
 // Real Supabase reads against Luke's actual library — not mocked.
 // Run from web repo root:
 //
 //   npx tsx scripts/test-segmented-library.ts
 //
-// Loads .env.local for SUPABASE_* env vars. Walks the test
-// transcripts from the Brick D EXECUTE brief and prints:
-//   - segmenter output
+// Loads .env.local for SUPABASE_* env vars. Walks transcripts that
+// exercise the post-Alpha.6 cascade (saved_meals favorited + non-
+// favorited tiers, hourly_go_tos tier, partial-resolve, gap-gate,
+// composite allowlist, single-segment early return, full miss) and
+// prints:
+//   - segmenter output (stripped + original pairs)
 //   - shortcut hit/miss + segment scores + per-food breakdown
 //   - latency per case
 //
-// Pre-fix (without 4f.5): all multi-item cases miss. Post-fix:
-// clean two-item + three-item-with-descriptor + composite-allowlist
-// cases hit; pure-descriptor "with" + single-item cases return null
-// (correctly defer to 4f / Sonnet).
+// Pre-Alpha.4 (no partial resolve): multi-item cases were all-or-
+// nothing — any non-library segment killed the fast path. Post-
+// Alpha.4 the helper reports {resolved, unresolved, segment_count}
+// so multi-item cases with one library + one LLM segment still
+// surface a partial win. Cases below cover both modes.
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
@@ -64,58 +69,98 @@ interface TestCase {
 
 const CASES: TestCase[] = [
   {
-    name: '1 — Two-item with library duplicate (gap-gate fires correctly)',
-    transcript: '3 eggs and a handful of blueberries',
-    expectSegmented: false,
-    notes:
-      'Segments to ["3 eggs", "blueberries"]. "3 eggs" hits saved_meal "3 eggs" at score 1.0 unambiguously. '
-      + '"blueberries" returns TWO score-1.0 hits (saved_meal "Blueberries" + product "Blueberries") — gap=0 '
-      + 'fails the 0.15 disambiguation gate. Returns null correctly: ambiguous matches should defer to 4g\'s '
-      + 'candidates UI, not silently pick one. Surfaces a Brick E (library dedupe) concern: Luke has duplicate '
-      + 'Blueberries entries that should be merged.',
-  },
-  {
-    name: '1b — Clean two-item, both unambiguous in library',
+    name: '1 — Two saved_meals + Sub-fix-D cascade gap-gate (variant ambiguity)',
     transcript: '3 eggs and a double espresso',
-    expectSegmented: true,
-    notes:
-      'Segments to ["3 eggs", "double espresso"]. Both saved_meals have NO substring-overlapping product '
-      + 'duplicates (verified via direct searchUserLibrary probe — single 1.0-score hits each). '
-      + 'Demonstrates the fast path actually works when library entries are unambiguous.',
-  },
-  {
-    name: '2 — Three-item with descriptor (with-clause)',
-    transcript:
-      'Three eggs, two strips of bacon and a protein shake with 25 grams of protein.',
     expectSegmented: false,
     notes:
-      'Segments to ["3 eggs", "2 bacon", "protein shake with 25 protein"] (after written-number + filler strip). '
-      + '"3 eggs" hits library; bacon NOT in saved_meals (top 7 = eggs/banana/blueberries/protein bar/espresso/shake/test); '
-      + '"protein shake with 25 protein" too noisy for "Protein Shake A - Pre-Workout". '
-      + 'Expected NULL return — proves no regression.',
+      'Segments to ["3 eggs", "double espresso"]. Pre-Alpha.6 this would full-resolve cleanly (saved_meals '
+      + 'were the only data source; no duplicates). Post-Alpha.6 the Sub-fix D cascade pulls candidates from '
+      + 'BOTH saved_meals AND hourly_go_tos with different source_refs (saved_meal "Double espresso" has '
+      + 'source_ref=lib:saved_meal:07c10655..., the hourly entry from the original USDA-resolved log has '
+      + 'source_ref=null). Different dedup_keys → both surface at score=1.0 → gap=0 → fails the 0.15 '
+      + 'disambiguation gate per segment → "double espresso" stays unresolved while "3 eggs" resolves via '
+      + 'the same multi-variant pattern (variants partly dedup via library_id matching). Helper returns '
+      + 'partial 1/2. SURFACES post-Alpha.6 cascade issue: hearted/saved foods that pre-existed as logs '
+      + 'have variant-ambiguity that gates them out of the segmented fast path. Future Brick Beta (matcher '
+      + 'upgrade) candidate.',
   },
   {
-    name: '3 — Composite item allowlist test',
+    name: '2 — Cross-tier with "Churro" saved_meal having same variant issue',
+    transcript: 'scrambled eggs and a Churro',
+    expectSegmented: false,
+    notes:
+      'Segments to ["scrambled eggs", "churro"]. "scrambled eggs" resolves cleanly via Tier 2 hourly_go_tos '
+      + '(unambiguous — only one entry with that name). "Churro" hits the same variant-ambiguity as Case 1: '
+      + 'saved_meal Churro at lib:saved_meal:f0eb30e7... vs hourly_go_to entry at null source_ref → gap-gate '
+      + 'fails. Helper returns partial 1/2. The "scrambled eggs" resolution still demonstrates the Sub-fix D '
+      + 'cascade extension working — a segment with NO corresponding saved_meal or product can resolve via '
+      + 'the hourly view. Same Brick Beta concern as Case 1.',
+  },
+  {
+    name: '3 — Hearted saved_meal exhibits same variant issue',
+    transcript: "McDonald's sausage burrito and a Churro",
+    expectSegmented: false,
+    notes:
+      "Segments to [\"mcdonald's sausage burrito\", \"churro\"]. Both saved_meals (one favorited, one not) "
+      + 'exhibit the same multi-variant gap-gate failure — saved_meal\'s lib:saved_meal:* source_ref doesn\'t '
+      + 'match the hourly_go_to source_ref from the original food log. Helper returns null (zero resolves) '
+      + 'or partial. Demonstrates that hearting a food via the heart endpoint does NOT automatically resolve '
+      + 'the variant-ambiguity issue — the original food_log_entries row\'s foods_json[i].source_ref stays '
+      + 'as it was at log time (null in this case for an LLM-only McDonald\'s parse), separate from the new '
+      + 'saved_meal\'s identity. Surfaces a heart-endpoint follow-up: should heart-INSERT also UPDATE the '
+      + 'parent food_log_entries row\'s foods_json[i].source_ref to point at the new saved_meal? Out of '
+      + 'scope for Alpha.6; flagged for Brick Beta.',
+  },
+  {
+    name: '4 — Gap-gate fires on multi-variant hourly entry',
+    transcript: '3 eggs and a banana',
+    expectSegmented: false,
+    notes:
+      'Segments to ["3 eggs", "banana"]. "3 eggs" resolves cleanly (saved_meal). "banana" hits 3 hourly '
+      + '1.0-score variants ("banana", "Banana", "Bananas") with different source_refs — gap between top '
+      + 'and second is 0, fails the 0.15 disambiguation gate per segment. Helper returns partial resolve '
+      + '(1/2). The full-resolve assertion is FALSE. Same shape as the pre-Alpha.6 "3 eggs and a handful of '
+      + 'blueberries" gap-gate test, just with banana variants instead. Surfaces ongoing library-dedupe debt.',
+  },
+  {
+    name: '5 — Composite-allowlist protection ("half and half")',
     transcript:
       'Double espresso, with half an ounce of half and half, and stevia hazelnut liquid.',
     expectSegmented: false,
     notes:
-      'COMPOSITE_ALLOWLIST should protect "half and half" from over-split. Result depends on whether '
-      + 'all 3 segments are in library. Likely NULL return because espresso composite + stevia not '
-      + 'matched as single library entries — proves no regression vs current behavior.',
+      'COMPOSITE_ALLOWLIST protects "half and half" from over-split on " and ". Three segments: '
+      + '["double espresso", "with half an ounce of half and half", "stevia hazelnut liquid"]. Espresso '
+      + 'is a saved_meal (Tier 4) but the other two segments are LLM-only. Helper returns partial resolve '
+      + '(1/3). Full-resolve FALSE — not a regression; proves composite handling + Alpha.4 partial mode '
+      + 'still work post-Alpha.6.',
   },
   {
-    name: '4 — Pure descriptor "with" — should NOT segment',
+    name: '6 — Pure descriptor "with" — single segment, early return',
     transcript: 'Protein shake with dextrose.',
     expectSegmented: false,
     notes:
-      'No " and ", no comma. Single segment. Returns null because segments.length < 2.',
+      'No comma, no " and ". segmentTranscript returns 1 segment → tryLibrarySegmentedShortcut early-returns '
+      + 'null because segments.length < 2. Proves the helper correctly defers single-item utterances to the '
+      + 'single-hit shortcut (tryLibraryShortcut) or the LLM path.',
   },
   {
-    name: '5 — Single-item baseline',
-    transcript: '3 eggs',
+    name: '7 — Partial resolve: 1 saved_meal + 1 unresolvable',
+    transcript: '3 eggs and a totally nonexistent food xyz123',
     expectSegmented: false,
-    notes: 'No delimiters. segments.length === 1 → early return. 4f handles.',
+    notes:
+      'Segments to ["3 eggs", "totally nonexistent food xyz123"]. "3 eggs" resolves; xyz123 has no library '
+      + 'or hourly hit → unresolved. Helper returns {resolved: 1, unresolved: 1}. Full-resolve assertion '
+      + 'FALSE; the partial telemetry should show resolved=1/2. This is the Alpha.4 partial-resolve happy '
+      + 'path: the route-side cascade hands the unresolved segment to the LLM tool-loop separately.',
+  },
+  {
+    name: '8 — Full miss: zero segments resolve',
+    transcript: 'nonexistent xyz123 and nonexistent abc456',
+    expectSegmented: false,
+    notes:
+      'Segments to ["nonexistent xyz123", "nonexistent abc456"]. Neither has any library or hourly hit. '
+      + 'Helper returns null (zero resolves → caller falls through to 4g/Sonnet unchanged). Proves no-hit '
+      + 'segmented utterances correctly defer the entire transcript to the LLM path.',
   },
 ]
 
