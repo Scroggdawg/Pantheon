@@ -446,6 +446,36 @@ export async function searchUserLibrary(
   const products = (productsRes.data ?? []) as ProductRow[]
   const hourlies = (hourlyRes.data ?? []) as HourlyGoToRow[]
 
+  // Op FASTRAK Brick Gamma A.2 — cross-reference map for unit_alternatives.
+  // When a hourly_go_to candidate's source_ref points back at a product
+  // (lib:product:<uuid>), pull the unit_alternatives from that product so
+  // the matcher's downstream FoodItem carries portion data even when the
+  // hit came via the Tier 2 hourly path. Same pattern for saved_meal-
+  // backed hourly entries — though saved_meals store unit_alternatives
+  // inside foods_json[i], not as a separate column.
+  const productAltsById = new Map<string, UnitAlternative[]>()
+  for (const p of products) {
+    if (Array.isArray(p.unit_alternatives) && p.unit_alternatives.length > 0) {
+      productAltsById.set(p.id, p.unit_alternatives)
+    }
+  }
+  const savedMealAltsById = new Map<string, UnitAlternative[]>()
+  for (const m of meals) {
+    const alts = unitAlternativesFromSavedMeal(m.foods_json)
+    if (alts && alts.length > 0) savedMealAltsById.set(m.id, alts)
+  }
+
+  function altsForRef(ref: string | null | undefined): UnitAlternative[] | undefined {
+    if (!ref) return undefined
+    if (ref.startsWith('lib:product:')) {
+      return productAltsById.get(ref.slice('lib:product:'.length))
+    }
+    if (ref.startsWith('lib:saved_meal:')) {
+      return savedMealAltsById.get(ref.slice('lib:saved_meal:'.length))
+    }
+    return undefined
+  }
+
   const matches: LibrarySearchResult[] = []
   for (const m of meals) {
     const aliases = m.tags ?? []
@@ -465,7 +495,11 @@ export async function searchUserLibrary(
   for (const h of hourlies) {
     const score = libraryNameSimilarity(searchQuery, h.name, [])
     if (score < minScore) continue
-    matches.push(hourlyGoToCandidate(h, score))
+    const candidate = hourlyGoToCandidate(h, score)
+    // Backfill unit_alternatives from the product/saved_meal the hourly
+    // entry's source_ref points at (when present).
+    candidate.unit_alternatives = altsForRef(candidate.source_ref)
+    matches.push(candidate)
   }
 
   // Op FASTRAK Alpha.6 — dedup by source_ref (or name fallback) keeping
