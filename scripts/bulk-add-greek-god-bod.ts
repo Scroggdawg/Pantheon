@@ -25,7 +25,7 @@
 //   --api-base=<url>      override API base (default: pantheon.guru)
 //   --category=<name>     run a single category (else all non-anchor)
 //   --dry-run             print picks; don't save
-//   --threshold=<float>   token-overlap floor (default 0.5)
+//   --threshold=<float>   token-overlap floor (default 0.6)
 //   --batch-size=<int>    names per /search call (default 25)
 //   --limit=<int>         cap entries processed per category
 
@@ -79,7 +79,7 @@ function parseArgs(argv: string[]): Args {
   let apiBase = process.env.EXPO_PUBLIC_API_BASE ?? 'https://pantheon.guru'
   let category: string | null = null
   let dryRun = false
-  let threshold = 0.5
+  let threshold = 0.6
   let batchSize = 25
   let limit: number | null = null
 
@@ -349,15 +349,94 @@ function passesDescriptorCheck(input: Set<string>, candidate: Set<string>): {
   return { ok: true }
 }
 
+// R.2 — meat-source check.
+//
+// When input contains a meat-source token (beef/pork/chicken/turkey/etc.),
+// the candidate description MUST contain that exact token. Catches
+// "Lean ground beef 93%" → "Turkey, ground, 93% lean" miss surfaced in
+// post-Path-B re-dry-run: token-overlap was 0.75 (passes 0.6) and R.1
+// descriptor check passed (both have "lean", "ground"), but candidate
+// is a different protein entirely (turkey vs beef).
+//
+// 'fish' is a soft-generic: when input has 'fish', any specific fish
+// (salmon/tuna/cod/etc.) in candidate is acceptable.
+const MEAT_SOURCES = new Set([
+  'beef', 'pork', 'chicken', 'turkey', 'lamb', 'venison',
+  'bison', 'duck', 'goose', 'rabbit', 'veal',
+  'salmon', 'tuna', 'cod', 'halibut', 'shrimp', 'swordfish',
+  'tilapia', 'mackerel', 'trout', 'sardine', 'sardines',
+  'fish',
+])
+const SPECIFIC_FISH = new Set([
+  'salmon', 'tuna', 'cod', 'halibut', 'shrimp', 'swordfish',
+  'tilapia', 'mackerel', 'trout', 'sardine', 'sardines',
+])
+
+function passesMeatSourceCheck(input: Set<string>, candidate: Set<string>): {
+  ok: boolean
+  failedSource?: string
+} {
+  for (const source of MEAT_SOURCES) {
+    if (!input.has(source)) continue
+    if (candidate.has(source)) continue
+    // Soft-generic: input "fish" passes if candidate has any specific fish.
+    if (source === 'fish') {
+      const anyFishInCandidate = [...SPECIFIC_FISH].some((s) => candidate.has(s))
+      if (anyFishInCandidate) continue
+    }
+    return { ok: false, failedSource: source }
+  }
+  return { ok: true }
+}
+
+// Per-row force-eyeball overrides.
+//
+// When dry-run review surfaces an auto-pick that's protein/cut-correct but
+// has a different precision-class mismatch (fat-percentage delta etc.),
+// drop the input name here to force eyeball regardless of strategy outcome.
+// Cleaner than save-then-delete: prevents transient bad data in production.
+const OVERRIDE_EYEBALL = new Set<string>([
+  // Smoke 3 review (Luke + V20): auto-picked Turkey ground 93% which has
+  // ~40% different kcal vs the requested 99%. Manual at /admin/pantry.
+  'Ground turkey 99% lean',
+])
+
+// Category-level scope pruning (Luke 2026-05-09).
+//
+// Some categories live inside recipe-level macros, not voice-logged
+// individually. Skip them entirely.
+const SKIP_CATEGORIES = new Set<string>([
+  'HERBS + SPICES',  // 24 entries — zero/negligible kcal; recipe-internal
+])
+
+// Per-category entry keepers. When a category appears here, only the
+// listed entries from that category are processed; the rest are skipped.
+// Categories not in this map are processed in full (subject to SKIP_CATEGORIES).
+const KEEP_ENTRIES: Record<string, Set<string>> = {
+  'ASIAN PANTRY': new Set([
+    'Soy sauce low-sodium',
+    'Sesame oil',
+    'Gochujang',
+    'Sriracha',
+    'Kimchi',
+  ]),
+  'CONDIMENTS / DRESSING BUILDING BLOCKS': new Set([
+    'Dijon mustard',
+    'Anchovy paste',
+    'Hot sauce',
+  ]),
+}
+
 // ---------------------------------------------------------------------
 // Auto-pick strategy
 // ---------------------------------------------------------------------
 
 interface AutoPickOutcome {
   pick: PickedRow | null
-  reason: 'usda' | 'off' | 'no-match' | 'no-candidates' | 'descriptor-fail'
+  reason: 'usda' | 'off' | 'no-match' | 'no-candidates' | 'descriptor-fail' | 'meat-source-fail' | 'override'
   matched: { name: string; source: string; overlap: number } | null
   rejectedDescriptor?: string  // surface which descriptor failed for eyeball context
+  rejectedMeatSource?: string  // surface which meat-source failed for eyeball context
 }
 
 function autoPickStrategy(
@@ -365,6 +444,11 @@ function autoPickStrategy(
   result: SearchResultRow,
   threshold: number,
 ): AutoPickOutcome {
+  // Per-row override: force eyeball before any candidate scoring runs.
+  if (OVERRIDE_EYEBALL.has(input)) {
+    return { pick: null, reason: 'override', matched: null }
+  }
+
   const inputTokens = tokenize(input)
 
   // Tier 1: USDA Foundation/FNDDS with non-null kcal
@@ -373,17 +457,34 @@ function autoPickStrategy(
       (u.data_type === 'Foundation' || u.data_type === 'Survey (FNDDS)') &&
       u.per_serving.kcal !== null,
   )
-  let bestUsda: { u: UsdaCandidate; overlap: number; descriptorOk: boolean; failedDesc?: string } | null = null
+  let bestUsda:
+    | {
+        u: UsdaCandidate
+        overlap: number
+        descriptorOk: boolean
+        failedDesc?: string
+        meatOk: boolean
+        failedMeat?: string
+      }
+    | null = null
   for (const u of tier1) {
     const candTokens = tokenize(u.description)
     const overlap = overlapRatio(inputTokens, candTokens)
     if (overlap < threshold) continue
     const descCheck = passesDescriptorCheck(inputTokens, candTokens)
+    const meatCheck = passesMeatSourceCheck(inputTokens, candTokens)
     if (!bestUsda || overlap > bestUsda.overlap) {
-      bestUsda = { u, overlap, descriptorOk: descCheck.ok, failedDesc: descCheck.failedDescriptor }
+      bestUsda = {
+        u,
+        overlap,
+        descriptorOk: descCheck.ok,
+        failedDesc: descCheck.failedDescriptor,
+        meatOk: meatCheck.ok,
+        failedMeat: meatCheck.failedSource,
+      }
     }
   }
-  if (bestUsda && bestUsda.descriptorOk) {
+  if (bestUsda && bestUsda.descriptorOk && bestUsda.meatOk) {
     return {
       pick: {
         source: 'usda',
@@ -401,7 +502,67 @@ function autoPickStrategy(
       },
     }
   }
-  // Tier 1 found a candidate but it failed descriptor check — surface for eyeball
+
+  // Path δ cascade (smoke-3 → variance-halt fix): when USDA Tier 1 has no
+  // clean pick (empty OR R.1/R.2-rejected), fall through to OFF Tier 2
+  // unconditionally. R.2 should reject wrong-protein USDA candidates AND
+  // give OFF a chance to provide a correct alternative; previously OFF
+  // only ran when tier1 was empty, so a USDA Turkey pick rejected by R.2
+  // for "Lean ground beef 93%" masked the correct OFF "Ground Beef 93%
+  // Lean 7% Fat" branded match.
+  const ranked = result.off.filter(
+    (p) => p.nutriscore_grade && p.nutriscore_grade !== 'unknown',
+  )
+  let bestOff:
+    | {
+        p: OffProductLite
+        idx: number
+        overlap: number
+        descriptorOk: boolean
+        failedDesc?: string
+        meatOk: boolean
+        failedMeat?: string
+      }
+    | null = null
+  for (let i = 0; i < ranked.length; i++) {
+    const p = ranked[i]
+    const candTokens = tokenize(`${p.brands ?? ''} ${p.product_name ?? ''}`)
+    const overlap = overlapRatio(inputTokens, candTokens)
+    if (overlap < threshold) continue
+    const descCheck = passesDescriptorCheck(inputTokens, candTokens)
+    const meatCheck = passesMeatSourceCheck(inputTokens, candTokens)
+    if (!bestOff || overlap > bestOff.overlap) {
+      const origIdx = result.off.indexOf(p)
+      bestOff = {
+        p,
+        idx: origIdx,
+        overlap,
+        descriptorOk: descCheck.ok,
+        failedDesc: descCheck.failedDescriptor,
+        meatOk: meatCheck.ok,
+        failedMeat: meatCheck.failedSource,
+      }
+    }
+  }
+  if (bestOff && bestOff.descriptorOk && bestOff.meatOk) {
+    return {
+      pick: {
+        source: 'off',
+        input_name: input,
+        off_index: bestOff.idx,
+      },
+      reason: 'off',
+      matched: {
+        name: bestOff.p.product_name ?? '(unnamed)',
+        source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
+        overlap: bestOff.overlap,
+      },
+    }
+  }
+
+  // Both tiers failed — surface the most informative eyeball reason.
+  // Prefer USDA's failure reason since it's the higher-tier candidate;
+  // fall back to OFF's failure reason if USDA had no candidate at all.
   if (bestUsda && !bestUsda.descriptorOk) {
     return {
       pick: null,
@@ -414,50 +575,40 @@ function autoPickStrategy(
       rejectedDescriptor: bestUsda.failedDesc,
     }
   }
-
-  // Tier 2: OFF with nutriscore grade (only when Tier 1 returned 0 research-grade)
-  if (tier1.length === 0) {
-    const ranked = result.off.filter(
-      (p) => p.nutriscore_grade && p.nutriscore_grade !== 'unknown',
-    )
-    let bestOff: { p: OffProductLite; idx: number; overlap: number; descriptorOk: boolean; failedDesc?: string } | null = null
-    for (let i = 0; i < ranked.length; i++) {
-      const p = ranked[i]
-      const candTokens = tokenize(`${p.brands ?? ''} ${p.product_name ?? ''}`)
-      const overlap = overlapRatio(inputTokens, candTokens)
-      if (overlap < threshold) continue
-      const descCheck = passesDescriptorCheck(inputTokens, candTokens)
-      if (!bestOff || overlap > bestOff.overlap) {
-        const origIdx = result.off.indexOf(p)
-        bestOff = { p, idx: origIdx, overlap, descriptorOk: descCheck.ok, failedDesc: descCheck.failedDescriptor }
-      }
+  if (bestUsda && !bestUsda.meatOk) {
+    return {
+      pick: null,
+      reason: 'meat-source-fail',
+      matched: {
+        name: bestUsda.u.description,
+        source: `usda/${bestUsda.u.data_type}`,
+        overlap: bestUsda.overlap,
+      },
+      rejectedMeatSource: bestUsda.failedMeat,
     }
-    if (bestOff && bestOff.descriptorOk) {
-      return {
-        pick: {
-          source: 'off',
-          input_name: input,
-          off_index: bestOff.idx,
-        },
-        reason: 'off',
-        matched: {
-          name: bestOff.p.product_name ?? '(unnamed)',
-          source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
-          overlap: bestOff.overlap,
-        },
-      }
+  }
+  if (bestOff && !bestOff.descriptorOk) {
+    return {
+      pick: null,
+      reason: 'descriptor-fail',
+      matched: {
+        name: bestOff.p.product_name ?? '(unnamed)',
+        source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
+        overlap: bestOff.overlap,
+      },
+      rejectedDescriptor: bestOff.failedDesc,
     }
-    if (bestOff && !bestOff.descriptorOk) {
-      return {
-        pick: null,
-        reason: 'descriptor-fail',
-        matched: {
-          name: bestOff.p.product_name ?? '(unnamed)',
-          source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
-          overlap: bestOff.overlap,
-        },
-        rejectedDescriptor: bestOff.failedDesc,
-      }
+  }
+  if (bestOff && !bestOff.meatOk) {
+    return {
+      pick: null,
+      reason: 'meat-source-fail',
+      matched: {
+        name: bestOff.p.product_name ?? '(unnamed)',
+        source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
+        overlap: bestOff.overlap,
+      },
+      rejectedMeatSource: bestOff.failedMeat,
     }
   }
 
@@ -616,6 +767,10 @@ async function processCategory(
           reason = `0 candidates (OFF=${result.off.length}, USDA=${result.usda.length})`
         } else if (outcome.reason === 'descriptor-fail') {
           reason = `descriptor "${outcome.rejectedDescriptor}" missing in candidate "${outcome.matched?.name ?? '?'}"`
+        } else if (outcome.reason === 'meat-source-fail') {
+          reason = `meat-source "${outcome.rejectedMeatSource}" missing in candidate "${outcome.matched?.name ?? '?'}"`
+        } else if (outcome.reason === 'override') {
+          reason = `manual override → /admin/pantry`
         } else {
           reason = `no token-overlap ≥ ${args.threshold} (OFF=${result.off.length}, USDA=${result.usda.length})`
         }
@@ -683,8 +838,31 @@ async function main() {
   )
 
   const parsed = parsePantryDoc(args.docPath)
+  const rawCount = [...parsed.categories.values()].reduce((acc, n) => acc + n.length, 0)
+
+  // Apply category-level + entry-level scope pruning.
+  let prunedSkippedCats = 0
+  let prunedSkippedEntries = 0
+  for (const cat of [...parsed.categories.keys()]) {
+    if (SKIP_CATEGORIES.has(cat)) {
+      prunedSkippedEntries += parsed.categories.get(cat)!.length
+      parsed.categories.delete(cat)
+      prunedSkippedCats += 1
+      continue
+    }
+    const keep = KEEP_ENTRIES[cat]
+    if (keep) {
+      const original = parsed.categories.get(cat)!
+      const kept = original.filter((n) => keep.has(n))
+      prunedSkippedEntries += original.length - kept.length
+      parsed.categories.set(cat, kept)
+    }
+  }
+  parsed.order = parsed.order.filter((c) => !SKIP_CATEGORIES.has(c))
+  const postCount = [...parsed.categories.values()].reduce((acc, n) => acc + n.length, 0)
+
   console.log(
-    `parsed ${parsed.order.length} categories, ${[...parsed.categories.values()].reduce((acc, n) => acc + n.length, 0)} entries`,
+    `parsed ${parsed.order.length} categories, ${postCount} entries (raw=${rawCount}, pruned=${prunedSkippedEntries} entries across ${prunedSkippedCats} skip-cats + per-cat keepers)`,
   )
 
   const cookie = await authenticate(args.apiBase)
