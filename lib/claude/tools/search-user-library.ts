@@ -30,7 +30,7 @@ import type { Tool } from '@anthropic-ai/sdk/resources/messages'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 import { applyBrandAliases } from '@/lib/brand-voice-aliases'
-import type { FoodItem } from '@/types/database'
+import type { FoodItem, UnitAlternative } from '@/types/database'
 
 import { confidenceLabel, type ConfidenceLabel } from './constants'
 
@@ -77,6 +77,10 @@ export interface LibrarySearchResult {
   times_logged: number | null
   last_logged_at: string | null
   match_confidence: LibraryMatchConfidence
+  // Op FASTRAK Brick Gamma A — unit conversion data populated from
+  // products.unit_alternatives (canonical) or saved_meals.foods_json[0].
+  // unit_alternatives (per-saved_meal overrides on single-food meals).
+  unit_alternatives?: UnitAlternative[]
 }
 
 export interface SearchUserLibraryInput {
@@ -179,6 +183,7 @@ interface ProductRow {
   protein_g_per_serving: number
   fat_g_per_serving: number
   carbs_g_per_serving: number
+  unit_alternatives: UnitAlternative[] | null
 }
 
 interface HourlyGoToRow {
@@ -197,6 +202,19 @@ interface HourlyGoToRow {
   fat_g: number | null
   qty: number | null
   unit: string | null
+}
+
+// Single-food saved_meals (created by Sub-fix C.1 heart-INSERTs) carry
+// per-saved_meal unit_alternatives inside foods_json[0]. Multi-food
+// saved_meals (recipes from select-mode) don't have a unique unit
+// shape — the matcher returns "1 serving" totals and the unit picker
+// would be the recipe-batch yield_servings UI (Brick L COOKBOOK), not
+// the per-food Delta picker.
+function unitAlternativesFromSavedMeal(
+  foods: FoodItem[] | null,
+): UnitAlternative[] | undefined {
+  if (!Array.isArray(foods) || foods.length !== 1) return undefined
+  return foods[0]?.unit_alternatives
 }
 
 function savedMealToCandidate(row: SavedMealRow, score: number): LibrarySearchResult {
@@ -243,6 +261,7 @@ function savedMealToCandidate(row: SavedMealRow, score: number): LibrarySearchRe
       components: { name_similarity: score },
       formula: 'library entries are pre-validated; match_confidence = name_similarity only',
     },
+    unit_alternatives: unitAlternativesFromSavedMeal(row.foods_json),
   }
 }
 
@@ -291,6 +310,7 @@ function productToCandidate(row: ProductRow, score: number): LibrarySearchResult
       components: { name_similarity: score },
       formula: 'library entries are pre-validated; match_confidence = name_similarity only',
     },
+    unit_alternatives: row.unit_alternatives ?? undefined,
   }
 }
 
@@ -401,7 +421,7 @@ export async function searchUserLibrary(
     ctx.supabase
       .from('products')
       .select(
-        'id, name, brand, unit, serving_size_g, calories_per_serving, protein_g_per_serving, fat_g_per_serving, carbs_g_per_serving',
+        'id, name, brand, unit, serving_size_g, calories_per_serving, protein_g_per_serving, fat_g_per_serving, carbs_g_per_serving, unit_alternatives',
       ),
     ctx.supabase
       .from('hourly_go_tos')

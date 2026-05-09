@@ -58,6 +58,25 @@ export interface MatchConfidence {
   warnings: string[]         // human-readable notes ("macro_math_off", "brand_mismatch", etc.)
 }
 
+// Op FASTRAK Brick Gamma A — unit-to-grams conversion entry.
+// Lives in arrays on products.unit_alternatives (canonical, populated
+// by USDA + OFF + LLM-fill) and inside saved_meals.foods_json[i].
+// unit_alternatives (per-saved_meal user overrides). Source label
+// drives the matcher's confidence ranking + cache invalidation.
+export type UnitAlternativeSource =
+  | 'usda'
+  | 'off'
+  | 'user_corrected'
+  | 'llm_estimated'
+export type UnitAlternativeConfidence = 'high' | 'medium' | 'low'
+
+export interface UnitAlternative {
+  unit: string                                  // canonicalized lowercase ('cup', 'fl oz', 'banana', 'serving')
+  grams: number                                 // grams per ONE unit
+  source: UnitAlternativeSource
+  confidence: UnitAlternativeConfidence
+}
+
 export interface FoodItem {
   name: string
   qty: number
@@ -78,6 +97,9 @@ export interface FoodItem {
   // native UI options to surface inline.
   state?: FoodItemState
   candidates?: DisambiguationCandidate[]
+  // Op FASTRAK Brick Gamma A — unit conversion alternatives for the
+  // Delta editor's unit picker. Optional + absent on pre-Gamma rows.
+  unit_alternatives?: UnitAlternative[]
 }
 
 // V2 disambiguation surface. When the parse pipeline finds multiple

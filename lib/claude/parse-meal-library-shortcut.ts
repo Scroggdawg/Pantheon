@@ -94,6 +94,7 @@ export async function tryLibraryShortcut(
     fat_g: top.total.fat_g,
     source: 'library',
     source_ref: top.library_id,
+    unit_alternatives: top.unit_alternatives,
     match_confidence: {
       score: top.match_confidence.score,
       label: top.match_confidence.label,
@@ -183,6 +184,7 @@ export async function tryLibraryCandidates(
     fat_g: top.total.fat_g,
     source: 'library',
     source_ref: top.library_id,
+    unit_alternatives: top.unit_alternatives,
     match_confidence: {
       score: top.match_confidence.score,
       label: top.match_confidence.label,
@@ -539,6 +541,7 @@ export async function tryLibrarySegmentedShortcut(
         fat_g: top.total.fat_g,
         source: 'library',
         source_ref: top.library_id,
+        unit_alternatives: top.unit_alternatives,
         match_confidence: {
           score: topScore,
           label: top.match_confidence.label,
