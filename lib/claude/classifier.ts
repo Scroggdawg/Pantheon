@@ -193,6 +193,12 @@ export function foodFromLibraryHit(hit: LibrarySearchResult, item: EnumeratedIte
     fat_g: round2(t.fat_g * q),
     source: 'library',
     source_ref: hit.library_id,
+    // Op FASTRAK Brick Gamma A — pass through unit_alternatives from
+    // the matcher hit. Mirrors the cascade-shortcut FoodItem builders
+    // in parse-meal-library-shortcut.ts so the LLM-tool-loop path
+    // (this function) and the shortcut path produce identical FoodItem
+    // shapes.
+    unit_alternatives: hit.unit_alternatives,
     match_confidence: {
       score: hit.match_confidence.score,
       label: hit.match_confidence.label,
