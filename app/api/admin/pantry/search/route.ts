@@ -104,17 +104,34 @@ async function usdaSearchTopN(name: string, limit: number = 3): Promise<UsdaCand
   const apiKey = process.env.USDA_FDC_API_KEY
   if (!apiKey) return []
 
-  // Greek God Bod bulk-add smoke (LEAN PROTEINS) surfaced that USDA's
-  // /foods/search ranks Branded entries first for many generic queries
-  // ("Chicken breast" returned 5 Branded; 0 Foundation/FNDDS in top-9).
-  // In-memory tier sort then has nothing research-grade to surface.
-  // Fix: query Foundation/Survey (FNDDS) explicitly first; fall back to
-  // all-types only when research-grade returns 0. Mirrors the proven
-  // pattern in lib/usda/portions.ts:usdaResolveFdcId from Gamma A.
-  const research = await usdaQuery(name, limit * 3, 'Foundation,Survey (FNDDS)', apiKey)
-  const foods = (research && research.length > 0)
-    ? research
-    : (await usdaQuery(name, limit * 3, undefined, apiKey)) ?? []
+  // Greek God Bod bulk-add smoke surfaced two issues:
+  //
+  // 1. (Path B) USDA's /foods/search ranks Branded entries first for many
+  //    generic queries. Without an explicit dataType filter, the in-memory
+  //    tier sort has nothing research-grade to surface.
+  //
+  // 2. (Path D / wave-1 raw-vs-cooked) Foundation contains raw entries for
+  //    most produce + meats; Survey (FNDDS) contains "as eaten" (cooked)
+  //    variants. When both are queried together, USDA may rank either
+  //    first non-deterministically — which means Luke logging raw weight
+  //    sometimes hits FNDDS-cooked macros that over-count by ~30-40%.
+  //    Foundation > FNDDS tiering at fetch time gives a stable raw-default.
+  //
+  // Strategy: Foundation first, then Survey (FNDDS), then any-type, in
+  // that priority order. Skip subsequent fetches when an earlier tier has
+  // results.
+  let foods: NonNullable<UsdaSearchResponse['foods']> = []
+  const foundation = await usdaQuery(name, limit * 3, 'Foundation', apiKey)
+  if (foundation && foundation.length > 0) {
+    foods = foundation
+  } else {
+    const fndds = await usdaQuery(name, limit * 3, 'Survey (FNDDS)', apiKey)
+    if (fndds && fndds.length > 0) {
+      foods = fndds
+    } else {
+      foods = (await usdaQuery(name, limit * 3, undefined, apiKey)) ?? []
+    }
+  }
 
   try {
     // Tier preference: Foundation/Survey FNDDS > SR Legacy > Branded.

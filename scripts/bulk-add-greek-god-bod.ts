@@ -64,7 +64,7 @@ loadEnvLocal()
 interface Args {
   docPath: string
   apiBase: string
-  category: string | null
+  categories: string[] | null  // null = all non-anchor; comma-separated supported
   dryRun: boolean
   threshold: number
   batchSize: number
@@ -77,7 +77,7 @@ const DEFAULT_DOC =
 function parseArgs(argv: string[]): Args {
   let docPath = DEFAULT_DOC
   let apiBase = process.env.EXPO_PUBLIC_API_BASE ?? 'https://pantheon.guru'
-  let category: string | null = null
+  let categories: string[] | null = null
   let dryRun = false
   let threshold = 0.6
   let batchSize = 25
@@ -87,12 +87,19 @@ function parseArgs(argv: string[]): Args {
     if (a === '--dry-run') dryRun = true
     else if (a.startsWith('--doc=')) docPath = a.slice('--doc='.length)
     else if (a.startsWith('--api-base=')) apiBase = a.slice('--api-base='.length).replace(/\/+$/, '')
-    else if (a.startsWith('--category=')) category = a.slice('--category='.length)
+    else if (a.startsWith('--category=')) {
+      // Comma-separated for multi-category runs (wave dry-runs)
+      categories = a
+        .slice('--category='.length)
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    }
     else if (a.startsWith('--threshold=')) threshold = Number(a.slice('--threshold='.length))
     else if (a.startsWith('--batch-size=')) batchSize = parseInt(a.slice('--batch-size='.length), 10)
     else if (a.startsWith('--limit=')) limit = parseInt(a.slice('--limit='.length), 10)
   }
-  return { docPath, apiBase, category, dryRun, threshold, batchSize, limit }
+  return { docPath, apiBase, categories, dryRun, threshold, batchSize, limit }
 }
 
 // ---------------------------------------------------------------------
@@ -389,6 +396,61 @@ function passesMeatSourceCheck(input: Set<string>, candidate: Set<string>): {
   return { ok: true }
 }
 
+// R.3 — preparation-state / dish-class filter.
+//
+// Wave 1 LEAN PROTEINS dry-run was clean, but wave 1 vegetables/dairy/
+// med-greek surfaced ~17 wrong picks where the matcher couldn't tell the
+// candidate was a different dish entirely (Lime → "Lime souffle", Eggplant
+// → "Eggplant dip", etc.) or had unwanted preparation (Beets → "Beets,
+// pickled"). R.3 covers both with two layers:
+//
+//   DISH_CLASS_TOKENS — hard reject. Candidate that's a bread/dip/sauce/
+//   salad/cake/etc. is structurally a different food category from a
+//   generic produce/dairy/protein input. The matcher should never auto-
+//   pick across food categories.
+//
+//   PREPARATION_TOKENS — soft reject only when input doesn't carry the
+//   same prep token. E.g., "Crushed tomatoes (canned)" matches
+//   "Tomatoes, canned, ..." but "Spaghetti squash" should NOT match
+//   "Spaghetti squash, cooked" if Luke's logging raw weight.
+//
+// Doesn't yet handle primary-noun mismatches (Ricotta → Mozzarella);
+// V20 deferred R.4 unless residual wrong-picks emerge.
+const DISH_CLASS_TOKENS = new Set([
+  'bread', 'crackers', 'cracker', 'dip', 'sauce', 'salad',
+  'souffle', 'tots', 'spreadable', 'spread',
+  'cake', 'cookie', 'cookies', 'pie', 'muffin', 'pancake', 'pancakes',
+  'roll', 'rolls', 'bagel', 'pastry', 'casserole',
+  'soup', 'stew', 'chili',
+])
+
+// Tokens indicating preparation/cooking method that change macros.
+// 'with' + 'added' catch combinations like "cooked with oil" / "fat added".
+// 'crumbles' catches FNDDS pan-broiled cooked-as-eaten variants.
+const PREPARATION_TOKENS = new Set([
+  'cooked', 'pickled', 'fried', 'baked', 'broiled',
+  'grilled', 'roasted', 'steamed', 'boiled', 'sauteed',
+  'stuffed', 'crumbles', 'with', 'added',
+])
+
+function passesPrepCheck(input: Set<string>, candidate: Set<string>): {
+  ok: boolean
+  rejected?: string
+  layer?: 'dish-class' | 'preparation'
+} {
+  for (const tok of candidate) {
+    if (DISH_CLASS_TOKENS.has(tok)) {
+      return { ok: false, rejected: tok, layer: 'dish-class' }
+    }
+  }
+  for (const tok of candidate) {
+    if (PREPARATION_TOKENS.has(tok) && !input.has(tok)) {
+      return { ok: false, rejected: tok, layer: 'preparation' }
+    }
+  }
+  return { ok: true }
+}
+
 // Per-row force-eyeball overrides.
 //
 // When dry-run review surfaces an auto-pick that's protein/cut-correct but
@@ -433,10 +495,20 @@ const KEEP_ENTRIES: Record<string, Set<string>> = {
 
 interface AutoPickOutcome {
   pick: PickedRow | null
-  reason: 'usda' | 'off' | 'no-match' | 'no-candidates' | 'descriptor-fail' | 'meat-source-fail' | 'override'
+  reason:
+    | 'usda'
+    | 'off'
+    | 'no-match'
+    | 'no-candidates'
+    | 'descriptor-fail'
+    | 'meat-source-fail'
+    | 'dish-class-fail'
+    | 'preparation-fail'
+    | 'override'
   matched: { name: string; source: string; overlap: number } | null
   rejectedDescriptor?: string  // surface which descriptor failed for eyeball context
   rejectedMeatSource?: string  // surface which meat-source failed for eyeball context
+  rejectedPrep?: string  // surface which dish-class / prep token rejected
 }
 
 function autoPickStrategy(
@@ -465,6 +537,9 @@ function autoPickStrategy(
         failedDesc?: string
         meatOk: boolean
         failedMeat?: string
+        prepOk: boolean
+        prepRejected?: string
+        prepLayer?: 'dish-class' | 'preparation'
       }
     | null = null
   for (const u of tier1) {
@@ -473,6 +548,7 @@ function autoPickStrategy(
     if (overlap < threshold) continue
     const descCheck = passesDescriptorCheck(inputTokens, candTokens)
     const meatCheck = passesMeatSourceCheck(inputTokens, candTokens)
+    const prepCheck = passesPrepCheck(inputTokens, candTokens)
     if (!bestUsda || overlap > bestUsda.overlap) {
       bestUsda = {
         u,
@@ -481,10 +557,13 @@ function autoPickStrategy(
         failedDesc: descCheck.failedDescriptor,
         meatOk: meatCheck.ok,
         failedMeat: meatCheck.failedSource,
+        prepOk: prepCheck.ok,
+        prepRejected: prepCheck.rejected,
+        prepLayer: prepCheck.layer,
       }
     }
   }
-  if (bestUsda && bestUsda.descriptorOk && bestUsda.meatOk) {
+  if (bestUsda && bestUsda.descriptorOk && bestUsda.meatOk && bestUsda.prepOk) {
     return {
       pick: {
         source: 'usda',
@@ -522,6 +601,9 @@ function autoPickStrategy(
         failedDesc?: string
         meatOk: boolean
         failedMeat?: string
+        prepOk: boolean
+        prepRejected?: string
+        prepLayer?: 'dish-class' | 'preparation'
       }
     | null = null
   for (let i = 0; i < ranked.length; i++) {
@@ -531,6 +613,7 @@ function autoPickStrategy(
     if (overlap < threshold) continue
     const descCheck = passesDescriptorCheck(inputTokens, candTokens)
     const meatCheck = passesMeatSourceCheck(inputTokens, candTokens)
+    const prepCheck = passesPrepCheck(inputTokens, candTokens)
     if (!bestOff || overlap > bestOff.overlap) {
       const origIdx = result.off.indexOf(p)
       bestOff = {
@@ -541,10 +624,13 @@ function autoPickStrategy(
         failedDesc: descCheck.failedDescriptor,
         meatOk: meatCheck.ok,
         failedMeat: meatCheck.failedSource,
+        prepOk: prepCheck.ok,
+        prepRejected: prepCheck.rejected,
+        prepLayer: prepCheck.layer,
       }
     }
   }
-  if (bestOff && bestOff.descriptorOk && bestOff.meatOk) {
+  if (bestOff && bestOff.descriptorOk && bestOff.meatOk && bestOff.prepOk) {
     return {
       pick: {
         source: 'off',
@@ -587,6 +673,18 @@ function autoPickStrategy(
       rejectedMeatSource: bestUsda.failedMeat,
     }
   }
+  if (bestUsda && !bestUsda.prepOk) {
+    return {
+      pick: null,
+      reason: bestUsda.prepLayer === 'dish-class' ? 'dish-class-fail' : 'preparation-fail',
+      matched: {
+        name: bestUsda.u.description,
+        source: `usda/${bestUsda.u.data_type}`,
+        overlap: bestUsda.overlap,
+      },
+      rejectedPrep: bestUsda.prepRejected,
+    }
+  }
   if (bestOff && !bestOff.descriptorOk) {
     return {
       pick: null,
@@ -609,6 +707,18 @@ function autoPickStrategy(
         overlap: bestOff.overlap,
       },
       rejectedMeatSource: bestOff.failedMeat,
+    }
+  }
+  if (bestOff && !bestOff.prepOk) {
+    return {
+      pick: null,
+      reason: bestOff.prepLayer === 'dish-class' ? 'dish-class-fail' : 'preparation-fail',
+      matched: {
+        name: bestOff.p.product_name ?? '(unnamed)',
+        source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
+        overlap: bestOff.overlap,
+      },
+      rejectedPrep: bestOff.prepRejected,
     }
   }
 
@@ -769,6 +879,10 @@ async function processCategory(
           reason = `descriptor "${outcome.rejectedDescriptor}" missing in candidate "${outcome.matched?.name ?? '?'}"`
         } else if (outcome.reason === 'meat-source-fail') {
           reason = `meat-source "${outcome.rejectedMeatSource}" missing in candidate "${outcome.matched?.name ?? '?'}"`
+        } else if (outcome.reason === 'dish-class-fail') {
+          reason = `dish-class "${outcome.rejectedPrep}" in candidate "${outcome.matched?.name ?? '?'}"`
+        } else if (outcome.reason === 'preparation-fail') {
+          reason = `preparation "${outcome.rejectedPrep}" in candidate "${outcome.matched?.name ?? '?'}" not in input`
         } else if (outcome.reason === 'override') {
           reason = `manual override → /admin/pantry`
         } else {
@@ -869,8 +983,8 @@ async function main() {
   const userId = await fetchUserId(args.apiBase, cookie)
   console.log(`auth ✓ user_id=${userId}`)
 
-  const targets = args.category
-    ? [args.category]
+  const targets = args.categories
+    ? args.categories
     : parsed.order.filter((c) => c !== RECIPE_ANCHORS_NAME)
 
   const allStats: { cat: string; stats: CategoryStats }[] = []
