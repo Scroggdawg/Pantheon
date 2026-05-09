@@ -75,14 +75,18 @@ const USDA_NUTRIENT_PROTEIN_G = 1003
 const USDA_NUTRIENT_CARBS_G = 1005
 const USDA_NUTRIENT_FAT_G = 1004
 
-async function usdaSearchTopN(name: string, limit: number = 3): Promise<UsdaCandidate[]> {
-  const apiKey = process.env.USDA_FDC_API_KEY
-  if (!apiKey) return []
+async function usdaQuery(
+  name: string,
+  pageSize: number,
+  dataType: string | undefined,
+  apiKey: string,
+): Promise<UsdaSearchResponse['foods']> {
   const params = new URLSearchParams({
     query: name,
-    pageSize: String(limit * 3), // fetch more, filter to research-grade tier
+    pageSize: String(pageSize),
     api_key: apiKey,
   })
+  if (dataType) params.set('dataType', dataType)
   try {
     const r = await fetch(`${USDA_SEARCH_URL}?${params}`, {
       headers: { 'User-Agent': USER_AGENT },
@@ -90,8 +94,29 @@ async function usdaSearchTopN(name: string, limit: number = 3): Promise<UsdaCand
     })
     if (!r.ok) return []
     const json = (await r.json()) as UsdaSearchResponse
-    const foods = json.foods ?? []
+    return json.foods ?? []
+  } catch {
+    return []
+  }
+}
 
+async function usdaSearchTopN(name: string, limit: number = 3): Promise<UsdaCandidate[]> {
+  const apiKey = process.env.USDA_FDC_API_KEY
+  if (!apiKey) return []
+
+  // Greek God Bod bulk-add smoke (LEAN PROTEINS) surfaced that USDA's
+  // /foods/search ranks Branded entries first for many generic queries
+  // ("Chicken breast" returned 5 Branded; 0 Foundation/FNDDS in top-9).
+  // In-memory tier sort then has nothing research-grade to surface.
+  // Fix: query Foundation/Survey (FNDDS) explicitly first; fall back to
+  // all-types only when research-grade returns 0. Mirrors the proven
+  // pattern in lib/usda/portions.ts:usdaResolveFdcId from Gamma A.
+  const research = await usdaQuery(name, limit * 3, 'Foundation,Survey (FNDDS)', apiKey)
+  const foods = (research && research.length > 0)
+    ? research
+    : (await usdaQuery(name, limit * 3, undefined, apiKey)) ?? []
+
+  try {
     // Tier preference: Foundation/Survey FNDDS > SR Legacy > Branded.
     function tier(dt: string | undefined): number {
       if (dt === 'Foundation' || dt === 'Survey (FNDDS)') return 1
@@ -100,7 +125,7 @@ async function usdaSearchTopN(name: string, limit: number = 3): Promise<UsdaCand
       return 4
     }
 
-    const ranked = [...foods].sort((a, b) => tier(a.dataType) - tier(b.dataType))
+    const ranked = [...(foods ?? [])].sort((a, b) => tier(a.dataType) - tier(b.dataType))
     return ranked.slice(0, limit).map((f) => {
       const nutrients = f.foodNutrients ?? []
       function findValue(id: number): number | null {
