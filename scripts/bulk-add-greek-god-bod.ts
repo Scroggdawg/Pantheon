@@ -396,6 +396,31 @@ function passesMeatSourceCheck(input: Set<string>, candidate: Set<string>): {
   return { ok: true }
 }
 
+// R.2.5 — inverse meat-source check.
+//
+// When candidate contains any meat token but input contains none, the
+// candidate is structurally a different food category (e.g.,
+// "Spaghetti squash" → "Sweet Chilli Chicken with Butternut Squash
+// Spaghetti" — overlap 1.00 because spaghetti+squash both appear, but
+// the candidate is a chicken dish). R.2 only catches the symmetric case
+// (input-has-meat + candidate-doesnt); inverse catches this asymmetric
+// failure mode.
+function passesInverseMeatCheck(input: Set<string>, candidate: Set<string>): {
+  ok: boolean
+  foundCandidateMeat?: string
+} {
+  // Skip if input has any meat-source token at all.
+  for (const source of MEAT_SOURCES) {
+    if (input.has(source)) return { ok: true }
+  }
+  // Input has no meat — candidate must have none either.
+  for (const source of MEAT_SOURCES) {
+    if (source === 'fish') continue  // 'fish' as a generic isn't a strong rejector signal
+    if (candidate.has(source)) return { ok: false, foundCandidateMeat: source }
+  }
+  return { ok: true }
+}
+
 // R.3 — preparation-state / dish-class filter.
 //
 // Wave 1 LEAN PROTEINS dry-run was clean, but wave 1 vegetables/dairy/
@@ -422,7 +447,35 @@ const DISH_CLASS_TOKENS = new Set([
   'cake', 'cookie', 'cookies', 'pie', 'muffin', 'pancake', 'pancakes',
   'roll', 'rolls', 'bagel', 'pastry', 'casserole',
   'soup', 'stew', 'chili',
+  // Path E additions (wave 1 dry-run #2 residuals):
+  'mayo', 'mayonnaise',
+  'mix', 'wrap', 'burrito', 'taco', 'burger',
+  'pizza', 'nuggets', 'patty', 'patties', 'lasagna',
+  'smoothie', 'sandwich', 'sushi',
+  // Path E.1 additions (wave 1 dry-run #3 residuals):
+  'pickles', 'kimchi', 'sauerkraut',
 ])
+
+// R.3.5 — inherently-prepared input override.
+//
+// Some Pantheon inputs ARE intrinsically a prepared-dish category
+// (Pita, Tzatziki, Hummus). When input contains one of these tokens,
+// skip the dish-class rejection — the candidate having "bread" / "dip"
+// is correct semantics, not a wrong-category match.
+const INHERENTLY_PREPARED_INPUTS = new Set([
+  'pita', 'tzatziki', 'hummus', 'falafel', 'naan',
+  'lavash', 'tortilla', 'sushi',
+  'baba', 'ganoush',  // baba ganoush split across tokenize
+])
+
+// Returns the matched token (so R.3.5b can require candidate to contain it),
+// or null when input has no inherently-prepared token.
+function inputPreparedToken(input: Set<string>): string | null {
+  for (const tok of INHERENTLY_PREPARED_INPUTS) {
+    if (input.has(tok)) return tok
+  }
+  return null
+}
 
 // Tokens indicating preparation/cooking method that change macros.
 // 'with' + 'added' catch combinations like "cooked with oil" / "fat added".
@@ -431,6 +484,8 @@ const PREPARATION_TOKENS = new Set([
   'cooked', 'pickled', 'fried', 'baked', 'broiled',
   'grilled', 'roasted', 'steamed', 'boiled', 'sauteed',
   'stuffed', 'crumbles', 'with', 'added',
+  // Path E.1 additions (Green beans → "canned, drained" miss):
+  'canned', 'drained', 'frozen',
 ])
 
 function passesPrepCheck(input: Set<string>, candidate: Set<string>): {
@@ -438,9 +493,22 @@ function passesPrepCheck(input: Set<string>, candidate: Set<string>): {
   rejected?: string
   layer?: 'dish-class' | 'preparation'
 } {
-  for (const tok of candidate) {
-    if (DISH_CLASS_TOKENS.has(tok)) {
-      return { ok: false, rejected: tok, layer: 'dish-class' }
+  // R.3.5 / R.3.5b — when input has an inherently-prepared token (Pita,
+  // Tzatziki, etc.), the candidate MUST also contain that token. If yes,
+  // skip dish-class rejection (Tzatziki "dip" / Pita "bread" are correct
+  // semantics). If no, REJECT — Pita-input → "Flour..." candidate is a
+  // primary-noun mismatch (soft R.4 for inherently-prepared inputs only).
+  const inputPrep = inputPreparedToken(input)
+  if (inputPrep !== null) {
+    if (!candidate.has(inputPrep)) {
+      return { ok: false, rejected: inputPrep, layer: 'dish-class' }
+    }
+    // candidate has the token → skip dish-class check entirely
+  } else {
+    for (const tok of candidate) {
+      if (DISH_CLASS_TOKENS.has(tok)) {
+        return { ok: false, rejected: tok, layer: 'dish-class' }
+      }
     }
   }
   for (const tok of candidate) {
@@ -461,6 +529,9 @@ const OVERRIDE_EYEBALL = new Set<string>([
   // Smoke 3 review (Luke + V20): auto-picked Turkey ground 93% which has
   // ~40% different kcal vs the requested 99%. Manual at /admin/pantry.
   'Ground turkey 99% lean',
+  // Wave 1 dry-run #2: auto-picked Yogurt, Greek, plain, NONFAT — Luke
+  // logged 2%. Fat-percentage precision class isn't covered by R.1-R.3.
+  'Greek yogurt 2% plain (Fage)',
 ])
 
 // Category-level scope pruning (Luke 2026-05-09).
@@ -502,12 +573,14 @@ interface AutoPickOutcome {
     | 'no-candidates'
     | 'descriptor-fail'
     | 'meat-source-fail'
+    | 'inverse-meat-fail'
     | 'dish-class-fail'
     | 'preparation-fail'
     | 'override'
   matched: { name: string; source: string; overlap: number } | null
   rejectedDescriptor?: string  // surface which descriptor failed for eyeball context
   rejectedMeatSource?: string  // surface which meat-source failed for eyeball context
+  rejectedInverseMeat?: string  // surface which candidate-meat triggered inverse rejection
   rejectedPrep?: string  // surface which dish-class / prep token rejected
 }
 
@@ -537,6 +610,8 @@ function autoPickStrategy(
         failedDesc?: string
         meatOk: boolean
         failedMeat?: string
+        invMeatOk: boolean
+        failedInvMeat?: string
         prepOk: boolean
         prepRejected?: string
         prepLayer?: 'dish-class' | 'preparation'
@@ -548,6 +623,7 @@ function autoPickStrategy(
     if (overlap < threshold) continue
     const descCheck = passesDescriptorCheck(inputTokens, candTokens)
     const meatCheck = passesMeatSourceCheck(inputTokens, candTokens)
+    const invMeatCheck = passesInverseMeatCheck(inputTokens, candTokens)
     const prepCheck = passesPrepCheck(inputTokens, candTokens)
     if (!bestUsda || overlap > bestUsda.overlap) {
       bestUsda = {
@@ -557,13 +633,15 @@ function autoPickStrategy(
         failedDesc: descCheck.failedDescriptor,
         meatOk: meatCheck.ok,
         failedMeat: meatCheck.failedSource,
+        invMeatOk: invMeatCheck.ok,
+        failedInvMeat: invMeatCheck.foundCandidateMeat,
         prepOk: prepCheck.ok,
         prepRejected: prepCheck.rejected,
         prepLayer: prepCheck.layer,
       }
     }
   }
-  if (bestUsda && bestUsda.descriptorOk && bestUsda.meatOk && bestUsda.prepOk) {
+  if (bestUsda && bestUsda.descriptorOk && bestUsda.meatOk && bestUsda.invMeatOk && bestUsda.prepOk) {
     return {
       pick: {
         source: 'usda',
@@ -601,6 +679,8 @@ function autoPickStrategy(
         failedDesc?: string
         meatOk: boolean
         failedMeat?: string
+        invMeatOk: boolean
+        failedInvMeat?: string
         prepOk: boolean
         prepRejected?: string
         prepLayer?: 'dish-class' | 'preparation'
@@ -613,6 +693,7 @@ function autoPickStrategy(
     if (overlap < threshold) continue
     const descCheck = passesDescriptorCheck(inputTokens, candTokens)
     const meatCheck = passesMeatSourceCheck(inputTokens, candTokens)
+    const invMeatCheck = passesInverseMeatCheck(inputTokens, candTokens)
     const prepCheck = passesPrepCheck(inputTokens, candTokens)
     if (!bestOff || overlap > bestOff.overlap) {
       const origIdx = result.off.indexOf(p)
@@ -624,13 +705,15 @@ function autoPickStrategy(
         failedDesc: descCheck.failedDescriptor,
         meatOk: meatCheck.ok,
         failedMeat: meatCheck.failedSource,
+        invMeatOk: invMeatCheck.ok,
+        failedInvMeat: invMeatCheck.foundCandidateMeat,
         prepOk: prepCheck.ok,
         prepRejected: prepCheck.rejected,
         prepLayer: prepCheck.layer,
       }
     }
   }
-  if (bestOff && bestOff.descriptorOk && bestOff.meatOk && bestOff.prepOk) {
+  if (bestOff && bestOff.descriptorOk && bestOff.meatOk && bestOff.invMeatOk && bestOff.prepOk) {
     return {
       pick: {
         source: 'off',
@@ -673,6 +756,18 @@ function autoPickStrategy(
       rejectedMeatSource: bestUsda.failedMeat,
     }
   }
+  if (bestUsda && !bestUsda.invMeatOk) {
+    return {
+      pick: null,
+      reason: 'inverse-meat-fail',
+      matched: {
+        name: bestUsda.u.description,
+        source: `usda/${bestUsda.u.data_type}`,
+        overlap: bestUsda.overlap,
+      },
+      rejectedInverseMeat: bestUsda.failedInvMeat,
+    }
+  }
   if (bestUsda && !bestUsda.prepOk) {
     return {
       pick: null,
@@ -707,6 +802,18 @@ function autoPickStrategy(
         overlap: bestOff.overlap,
       },
       rejectedMeatSource: bestOff.failedMeat,
+    }
+  }
+  if (bestOff && !bestOff.invMeatOk) {
+    return {
+      pick: null,
+      reason: 'inverse-meat-fail',
+      matched: {
+        name: bestOff.p.product_name ?? '(unnamed)',
+        source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
+        overlap: bestOff.overlap,
+      },
+      rejectedInverseMeat: bestOff.failedInvMeat,
     }
   }
   if (bestOff && !bestOff.prepOk) {
@@ -879,6 +986,8 @@ async function processCategory(
           reason = `descriptor "${outcome.rejectedDescriptor}" missing in candidate "${outcome.matched?.name ?? '?'}"`
         } else if (outcome.reason === 'meat-source-fail') {
           reason = `meat-source "${outcome.rejectedMeatSource}" missing in candidate "${outcome.matched?.name ?? '?'}"`
+        } else if (outcome.reason === 'inverse-meat-fail') {
+          reason = `candidate has unrelated meat "${outcome.rejectedInverseMeat}" not in input ("${outcome.matched?.name ?? '?'}")`
         } else if (outcome.reason === 'dish-class-fail') {
           reason = `dish-class "${outcome.rejectedPrep}" in candidate "${outcome.matched?.name ?? '?'}"`
         } else if (outcome.reason === 'preparation-fail') {
