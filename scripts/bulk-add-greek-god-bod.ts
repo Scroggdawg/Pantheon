@@ -512,6 +512,41 @@ function passesAntiFlourCheck(input: Set<string>, candidateDescription: string):
   return !firstTokens.includes('flour')
 }
 
+// R.7 — OFF brand-fluff anti-pattern.
+//
+// Three occurrences across waves 1-2 of the same OFF failure class:
+//   Lime    → "Tourtel 27.5 cl Tourtel Twist Lime 0.0 DEGRE ALCOOL" (alcoholic beverage)
+//   Orange  → "Biscuit soja orange" (soy biscuit)
+//   Papaya  → "Mango Papaya Passion Fruit Yogurt" (yogurt mix)
+//
+// Pattern: short generic-produce input (1-2 tokens), OFF returns a
+// long branded composite where the input keyword is just one ingredient
+// in a multi-component product. R.1-R.6 don't catch because tokens
+// overlap and dish-class doesn't include yogurt/biscuit/beverage variants.
+//
+// R.7 heuristic: when input is short (≤2 tokens), candidate is long
+// (≥4 tokens after stopword filter), AND candidate's first non-stopword
+// token isn't in input → reject. This protects:
+//   - Hummus → "Hummus Classic" (2 candidate tokens, short → pass)
+//   - Cheerios → "Cheerios Aveia" (first candidate token in input → pass)
+//   - Mango → "Mango ohne Zuckerzusatz" (3 candidate tokens, leads with input → pass)
+// While catching:
+//   - Lime/Orange/Papaya brand-fluff cases above (≥4 tokens, first token not in input)
+//
+// Apply ONLY to OFF Tier 2. USDA Foundation/FNDDS conventions are
+// food-first ("Mango, raw") so they don't exhibit this pattern.
+function passesOffBrandFluffCheck(input: Set<string>, candidateName: string): boolean {
+  if (input.size > 2) return true  // multi-token input is specific enough
+  const tokens = candidateName
+    .toLowerCase()
+    .split(/[,\s]+/)
+    .filter((t) => t.length > 0 && !STOPWORDS.has(t))
+  if (tokens.length < 4) return true  // short candidate likely real match
+  const firstToken = tokens[0]
+  if (input.has(firstToken)) return true  // candidate leads with input token
+  return false  // brand-fluff: long candidate, first token unrelated
+}
+
 function passesPrepCheck(input: Set<string>, candidate: Set<string>): {
   ok: boolean
   rejected?: string
@@ -601,6 +636,7 @@ interface AutoPickOutcome {
     | 'dish-class-fail'
     | 'preparation-fail'
     | 'anti-flour-fail'
+    | 'off-brand-fluff'
     | 'override'
   matched: { name: string; source: string; overlap: number } | null
   rejectedDescriptor?: string  // surface which descriptor failed for eyeball context
@@ -713,6 +749,7 @@ function autoPickStrategy(
         prepRejected?: string
         prepLayer?: 'dish-class' | 'preparation'
         flourOk: boolean
+        brandFluffOk: boolean
       }
     | null = null
   for (let i = 0; i < ranked.length; i++) {
@@ -726,6 +763,7 @@ function autoPickStrategy(
     const invMeatCheck = passesInverseMeatCheck(inputTokens, candTokens)
     const prepCheck = passesPrepCheck(inputTokens, candTokens)
     const flourOk = passesAntiFlourCheck(inputTokens, offDescription)
+    const brandFluffOk = passesOffBrandFluffCheck(inputTokens, offDescription)
     if (!bestOff || overlap > bestOff.overlap) {
       const origIdx = result.off.indexOf(p)
       bestOff = {
@@ -742,10 +780,11 @@ function autoPickStrategy(
         prepRejected: prepCheck.rejected,
         prepLayer: prepCheck.layer,
         flourOk,
+        brandFluffOk,
       }
     }
   }
-  if (bestOff && bestOff.descriptorOk && bestOff.meatOk && bestOff.invMeatOk && bestOff.prepOk && bestOff.flourOk) {
+  if (bestOff && bestOff.descriptorOk && bestOff.meatOk && bestOff.invMeatOk && bestOff.prepOk && bestOff.flourOk && bestOff.brandFluffOk) {
     return {
       pick: {
         source: 'off',
@@ -875,6 +914,17 @@ function autoPickStrategy(
     return {
       pick: null,
       reason: 'anti-flour-fail',
+      matched: {
+        name: bestOff.p.product_name ?? '(unnamed)',
+        source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
+        overlap: bestOff.overlap,
+      },
+    }
+  }
+  if (bestOff && !bestOff.brandFluffOk) {
+    return {
+      pick: null,
+      reason: 'off-brand-fluff',
       matched: {
         name: bestOff.p.product_name ?? '(unnamed)',
         source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
@@ -1048,6 +1098,8 @@ async function processCategory(
           reason = `preparation "${outcome.rejectedPrep}" in candidate "${outcome.matched?.name ?? '?'}" not in input`
         } else if (outcome.reason === 'anti-flour-fail') {
           reason = `R.6 anti-flour: candidate "${outcome.matched?.name ?? '?'}" leads with "flour", input doesn't`
+        } else if (outcome.reason === 'off-brand-fluff') {
+          reason = `R.7 OFF brand-fluff: candidate "${outcome.matched?.name ?? '?'}" is long composite; input keyword not its primary noun`
         } else if (outcome.reason === 'override') {
           reason = `manual override → /admin/pantry`
         } else {
