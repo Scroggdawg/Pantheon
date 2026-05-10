@@ -488,6 +488,30 @@ const PREPARATION_TOKENS = new Set([
   'canned', 'drained', 'frozen',
 ])
 
+// R.6 — anti-flour rule.
+//
+// Wave 1 + 2 surfaced 4 wrong picks of the same class: input is a specific
+// carb/grain item (Tortillas, Brown rice, Couscous, Pasta) and USDA returns
+// "Flour, X" entries with high token overlap. R.3.5b only catches a curated
+// list of inherently-prepared inputs (pita, tortilla, etc.) and doesn't
+// generalize. R.6 catches the dual: any candidate whose description LEADS
+// with "flour" must be matched against an input that explicitly mentions
+// "flour" — otherwise reject.
+//
+// Operates on the raw description string (not tokenized) so it can inspect
+// position. USDA Foundation conventions: "Flour, whole wheat" / "Flour,
+// rice, brown" — flour is always position-0. OFF brand-prefixed entries
+// like "Bob's Red Mill ..." don't lead with flour, so don't false-positive.
+function passesAntiFlourCheck(input: Set<string>, candidateDescription: string): boolean {
+  if (input.has('flour')) return true  // input wants flour, ok
+  const firstTokens = candidateDescription
+    .toLowerCase()
+    .split(/[,\s]+/)
+    .filter((t) => t.length > 0)
+    .slice(0, 2)
+  return !firstTokens.includes('flour')
+}
+
 function passesPrepCheck(input: Set<string>, candidate: Set<string>): {
   ok: boolean
   rejected?: string
@@ -576,6 +600,7 @@ interface AutoPickOutcome {
     | 'inverse-meat-fail'
     | 'dish-class-fail'
     | 'preparation-fail'
+    | 'anti-flour-fail'
     | 'override'
   matched: { name: string; source: string; overlap: number } | null
   rejectedDescriptor?: string  // surface which descriptor failed for eyeball context
@@ -615,6 +640,7 @@ function autoPickStrategy(
         prepOk: boolean
         prepRejected?: string
         prepLayer?: 'dish-class' | 'preparation'
+        flourOk: boolean
       }
     | null = null
   for (const u of tier1) {
@@ -625,6 +651,7 @@ function autoPickStrategy(
     const meatCheck = passesMeatSourceCheck(inputTokens, candTokens)
     const invMeatCheck = passesInverseMeatCheck(inputTokens, candTokens)
     const prepCheck = passesPrepCheck(inputTokens, candTokens)
+    const flourOk = passesAntiFlourCheck(inputTokens, u.description)
     if (!bestUsda || overlap > bestUsda.overlap) {
       bestUsda = {
         u,
@@ -638,10 +665,11 @@ function autoPickStrategy(
         prepOk: prepCheck.ok,
         prepRejected: prepCheck.rejected,
         prepLayer: prepCheck.layer,
+        flourOk,
       }
     }
   }
-  if (bestUsda && bestUsda.descriptorOk && bestUsda.meatOk && bestUsda.invMeatOk && bestUsda.prepOk) {
+  if (bestUsda && bestUsda.descriptorOk && bestUsda.meatOk && bestUsda.invMeatOk && bestUsda.prepOk && bestUsda.flourOk) {
     return {
       pick: {
         source: 'usda',
@@ -684,17 +712,20 @@ function autoPickStrategy(
         prepOk: boolean
         prepRejected?: string
         prepLayer?: 'dish-class' | 'preparation'
+        flourOk: boolean
       }
     | null = null
   for (let i = 0; i < ranked.length; i++) {
     const p = ranked[i]
-    const candTokens = tokenize(`${p.brands ?? ''} ${p.product_name ?? ''}`)
+    const offDescription = `${p.brands ?? ''} ${p.product_name ?? ''}`
+    const candTokens = tokenize(offDescription)
     const overlap = overlapRatio(inputTokens, candTokens)
     if (overlap < threshold) continue
     const descCheck = passesDescriptorCheck(inputTokens, candTokens)
     const meatCheck = passesMeatSourceCheck(inputTokens, candTokens)
     const invMeatCheck = passesInverseMeatCheck(inputTokens, candTokens)
     const prepCheck = passesPrepCheck(inputTokens, candTokens)
+    const flourOk = passesAntiFlourCheck(inputTokens, offDescription)
     if (!bestOff || overlap > bestOff.overlap) {
       const origIdx = result.off.indexOf(p)
       bestOff = {
@@ -710,10 +741,11 @@ function autoPickStrategy(
         prepOk: prepCheck.ok,
         prepRejected: prepCheck.rejected,
         prepLayer: prepCheck.layer,
+        flourOk,
       }
     }
   }
-  if (bestOff && bestOff.descriptorOk && bestOff.meatOk && bestOff.invMeatOk && bestOff.prepOk) {
+  if (bestOff && bestOff.descriptorOk && bestOff.meatOk && bestOff.invMeatOk && bestOff.prepOk && bestOff.flourOk) {
     return {
       pick: {
         source: 'off',
@@ -780,6 +812,17 @@ function autoPickStrategy(
       rejectedPrep: bestUsda.prepRejected,
     }
   }
+  if (bestUsda && !bestUsda.flourOk) {
+    return {
+      pick: null,
+      reason: 'anti-flour-fail',
+      matched: {
+        name: bestUsda.u.description,
+        source: `usda/${bestUsda.u.data_type}`,
+        overlap: bestUsda.overlap,
+      },
+    }
+  }
   if (bestOff && !bestOff.descriptorOk) {
     return {
       pick: null,
@@ -826,6 +869,17 @@ function autoPickStrategy(
         overlap: bestOff.overlap,
       },
       rejectedPrep: bestOff.prepRejected,
+    }
+  }
+  if (bestOff && !bestOff.flourOk) {
+    return {
+      pick: null,
+      reason: 'anti-flour-fail',
+      matched: {
+        name: bestOff.p.product_name ?? '(unnamed)',
+        source: `off/nutriscore=${bestOff.p.nutriscore_grade}`,
+        overlap: bestOff.overlap,
+      },
     }
   }
 
@@ -992,6 +1046,8 @@ async function processCategory(
           reason = `dish-class "${outcome.rejectedPrep}" in candidate "${outcome.matched?.name ?? '?'}"`
         } else if (outcome.reason === 'preparation-fail') {
           reason = `preparation "${outcome.rejectedPrep}" in candidate "${outcome.matched?.name ?? '?'}" not in input`
+        } else if (outcome.reason === 'anti-flour-fail') {
+          reason = `R.6 anti-flour: candidate "${outcome.matched?.name ?? '?'}" leads with "flour", input doesn't`
         } else if (outcome.reason === 'override') {
           reason = `manual override → /admin/pantry`
         } else {
