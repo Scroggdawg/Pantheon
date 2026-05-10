@@ -45,6 +45,25 @@ import { searchUserLibrary } from './tools/search-user-library'
 const SHORTCUT_SCORE_THRESHOLD = 0.85
 const SHORTCUT_GAP_THRESHOLD = 0.15
 
+// M.1 — write-time source_ref normalization (Brick Beta-1).
+//
+// Strips ratcheting "lib:hourly_go_to:NAME|" prefixes from a chained
+// source_ref, leaving the terminal underlying ref ("lib:saved_meal:UUID"
+// or "lib:product:UUID") intact. Without this, hourly_go_to picks
+// ratchet one prefix deeper per parse-meal cycle: each log inherits the
+// prior chained ref AND prepends its own hourly library_id.
+//
+// Applied at every food.source_ref write site below (4 in this file).
+// Belt-and-suspenders cascade-dedup in dedupKeyFor() handles any chains
+// that bypass this normalization (e.g., legacy data pre-migration 020).
+function normalizeFoodSourceRef(ref: string | null | undefined): string | null {
+  if (!ref) return null
+  const cleaned = ref.replace(/^(lib:hourly_go_to:[^|]+\|)+/, '')
+  // Degenerate case: input was solely the chain prefix with empty terminal.
+  // Preserve original semantics rather than producing an empty string.
+  return cleaned.length > 0 ? cleaned : ref
+}
+
 // Candidates-mode thresholds. Lower than single-hit because we're
 // surfacing options for the user to pick, not committing to one.
 const CANDIDATES_MIN_SCORE = 0.6
@@ -93,7 +112,7 @@ export async function tryLibraryShortcut(
     carbs_g: top.total.carbs_g,
     fat_g: top.total.fat_g,
     source: 'library',
-    source_ref: top.library_id,
+    source_ref: normalizeFoodSourceRef(top.source_ref ?? top.library_id),
     unit_alternatives: top.unit_alternatives,
     match_confidence: {
       score: top.match_confidence.score,
@@ -183,7 +202,7 @@ export async function tryLibraryCandidates(
     carbs_g: top.total.carbs_g,
     fat_g: top.total.fat_g,
     source: 'library',
-    source_ref: top.library_id,
+    source_ref: normalizeFoodSourceRef(top.source_ref ?? top.library_id),
     unit_alternatives: top.unit_alternatives,
     match_confidence: {
       score: top.match_confidence.score,
@@ -196,7 +215,7 @@ export async function tryLibraryCandidates(
   const candidates: DisambiguationCandidate[] = topN.map((r) => ({
     name: r.name,
     source: 'library' as const,
-    source_ref: r.library_id,
+    source_ref: normalizeFoodSourceRef(r.source_ref ?? r.library_id) ?? r.library_id,
     per_serving: {
       calories: r.total.kcal,
       protein_g: r.total.protein_g,
@@ -540,7 +559,7 @@ export async function tryLibrarySegmentedShortcut(
         carbs_g: top.total.carbs_g,
         fat_g: top.total.fat_g,
         source: 'library',
-        source_ref: top.library_id,
+        source_ref: normalizeFoodSourceRef(top.source_ref ?? top.library_id),
         unit_alternatives: top.unit_alternatives,
         match_confidence: {
           score: topScore,

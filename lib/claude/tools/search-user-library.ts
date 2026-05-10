@@ -370,7 +370,19 @@ function tierFor(r: LibrarySearchResult): number {
 }
 
 function dedupKeyFor(r: LibrarySearchResult): string {
-  if (r.source_ref && r.source_ref.length > 0) return r.source_ref
+  if (r.source_ref && r.source_ref.length > 0) {
+    // M.1 cascade-dedup (Brick Beta-1) — strip ratcheting
+    // "lib:hourly_go_to:NAME|" prefixes before using as dedup key.
+    // Belt-and-suspenders for any chained source_refs that escape the
+    // write-time normalization in parse-meal-library-shortcut.ts (e.g.,
+    // pre-migration-020 legacy data, or future regressions). Without
+    // this, a saved_meal candidate with source_ref="lib:saved_meal:X"
+    // and an hourly_go_to candidate whose underlying source_ref is the
+    // same lib:saved_meal:X but wrapped in a chain wouldn't dedup,
+    // killing the gap-gate at the matcher.
+    const stripped = r.source_ref.replace(/^(lib:hourly_go_to:[^|]+\|)+/, '')
+    return stripped.length > 0 ? stripped : r.source_ref
+  }
   return `name:${r.name.toLowerCase().trim()}`
 }
 
