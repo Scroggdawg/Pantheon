@@ -516,6 +516,13 @@ export async function searchUserLibrary(
 
   // Op FASTRAK Alpha.6 — dedup by source_ref (or name fallback) keeping
   // the highest-priority tier per group, then tier-asc + score-desc sort.
+  //
+  // M.2 cascade (Brick Beta-1.5, see comment block below) adds a second
+  // pass that collapses NULL-source_ref entries by name into canonical
+  // lib:* entries sharing the same name. M.1 covered the ratchet-chain
+  // case; M.2 covers the NULL-ref legacy-data case that produced the
+  // residual gap-gate failures post-M.1 deploy on banana / eggs - large /
+  // McDonald's BEC.
   const grouped = new Map<string, LibrarySearchResult>()
   for (const r of matches) {
     const key = dedupKeyFor(r)
@@ -530,6 +537,50 @@ export async function searchUserLibrary(
       grouped.set(key, r)
     } else if (tierR === tierE && r.match_confidence.score > existing.match_confidence.score) {
       grouped.set(key, r)
+    }
+  }
+
+  // M.2 — NULL-ref name-cascade dedup (Brick Beta-1.5).
+  //
+  // Symptom (live-test post-M.1): banana / eggs - large / McDonald's BEC
+  // still surfaced as candidates-mode (disambiguation: 1) because their
+  // matching hourly_go_to entries carry NULL source_ref (legacy pre-Gamma-
+  // A.2 logs). NULL refs fall through dedupKeyFor() to `name:NAME`, while
+  // the canonical product/saved_meal carries `lib:product:UUID` /
+  // `lib:saved_meal:UUID`. Pass 1 above can't collapse those — different
+  // keys.
+  //
+  // Pass 2 collapses every `name:X` survivor into the canonical `lib:*`
+  // survivor whose entry's name (case-insensitive, trimmed) equals X.
+  // Canonical wins always — its source_ref is the durable identity. The
+  // collapsed entry's tier/score boost is lost (acceptable: NULL-ref
+  // entries are legacy stragglers; their tier-2 "recently logged" signal
+  // is unreliable when the underlying source_ref is missing).
+  //
+  // When multiple canonical entries share a name (e.g., a product AND
+  // a saved_meal both named "Banana"), the higher-tier canonical wins
+  // the collapse target so NULL-hourlies fold into the strongest existing
+  // surface. Distinct canonical entries with the same name STAY distinct
+  // (e.g., Banana product vs Banana smoothie saved_meal stay separate
+  // because their names differ; same-name distinct entries surface
+  // together, which is the correct ambiguity to expose).
+  const nameToCanonical = new Map<string, string>()
+  for (const [key, r] of grouped) {
+    if (key.startsWith('name:')) continue
+    const nameKey = `name:${r.name.toLowerCase().trim()}`
+    const existing = nameToCanonical.get(nameKey)
+    if (!existing) {
+      nameToCanonical.set(nameKey, key)
+      continue
+    }
+    if (tierFor(r) < tierFor(grouped.get(existing)!)) {
+      nameToCanonical.set(nameKey, key)
+    }
+  }
+  for (const key of [...grouped.keys()]) {
+    if (!key.startsWith('name:')) continue
+    if (nameToCanonical.has(key)) {
+      grouped.delete(key)
     }
   }
 
