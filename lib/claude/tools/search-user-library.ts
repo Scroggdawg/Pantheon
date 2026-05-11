@@ -584,6 +584,42 @@ export async function searchUserLibrary(
     }
   }
 
+  // M.2b — extension of Pass 2 to collapse ANY hourly_go_to entry whose
+  // name matches a canonical, not just NULL-ref ones. Catches the Class C
+  // case where an hourly has a non-NULL non-chain source_ref (e.g.,
+  // "usda:172069" for McDonald's BEC) but the name still matches a
+  // saved_meal/product canonical. The hourly view is a "this was logged
+  // at this hour" ranking signal, not a separate matcher entity — its
+  // existence shouldn't suppress the canonical's gap-gate.
+  //
+  // Order matters: Pass 1 (cascade-dedup) collapses same-key entries
+  // first, so any hourly_go_to whose source_ref matches a canonical's
+  // key has already been merged at this point. The remaining hourly_*
+  // entries here are the ones with non-matching source_refs (usda:, off:,
+  // empty-tail lib:hourly_go_to:|, etc.) — those that wouldn't dedup
+  // via key alone.
+  //
+  // Self-collapse guard: when an hourly_go_to candidate's key IS the
+  // canonical for its name (because Pass 1 elevated it above a tier-3
+  // product at the same source_ref), `canonical === key` prevents
+  // dropping the surviving entry.
+  //
+  // Does NOT catch:
+  //   - Class A (banana plural): "Bananas" vs "Banana" — names differ
+  //     so nameToCanonical[name:bananas] is the plural-hourly's own key,
+  //     self-collapse guard fires. Needs M.5 for pluralization tolerance.
+  //   - Class B (Eggs - Large): product + saved_meal both canonical,
+  //     not hourly. M.2b only touches source='hourly_go_to'. Needs M.4
+  //     for same-name canonical collision.
+  for (const [key, r] of [...grouped.entries()]) {
+    if (r.source !== 'hourly_go_to') continue
+    const nameKey = `name:${r.name.toLowerCase().trim()}`
+    const canonical = nameToCanonical.get(nameKey)
+    if (canonical && canonical !== key) {
+      grouped.delete(key)
+    }
+  }
+
   const deduped = [...grouped.values()]
   deduped.sort((a, b) => {
     const tierDiff = tierFor(a) - tierFor(b)
