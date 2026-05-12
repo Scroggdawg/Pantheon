@@ -95,28 +95,21 @@ const CASES: TestCase[] = [
       + '"coffee" should not fully resolve to a specific branded product like REBBL Hazelnut Coffee Elixir.',
   },
   {
-    name: 'M3.3 — True two-food "and" still splits without runtime compound',
+    name: 'M3.3/M5 — True two-food "and" splits and banana resolves',
     transcript: '3 eggs and a banana',
     expectOriginals: ['3 eggs', 'a banana'],
-    expectSegmented: false,
+    expectSegmented: true,
     notes:
-      'Guardrail: runtime compound protection must not weaken ordinary multi-food segmentation.',
+      'Guardrail: runtime compound protection must not weaken ordinary multi-food segmentation. M.5 now '
+      + 'also lets the banana segment resolve after singular/plural duplicate collapse.',
   },
   {
-    name: '1 — Two saved_meals + Sub-fix-D cascade gap-gate (variant ambiguity)',
+    name: '1 — Two saved_meals resolve after Beta cascade cleanup',
     transcript: '3 eggs and a double espresso',
-    expectSegmented: false,
+    expectSegmented: true,
     notes:
-      'Segments to ["3 eggs", "double espresso"]. Pre-Alpha.6 this would full-resolve cleanly (saved_meals '
-      + 'were the only data source; no duplicates). Post-Alpha.6 the Sub-fix D cascade pulls candidates from '
-      + 'BOTH saved_meals AND hourly_go_tos with different source_refs (saved_meal "Double espresso" has '
-      + 'source_ref=lib:saved_meal:07c10655..., the hourly entry from the original USDA-resolved log has '
-      + 'source_ref=null). Different dedup_keys → both surface at score=1.0 → gap=0 → fails the 0.15 '
-      + 'disambiguation gate per segment → "double espresso" stays unresolved while "3 eggs" resolves via '
-      + 'the same multi-variant pattern (variants partly dedup via library_id matching). Helper returns '
-      + 'partial 1/2. SURFACES post-Alpha.6 cascade issue: hearted/saved foods that pre-existed as logs '
-      + 'have variant-ambiguity that gates them out of the segmented fast path. Future Brick Beta (matcher '
-      + 'upgrade) candidate.',
+      'Segments to ["3 eggs", "double espresso"]. Current Beta cascade cleanup resolves both saved meals '
+      + 'cleanly. This guards against regressing the source_ref / hourly_go_to canonical collapse work.',
   },
   {
     name: '2 — Cross-tier with "Churro" saved_meal having same variant issue',
@@ -137,15 +130,13 @@ const CASES: TestCase[] = [
       + 'hourly_go_to canonicalization fixes.',
   },
   {
-    name: '4 — Gap-gate fires on multi-variant hourly entry',
+    name: '4 — M5 singular/plural cascade resolves banana variants',
     transcript: '3 eggs and a banana',
-    expectSegmented: false,
+    expectSegmented: true,
     notes:
-      'Segments to ["3 eggs", "banana"]. "3 eggs" resolves cleanly (saved_meal). "banana" hits 3 hourly '
-      + '1.0-score variants ("banana", "Banana", "Bananas") with different source_refs — gap between top '
-      + 'and second is 0, fails the 0.15 disambiguation gate per segment. Helper returns partial resolve '
-      + '(1/2). The full-resolve assertion is FALSE. Same shape as the pre-Alpha.6 "3 eggs and a handful of '
-      + 'blueberries" gap-gate test, just with banana variants instead. Surfaces ongoing library-dedupe debt.',
+      'Segments to ["3 eggs", "banana"]. M.5 collapses simple singular/plural hourly_go_to variants '
+      + '("banana" / "Bananas") into the canonical saved_meal/product when one exists, so the gap-gate no '
+      + 'longer fails on 1.0/1.0 plural duplicates.',
   },
   {
     name: '5 — Composite-allowlist protection ("half and half")',

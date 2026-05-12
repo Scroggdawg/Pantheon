@@ -112,6 +112,26 @@ function tokens(s: string | null | undefined): Set<string> {
   return new Set(normalize(s).split(' ').filter((t) => t.length > 0))
 }
 
+function singularizeToken(token: string): string {
+  if (token.endsWith('ies') && token.length > 4) {
+    return `${token.slice(0, -3)}y`
+  }
+  if (token.endsWith('es') && token.length > 3) {
+    return token.slice(0, -2)
+  }
+  if (token.endsWith('s') && !token.endsWith('ss') && token.length > 3) {
+    return token.slice(0, -1)
+  }
+  return token
+}
+
+function normalizedNameKey(name: string): string {
+  return normalize(name)
+    .split(' ')
+    .map(singularizeToken)
+    .join(' ')
+}
+
 const GENERIC_SINGLE_TOKEN_QUERIES = new Set([
   'coffee',
   'tea',
@@ -635,9 +655,6 @@ export async function searchUserLibrary(
   // dropping the surviving entry.
   //
   // Does NOT catch:
-  //   - Class A (banana plural): "Bananas" vs "Banana" — names differ
-  //     so nameToCanonical[name:bananas] is the plural-hourly's own key,
-  //     self-collapse guard fires. Needs M.5 for pluralization tolerance.
   //   - Class B (Eggs - Large): product + saved_meal both canonical,
   //     not hourly. M.2b only touches source='hourly_go_to'. Needs M.4
   //     for same-name canonical collision.
@@ -646,6 +663,40 @@ export async function searchUserLibrary(
     const nameKey = `name:${r.name.toLowerCase().trim()}`
     const canonical = nameToCanonical.get(nameKey)
     if (canonical && canonical !== key) {
+      grouped.delete(key)
+    }
+  }
+
+  // M.5 — singular/plural name-variant cascade.
+  //
+  // Class A live failure: "banana" produced separate high-confidence
+  // hourly_go_to variants named "banana", "Banana", and "Bananas". Exact
+  // name-cascade cannot collapse the plural form, leaving a 1.0/1.0
+  // gap-gate failure in segmented shortcut. Keep this conservative: only
+  // exact simple singular/plural normalized name keys collapse. Higher
+  // priority tier wins; score breaks same-tier ties.
+  const normalizedNameWinners = new Map<string, string>()
+  for (const [key, r] of grouped) {
+    const nameKey = normalizedNameKey(r.name)
+    if (!nameKey) continue
+    const existing = normalizedNameWinners.get(nameKey)
+    if (!existing) {
+      normalizedNameWinners.set(nameKey, key)
+      continue
+    }
+    const existingRow = grouped.get(existing)!
+    const tierR = tierFor(r)
+    const tierE = tierFor(existingRow)
+    if (
+      tierR < tierE ||
+      (tierR === tierE && r.match_confidence.score > existingRow.match_confidence.score)
+    ) {
+      normalizedNameWinners.set(nameKey, key)
+    }
+  }
+  for (const [key, r] of [...grouped.entries()]) {
+    const winner = normalizedNameWinners.get(normalizedNameKey(r.name))
+    if (winner && winner !== key) {
       grouped.delete(key)
     }
   }
