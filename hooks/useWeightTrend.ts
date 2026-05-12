@@ -28,7 +28,10 @@ export function useWeightTrend(userId: string | null) {
   }, [userId, supabase])
 
   useEffect(() => {
-    refresh()
+    const timer = window.setTimeout(() => {
+      void refresh()
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [refresh])
 
   const latest = readings.length > 0 ? readings[readings.length - 1] : null

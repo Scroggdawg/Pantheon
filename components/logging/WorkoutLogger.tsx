@@ -298,6 +298,7 @@ export function WorkoutLogger({ userId, onComplete, onClose }: Props) {
 
             {imagePreview ? (
               <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element -- local object URL preview, not a deployable optimized asset */}
                 <img
                   src={imagePreview}
                   alt="Workout notes"

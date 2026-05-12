@@ -2,12 +2,20 @@ import { parseWorkout } from '@/lib/claude/workout'
 import { createClient } from '@/lib/supabase/server'
 import { estimateCalories } from '@/lib/claude/calories'
 
+const MAX_TRANSCRIPT_CHARS = 2000
+
 export async function POST(request: Request) {
   try {
     const { transcript } = await request.json()
 
     if (!transcript || typeof transcript !== 'string') {
       return Response.json({ error: 'transcript is required' }, { status: 400 })
+    }
+    if (transcript.length > MAX_TRANSCRIPT_CHARS) {
+      return Response.json(
+        { error: `transcript must be ${MAX_TRANSCRIPT_CHARS} characters or less` },
+        { status: 413 },
+      )
     }
 
     // Fetch most recent weight for calorie estimation

@@ -31,7 +31,10 @@ export function useTodayWorkouts(userId: string | null, dateStr?: string) {
   }, [userId, today, supabase])
 
   useEffect(() => {
-    refresh()
+    const timer = window.setTimeout(() => {
+      void refresh()
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [refresh])
 
   return { workouts, loading, refresh }

@@ -130,7 +130,7 @@ export default function CoachPanel({
             total_carbs_g: parsed.total_carbs_g,
             total_fat_g: parsed.total_fat_g,
             raw_input_text: params.description,
-          }).eq('id', params.entry_id)
+          }).eq('id', params.entry_id).eq('user_id', userId)
           refreshLog()
           addMsg(`Updated entry to: ${params.description} (${parsed.total_calories} cal).`)
 
@@ -141,6 +141,7 @@ export default function CoachPanel({
             .from('food_log_entries')
             .select('*')
             .eq('id', params.entry_id)
+            .eq('user_id', userId)
             .single()
           if (!entry) throw new Error('Entry not found')
 
@@ -163,14 +164,14 @@ export default function CoachPanel({
             total_protein_g: newP,
             total_carbs_g: newC,
             total_fat_g: newF,
-          }).eq('id', params.entry_id)
+          }).eq('id', params.entry_id).eq('user_id', userId)
           refreshLog()
           addMsg(`Scaled entry by ${factor}x (now ${newCal} cal).`)
         }
 
       } else if (action.type === 'delete_food_entry') {
         const params = action.params as { entry_id: string }
-        await supabase.from('food_log_entries').delete().eq('id', params.entry_id)
+        await supabase.from('food_log_entries').delete().eq('id', params.entry_id).eq('user_id', userId)
         refreshLog()
         addMsg('Food entry deleted.')
 
@@ -181,15 +182,22 @@ export default function CoachPanel({
         if (params.duration_min != null) updates.duration_min = params.duration_min
         if (params.notes != null) updates.workout_notes = params.notes
         if (Object.keys(updates).length > 0) {
-          await supabase.from('workout_sessions').update(updates).eq('id', params.session_id)
+          await supabase.from('workout_sessions').update(updates).eq('id', params.session_id).eq('user_id', userId)
           refreshWorkouts()
           addMsg('Workout updated.')
         }
 
       } else if (action.type === 'delete_workout') {
         const params = action.params as { session_id: string }
+        const { data: session } = await supabase
+          .from('workout_sessions')
+          .select('id')
+          .eq('id', params.session_id)
+          .eq('user_id', userId)
+          .maybeSingle()
+        if (!session) throw new Error('Workout not found')
         await supabase.from('workout_exercises').delete().eq('session_id', params.session_id)
-        await supabase.from('workout_sessions').delete().eq('id', params.session_id)
+        await supabase.from('workout_sessions').delete().eq('id', params.session_id).eq('user_id', userId)
         refreshWorkouts()
         addMsg('Workout deleted.')
 
@@ -206,7 +214,7 @@ export default function CoachPanel({
 
       } else if (action.type === 'delete_weight') {
         const params = action.params as { reading_id: string }
-        await supabase.from('weight_readings').delete().eq('id', params.reading_id)
+        await supabase.from('weight_readings').delete().eq('id', params.reading_id).eq('user_id', userId)
         refreshWeight()
         addMsg('Weight reading deleted.')
 
@@ -249,7 +257,7 @@ export default function CoachPanel({
         await supabase.from('saved_meals').update({
           times_logged: (meal.times_logged || 0) + 1,
           last_logged_at: selectedDateNoon(selectedDate),
-        }).eq('id', meal.id)
+        }).eq('id', meal.id).eq('user_id', userId)
 
         refreshLog()
         addMsg(`Logged ${params.servings} serving(s) of "${meal.name}" (${portionCal} cal).`)

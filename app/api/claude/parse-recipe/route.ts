@@ -1,5 +1,8 @@
 import { parseRecipe } from '@/lib/claude/recipe'
 
+const MAX_RECIPE_TEXT_CHARS = 12000
+const MAX_HINT_NAME_CHARS = 160
+
 export async function POST(request: Request) {
   try {
     const { text, hint_name } = await request.json()
@@ -7,11 +10,23 @@ export async function POST(request: Request) {
     if (!text || typeof text !== 'string') {
       return Response.json({ error: 'text is required' }, { status: 400 })
     }
+    if (text.length > MAX_RECIPE_TEXT_CHARS) {
+      return Response.json(
+        { error: `text must be ${MAX_RECIPE_TEXT_CHARS} characters or less` },
+        { status: 413 },
+      )
+    }
 
     if (hint_name !== undefined && typeof hint_name !== 'string') {
       return Response.json(
         { error: 'hint_name must be a string when provided' },
         { status: 400 },
+      )
+    }
+    if (typeof hint_name === 'string' && hint_name.length > MAX_HINT_NAME_CHARS) {
+      return Response.json(
+        { error: `hint_name must be ${MAX_HINT_NAME_CHARS} characters or less` },
+        { status: 413 },
       )
     }
 

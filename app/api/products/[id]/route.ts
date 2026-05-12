@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { bustResponseCacheForUser } from '@/lib/claude/parse-meal-response-cache'
+import { getCanonicalUserId } from '@/lib/pantheon-user'
 import type { ProductFulfillmentSource } from '@/types/database'
 
 const ALLOWED_SOURCES: ProductFulfillmentSource[] = [
@@ -120,6 +122,13 @@ export async function PUT(
     if (error) {
       return Response.json({ error: error.message }, { status: 500 })
     }
+    try {
+      const userId = await getCanonicalUserId(supabase)
+      await bustResponseCacheForUser(supabase, userId)
+    } catch (cacheError) {
+      const message = cacheError instanceof Error ? cacheError.message : String(cacheError)
+      console.warn('[products/[id]] cache bust skipped:', message)
+    }
     return Response.json(data)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
@@ -137,6 +146,13 @@ export async function DELETE(
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) {
       return Response.json({ error: error.message }, { status: 500 })
+    }
+    try {
+      const userId = await getCanonicalUserId(supabase)
+      await bustResponseCacheForUser(supabase, userId)
+    } catch (cacheError) {
+      const message = cacheError instanceof Error ? cacheError.message : String(cacheError)
+      console.warn('[products/[id]] cache bust skipped:', message)
     }
     return new Response(null, { status: 204 })
   } catch (error) {

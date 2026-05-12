@@ -16,6 +16,7 @@
 // products table changed → matcher candidates may shift).
 
 import { bustResponseCacheForUser } from '@/lib/claude/parse-meal-response-cache'
+import { assertCanonicalUserId, PantheonUserError } from '@/lib/pantheon-user'
 import { createClient } from '@/lib/supabase/server'
 import { llmFillPortions } from '@/lib/llm-fill/portions'
 import { offTextSearch, parseUnitFromServingSize } from '@/lib/off/search'
@@ -223,11 +224,17 @@ export async function POST(request: Request) {
   } catch {
     return bad(400, 'invalid JSON body')
   }
-  if (!body.user_id || typeof body.user_id !== 'string') return bad(400, 'user_id required')
   if (!Array.isArray(body.rows) || body.rows.length === 0) return bad(400, 'rows[] required')
   if (body.rows.length > 50) return bad(400, 'maximum 50 rows per save')
 
   const supabase = await createClient()
+  let userId: string
+  try {
+    userId = await assertCanonicalUserId(supabase, body.user_id)
+  } catch (error) {
+    if (error instanceof PantheonUserError) return bad(error.status, error.message)
+    throw error
+  }
 
   // Build row payloads in parallel. Failures land per-row; we still
   // attempt the bulk INSERT for whatever succeeded.
@@ -302,7 +309,7 @@ export async function POST(request: Request) {
   // table changed → matcher candidates may shift).
   const anySaved = results.some((r) => r.status === 'saved')
   if (anySaved) {
-    await bustResponseCacheForUser(supabase, body.user_id)
+    await bustResponseCacheForUser(supabase, userId)
   }
 
   return Response.json({ results })

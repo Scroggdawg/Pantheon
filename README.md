@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pantheon Web
 
-## Getting Started
+Pantheon Web is the backend/admin/API companion to Pantheon Native.
 
-First, run the development server:
+Native is the primary user experience. This repo remains live because it hosts server-side capabilities that native depends on.
+
+## Main Responsibilities
+
+- AI meal/workout parsing routes
+- Whisper transcription
+- Withings OAuth and sync
+- Admin/pantry product workflows
+- Meal-plan generation and promotion
+- Supabase migrations and server-side data utilities
+- Vercel deployment
+
+## Quick Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Useful checks:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Important Files
 
-## Learn More
+- `app/api/claude/parse-meal/route.ts` - native/web meal parse entrypoint.
+- `lib/claude/tools/search-user-library.ts` - personal library matcher.
+- `lib/claude/parse-meal-library-shortcut.ts` - shortcut/candidates/segmenter layer.
+- `app/api/meals/log/route.ts` - server-side meal logging route used by native.
+- `app/api/admin/pantry/*` - product search/save workflows.
+- `supabase/migrations/` - database migrations.
+- `AGENTS.md` - operating rules for agents.
 
-To learn more about Next.js, take a look at the following resources:
+## Environment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Do not commit raw env values. `.env*` is ignored except `.env.example`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Important env var categories:
 
-## Deploy on Vercel
+- Supabase URL/anon/service-role keys
+- Anthropic/OpenAI keys
+- Native shared secret
+- Withings OAuth credentials
+- Vercel/project settings
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment Notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Vercel production changes require explicit approval. Database migrations require explicit approval. Production data mutations require explicit approval.
+
+When changing API response shapes, check native callers in `/Users/scrogdawg/Code/pantheon-native`.

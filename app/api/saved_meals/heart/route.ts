@@ -33,6 +33,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 import { bustResponseCacheForUser } from '@/lib/claude/parse-meal-response-cache'
+import { assertCanonicalUserId, PantheonUserError } from '@/lib/pantheon-user'
 import { createClient } from '@/lib/supabase/server'
 import type { FoodItem } from '@/types/database'
 
@@ -53,7 +54,6 @@ async function parseAndValidate(request: Request): Promise<HeartBody | Response>
   } catch {
     return bad(400, 'invalid JSON body')
   }
-  if (!body.user_id || typeof body.user_id !== 'string') return bad(400, 'user_id required')
   if (!body.food_log_entry_id || typeof body.food_log_entry_id !== 'string') {
     return bad(400, 'food_log_entry_id required')
   }
@@ -110,6 +110,13 @@ export async function POST(request: Request) {
   const { user_id, food_log_entry_id, food_index } = parsed
 
   const supabase = await createClient()
+  let userId: string
+  try {
+    userId = await assertCanonicalUserId(supabase, user_id)
+  } catch (error) {
+    if (error instanceof PantheonUserError) return bad(error.status, error.message)
+    throw error
+  }
 
   const { data: logRow, error: logErr } = await supabase
     .from('food_log_entries')
@@ -119,7 +126,7 @@ export async function POST(request: Request) {
 
   if (logErr) return bad(500, `food_log_entries lookup failed: ${logErr.message}`)
   if (!logRow) return bad(404, 'food_log_entry not found')
-  if (logRow.user_id !== user_id) return bad(403, 'user_id mismatch')
+  if (logRow.user_id !== userId) return bad(403, 'user_id mismatch')
 
   const foods = (logRow.foods_json ?? []) as FoodItem[]
   if (food_index >= foods.length) {
@@ -127,7 +134,7 @@ export async function POST(request: Request) {
   }
   const targetFood = foods[food_index]
 
-  const existingId = await findSavedMealForFood(supabase, user_id, targetFood)
+  const existingId = await findSavedMealForFood(supabase, userId, targetFood)
 
   let savedMealId: string
 
@@ -145,7 +152,7 @@ export async function POST(request: Request) {
     const { data: ins, error: insErr } = await supabase
       .from('saved_meals')
       .insert({
-        user_id,
+        user_id: userId,
         name: targetFood.name ?? 'Untitled food',
         foods_json: [targetFood],
         total_calories: Math.round(targetFood.calories ?? 0),
@@ -166,7 +173,7 @@ export async function POST(request: Request) {
     savedMealId = ins.id
   }
 
-  await bustResponseCacheForUser(supabase, user_id)
+  await bustResponseCacheForUser(supabase, userId)
 
   return Response.json({
     saved_meal_id: savedMealId,
@@ -180,6 +187,13 @@ export async function DELETE(request: Request) {
   const { user_id, food_log_entry_id, food_index } = parsed
 
   const supabase = await createClient()
+  let userId: string
+  try {
+    userId = await assertCanonicalUserId(supabase, user_id)
+  } catch (error) {
+    if (error instanceof PantheonUserError) return bad(error.status, error.message)
+    throw error
+  }
 
   const { data: logRow, error: logErr } = await supabase
     .from('food_log_entries')
@@ -189,7 +203,7 @@ export async function DELETE(request: Request) {
 
   if (logErr) return bad(500, `food_log_entries lookup failed: ${logErr.message}`)
   if (!logRow) return bad(404, 'food_log_entry not found')
-  if (logRow.user_id !== user_id) return bad(403, 'user_id mismatch')
+  if (logRow.user_id !== userId) return bad(403, 'user_id mismatch')
 
   const foods = (logRow.foods_json ?? []) as FoodItem[]
   if (food_index >= foods.length) {
@@ -197,7 +211,7 @@ export async function DELETE(request: Request) {
   }
   const targetFood = foods[food_index]
 
-  const existingId = await findSavedMealForFood(supabase, user_id, targetFood)
+  const existingId = await findSavedMealForFood(supabase, userId, targetFood)
   if (!existingId) {
     return bad(404, 'no saved_meal exists for this food')
   }
@@ -208,7 +222,7 @@ export async function DELETE(request: Request) {
     .eq('id', existingId)
   if (updErr) return bad(500, `saved_meals update failed: ${updErr.message}`)
 
-  await bustResponseCacheForUser(supabase, user_id)
+  await bustResponseCacheForUser(supabase, userId)
 
   return Response.json({
     saved_meal_id: existingId,

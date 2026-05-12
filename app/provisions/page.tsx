@@ -45,7 +45,10 @@ export default function ProvisionsPage() {
 
   useEffect(() => {
     if (!user) return
-    fetchRecipes()
+    const timer = window.setTimeout(() => {
+      void fetchRecipes()
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [user, fetchRecipes])
 
   if (userLoading) {

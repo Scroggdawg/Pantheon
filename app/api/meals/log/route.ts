@@ -14,6 +14,7 @@
 // compensation; surfaced in the response if compensation itself fails).
 
 import { createClient } from '@/lib/supabase/server'
+import { assertCanonicalUserId, PantheonUserError } from '@/lib/pantheon-user'
 import type { DayType, FoodItem, LogMethod } from '@/types/database'
 
 interface MealsLogBody {
@@ -45,13 +46,19 @@ export async function POST(request: Request) {
     return bad(400, 'invalid JSON body')
   }
 
-  if (!body.user_id || typeof body.user_id !== 'string') return bad(400, 'user_id required')
   if (!Array.isArray(body.foods) || body.foods.length === 0) return bad(400, 'foods[] required')
   if (!body.day_type) return bad(400, 'day_type required')
   if (!body.log_method) return bad(400, 'log_method required')
   if (!body.meal_label) return bad(400, 'meal_label required')
 
   const supabase = await createClient()
+  let userId: string
+  try {
+    userId = await assertCanonicalUserId(supabase, body.user_id)
+  } catch (error) {
+    if (error instanceof PantheonUserError) return bad(error.status, error.message)
+    throw error
+  }
 
   // Op FASTRAK Alpha.7 + Alpha.6 — extract the saved_meal UUID up front
   // for the food_log_entries.saved_meal_id audit column. Only the
@@ -67,7 +74,7 @@ export async function POST(request: Request) {
   const { data: logRow, error: logErr } = await supabase
     .from('food_log_entries')
     .insert({
-      user_id: body.user_id,
+      user_id: userId,
       meal_label: body.meal_label,
       day_type: body.day_type,
       foods_json: body.foods,
@@ -103,6 +110,7 @@ export async function POST(request: Request) {
         .from('saved_meals')
         .select('times_logged')
         .eq('id', uuid)
+        .eq('user_id', userId)
         .single()
       if (getErr || !existing) {
         throw new Error(
@@ -116,6 +124,7 @@ export async function POST(request: Request) {
           last_logged_at: new Date().toISOString(),
         })
         .eq('id', uuid)
+        .eq('user_id', userId)
       if (updErr) throw new Error(`saved_meals update failed: ${updErr.message}`)
       savedMealId = uuid
       savedMealAction = 'incremented'

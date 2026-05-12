@@ -27,6 +27,8 @@ import {
 import { createClient } from '@/lib/supabase/server'
 import type { FoodItem } from '@/types/database'
 
+const MAX_TRANSCRIPT_CHARS = 2000
+
 // Op FASTRAK Alpha.3 layer 3 — accept whisper telemetry forwarded from
 // the transcribe route (via the native client; web uses Web Speech API
 // and never has whisper data) and merge into _telemetry. Fields are
@@ -48,6 +50,12 @@ export async function POST(request: Request) {
 
     if (!transcript || typeof transcript !== 'string') {
       return Response.json({ error: 'transcript is required' }, { status: 400 })
+    }
+    if (transcript.length > MAX_TRANSCRIPT_CHARS) {
+      return Response.json(
+        { error: `transcript must be ${MAX_TRANSCRIPT_CHARS} characters or less` },
+        { status: 413 },
+      )
     }
 
     const supabase = await createClient()

@@ -20,7 +20,6 @@ interface Props {
   onSaved: () => void
 }
 
-const GOLD = '#a47c16'
 const GOLD_LIGHT = '#c9a03c'
 const TEXT_DARK = '#3d3225'
 const TEXT_MID = '#5a4a32'

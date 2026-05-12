@@ -2,6 +2,8 @@ import { client } from '@/lib/claude/claude'
 import { createClient } from '@/lib/supabase/server'
 import { estimateCalories } from '@/lib/claude/calories'
 
+const MAX_IMAGE_BASE64_CHARS = 10_000_000
+
 const WORKOUT_IMAGE_SYSTEM_PROMPT = `This is a handwritten gym workout. Parse every exercise you can read into structured JSON:
 {
   "session_type": "lift|bjj|zone2|other",
@@ -32,6 +34,12 @@ export async function POST(request: Request) {
 
     if (!image || typeof image !== 'string') {
       return Response.json({ error: 'image (base64) is required' }, { status: 400 })
+    }
+    if (image.length > MAX_IMAGE_BASE64_CHARS) {
+      return Response.json(
+        { error: 'image is too large' },
+        { status: 413 },
+      )
     }
 
     const validTypes = ['image/jpeg', 'image/png', 'image/webp']
