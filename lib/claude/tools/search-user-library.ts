@@ -109,10 +109,6 @@ function normalize(s: string | null | undefined): string {
     .trim()
 }
 
-function tokens(s: string | null | undefined): Set<string> {
-  return new Set(normalize(s).split(' ').filter((t) => t.length > 0))
-}
-
 function singularizeToken(token: string): string {
   if (token.endsWith('ies') && token.length > 4) {
     return `${token.slice(0, -3)}y`
@@ -126,11 +122,17 @@ function singularizeToken(token: string): string {
   return token
 }
 
+function tokens(s: string | null | undefined): Set<string> {
+  return new Set(
+    normalize(s)
+      .split(' ')
+      .filter((t) => t.length > 0)
+      .map(singularizeToken),
+  )
+}
+
 function normalizedNameKey(name: string): string {
-  return normalize(name)
-    .split(' ')
-    .map(singularizeToken)
-    .join(' ')
+  return [...tokens(name)].join(' ')
 }
 
 const GENERIC_SINGLE_TOKEN_QUERIES = new Set([

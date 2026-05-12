@@ -498,6 +498,21 @@ function stripFillerTokens(segment: string): string {
     .trim()
 }
 
+function relaxedSegmentQuery(segment: string): string {
+  return segment
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => {
+      const cleaned = t.replace(/[^\w]/g, '')
+      if (cleaned.length === 0) return false
+      if (/^\d+$/.test(cleaned)) return false
+      if (cleaned === 'with' || cleaned === 'on' || cleaned === 'rocks') return false
+      return !FILLER_TOKENS.has(cleaned)
+    })
+    .join(' ')
+    .trim()
+}
+
 // Op FASTRAK Alpha.4.1 — segmenter now emits stripped+original pairs.
 //
 // Pre-Alpha.4.1 segmentTranscript returned only the stripped form, which
@@ -638,9 +653,21 @@ export async function tryLibrarySegmentedShortcut(
   // what the library similarity scorer expects — filler-removed,
   // written-numbers-normalized).
   const segmentResults = await Promise.all(
-    segments.map((seg) =>
-      searchUserLibrary({ query: seg.stripped, limit: 2 }, { userId, supabase }),
-    ),
+    segments.map(async (seg) => {
+      const primary = await searchUserLibrary({ query: seg.stripped, limit: 2 }, { userId, supabase })
+      const relaxed = relaxedSegmentQuery(seg.stripped)
+      if (!relaxed || relaxed === seg.stripped) return primary
+
+      const top = primary.results[0]
+      const second = primary.results[1]
+      const primaryClears =
+        top &&
+        top.match_confidence.score >= SEGMENT_SHORTCUT_SCORE_THRESHOLD &&
+        top.match_confidence.score - (second?.match_confidence.score ?? 0) >= SEGMENT_SHORTCUT_GAP_THRESHOLD
+      if (primaryClears) return primary
+
+      return searchUserLibrary({ query: relaxed, limit: 2 }, { userId, supabase })
+    }),
   )
 
   // Per-segment classification. Same threshold gates as the pre-Alpha.4
