@@ -63,11 +63,44 @@ import {
 interface TestCase {
   name: string
   transcript: string
+  runtimeCompositeNames?: string[]
+  expectOriginals?: string[]
   expectSegmented: boolean // expect tryLibrarySegmentedShortcut to return non-null
   notes?: string
 }
 
 const CASES: TestCase[] = [
+  {
+    name: 'M3.1 — Runtime saved_meal protects "&" compound from "and" split',
+    transcript: "One Bacon Egg and Cheese Biscuit from McDonald's and one Sausage Burrito from McDonald's",
+    runtimeCompositeNames: ["McDonald's Bacon Egg & Cheese Biscuit"],
+    expectOriginals: [
+      "One Bacon Egg and Cheese Biscuit from McDonald's",
+      "one Sausage Burrito from McDonald's",
+    ],
+    expectSegmented: false,
+    notes:
+      'M.3 direct segmenter regression. Saved meal uses "&"; voice says "and". The segmenter should keep '
+      + '"Bacon Egg and Cheese Biscuit" intact and only split between the two foods.',
+  },
+  {
+    name: 'M3.2 — Runtime saved_meal protects prefix compound plus coffee',
+    transcript: "McDonald's Bacon Egg and Cheese Biscuit and a coffee",
+    runtimeCompositeNames: ["McDonald's Bacon Egg & Cheese Biscuit"],
+    expectOriginals: ["McDonald's Bacon Egg and Cheese Biscuit", 'a coffee'],
+    expectSegmented: true,
+    notes:
+      'M.3 direct segmenter regression. Restaurant-prefixed library name should protect the full compound '
+      + 'food while still allowing the outer "and a coffee" delimiter to split.',
+  },
+  {
+    name: 'M3.3 — True two-food "and" still splits without runtime compound',
+    transcript: '3 eggs and a banana',
+    expectOriginals: ['3 eggs', 'a banana'],
+    expectSegmented: false,
+    notes:
+      'Guardrail: runtime compound protection must not weaken ordinary multi-food segmentation.',
+  },
   {
     name: '1 — Two saved_meals + Sub-fix-D cascade gap-gate (variant ambiguity)',
     transcript: '3 eggs and a double espresso',
@@ -87,29 +120,20 @@ const CASES: TestCase[] = [
   {
     name: '2 — Cross-tier with "Churro" saved_meal having same variant issue',
     transcript: 'scrambled eggs and a Churro',
-    expectSegmented: false,
+    expectSegmented: true,
     notes:
-      'Segments to ["scrambled eggs", "churro"]. "scrambled eggs" resolves cleanly via Tier 2 hourly_go_tos '
-      + '(unambiguous — only one entry with that name). "Churro" hits the same variant-ambiguity as Case 1: '
-      + 'saved_meal Churro at lib:saved_meal:f0eb30e7... vs hourly_go_to entry at null source_ref → gap-gate '
-      + 'fails. Helper returns partial 1/2. The "scrambled eggs" resolution still demonstrates the Sub-fix D '
-      + 'cascade extension working — a segment with NO corresponding saved_meal or product can resolve via '
-      + 'the hourly view. Same Brick Beta concern as Case 1.',
+      'Segments to ["scrambled eggs", "churro"]. Current Beta-1 matcher state resolves both segments cleanly: '
+      + '"scrambled eggs" through hourly_go_tos and "Churro" through saved_meals. This case is kept as a '
+      + 'current-reality regression guard for cross-tier full segmented resolution.',
   },
   {
     name: '3 — Hearted saved_meal exhibits same variant issue',
     transcript: "McDonald's sausage burrito and a Churro",
-    expectSegmented: false,
+    expectSegmented: true,
     notes:
-      "Segments to [\"mcdonald's sausage burrito\", \"churro\"]. Both saved_meals (one favorited, one not) "
-      + 'exhibit the same multi-variant gap-gate failure — saved_meal\'s lib:saved_meal:* source_ref doesn\'t '
-      + 'match the hourly_go_to source_ref from the original food log. Helper returns null (zero resolves) '
-      + 'or partial. Demonstrates that hearting a food via the heart endpoint does NOT automatically resolve '
-      + 'the variant-ambiguity issue — the original food_log_entries row\'s foods_json[i].source_ref stays '
-      + 'as it was at log time (null in this case for an LLM-only McDonald\'s parse), separate from the new '
-      + 'saved_meal\'s identity. Surfaces a heart-endpoint follow-up: should heart-INSERT also UPDATE the '
-      + 'parent food_log_entries row\'s foods_json[i].source_ref to point at the new saved_meal? Out of '
-      + 'scope for Alpha.6; flagged for Brick Beta.',
+      "Segments to [\"mcdonald's sausage burrito\", \"churro\"]. Current Beta-1 matcher state resolves both "
+      + 'saved_meals cleanly. This case guards the improved cascade behavior after the source_ref and '
+      + 'hourly_go_to canonicalization fixes.',
   },
   {
     name: '4 — Gap-gate fires on multi-variant hourly entry',
@@ -190,7 +214,7 @@ async function main() {
 
     // Segmenter output (independent of shortcut decision).
     // Post-Alpha.4.1 the shape is { stripped, original } pairs.
-    const segs = segmentTranscript(c.transcript)
+    const segs = segmentTranscript(c.transcript, c.runtimeCompositeNames)
     console.log(
       `  segments (${segs.length}): ${JSON.stringify(segs.map((s) => s.stripped))}`,
     )
@@ -236,7 +260,16 @@ async function main() {
       }
     }
 
-    const matched = fullResolve === c.expectSegmented
+    const originals = segs.map((s) => s.original)
+    const originalsMatched = c.expectOriginals === undefined
+      || JSON.stringify(originals) === JSON.stringify(c.expectOriginals)
+    if (c.expectOriginals !== undefined) {
+      console.log(
+        `  expected originals matched: ${originalsMatched ? 'YES' : 'NO'}`,
+      )
+    }
+
+    const matched = fullResolve === c.expectSegmented && originalsMatched
     if (matched) {
       console.log(`  ✓ matches expectation (segmented=${c.expectSegmented})`)
       pass += 1

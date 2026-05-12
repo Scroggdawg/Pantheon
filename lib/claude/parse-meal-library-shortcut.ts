@@ -283,6 +283,114 @@ const COMPOSITE_ALLOWLIST = [
 
 const COMPOSITE_PLACEHOLDER = (i: number) => `__COMPOSITE_${i}__`
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function normalizeCompositePhrase(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function compositeTokens(s: string): string[] {
+  return normalizeCompositePhrase(s)
+    .split(' ')
+    .filter((token) => token.length > 1 || token === 'and')
+}
+
+function hasAndConnector(s: string): boolean {
+  return compositeTokens(s).includes('and')
+}
+
+function compositeProtectionPhrases(name: string): string[] {
+  const tokens = compositeTokens(name)
+  const normalized = tokens.join(' ')
+  if (!normalized) return []
+  const connectorIndexes = tokens
+    .map((t, i) => (t === 'and' ? i : -1))
+    .filter((i) => i >= 0)
+  if (connectorIndexes.length === 0) return []
+
+  const phrases = new Set<string>()
+  phrases.add(normalized)
+
+  // Runtime names often include a brand/restaurant prefix, while voice
+  // transcripts place that context elsewhere ("Bacon Egg and Cheese
+  // Biscuit from McDonald's"). Protect the food-name window around
+  // "and" so the segmenter keeps the compound intact in both shapes.
+  for (const idx of connectorIndexes) {
+    for (let left = 1; left <= 3; left++) {
+      for (let right = 1; right <= 3; right++) {
+        const start = Math.max(0, idx - left)
+        const end = Math.min(tokens.length, idx + right + 1)
+        const phrase = tokens.slice(start, end).join(' ')
+        const phraseLength = phrase.split(' ').length
+        if (phrase === normalized || phraseLength >= 4) phrases.add(phrase)
+      }
+    }
+  }
+
+  return [...phrases]
+}
+
+function compositePhraseRegex(phrase: string): RegExp | null {
+  const tokens = compositeTokens(phrase)
+  if (tokens.length < 3 || !tokens.includes('and')) return null
+
+  const pattern = tokens
+    .map((token) => (token === 'and' ? '(?:and|&)' : escapeRegExp(token)))
+    .join('[^a-z0-9]+')
+  return new RegExp(`\\b${pattern}\\b`, 'gi')
+}
+
+function buildCompositeProtectionPhrases(runtimeCompositeNames: string[]): string[] {
+  const phrases = new Map<string, string>()
+  for (const name of [...COMPOSITE_ALLOWLIST, ...runtimeCompositeNames]) {
+    for (const phrase of compositeProtectionPhrases(name)) {
+      phrases.set(normalizeCompositePhrase(phrase), phrase)
+    }
+  }
+
+  return [...phrases.values()].sort((a, b) => b.length - a.length)
+}
+
+async function loadRuntimeCompositeNames(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<string[]> {
+  const [savedMealsRes, productsRes] = await Promise.all([
+    supabase.from('saved_meals').select('name').eq('user_id', userId),
+    supabase.from('products').select('name, brand'),
+  ])
+
+  if (savedMealsRes.error) {
+    console.warn('[parse-meal] M.3 saved_meals compound lookup failed:', savedMealsRes.error.message)
+  }
+  if (productsRes.error) {
+    console.warn('[parse-meal] M.3 products compound lookup failed:', productsRes.error.message)
+  }
+
+  const savedMealNames = (savedMealsRes.data ?? [])
+    .map((row) => row.name)
+    .filter((name): name is string => typeof name === 'string' && hasAndConnector(name))
+
+  const productNames = (productsRes.data ?? [])
+    .map((row) => {
+      const name = typeof row.name === 'string' ? row.name : ''
+      const brand = typeof row.brand === 'string' ? row.brand : ''
+      return brand && !name.toLowerCase().includes(brand.toLowerCase())
+        ? `${brand} ${name}`
+        : name
+    })
+    .filter((name) => name.length > 0 && hasAndConnector(name))
+
+  return [...savedMealNames, ...productNames]
+}
+
 // Written-number → digit normalization. Library entries typically
 // store digit form ("3 eggs"); voice transcripts often produce
 // written form ("three eggs"). Without normalization, segmented
@@ -412,15 +520,21 @@ export interface TranscriptSegment {
   original: string
 }
 
-export function segmentTranscript(transcript: string): TranscriptSegment[] {
+export function segmentTranscript(
+  transcript: string,
+  runtimeCompositeNames: string[] = [],
+): TranscriptSegment[] {
   let work = transcript
 
-  // 1. Protect composite items from " and " split
+  // 1. Protect composite items from " and " split. M.3 extends the
+  // static allowlist with runtime user library names so compound foods
+  // like "Bacon Egg & Cheese Biscuit" survive segmentation.
   const protectedSubs: string[] = []
-  for (const composite of COMPOSITE_ALLOWLIST) {
-    const re = new RegExp(composite.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
-    work = work.replace(re, () => {
-      protectedSubs.push(composite)
+  for (const composite of buildCompositeProtectionPhrases(runtimeCompositeNames)) {
+    const re = compositePhraseRegex(composite)
+    if (!re) continue
+    work = work.replace(re, (match) => {
+      protectedSubs.push(match)
       return COMPOSITE_PLACEHOLDER(protectedSubs.length - 1)
     })
   }
@@ -504,10 +618,16 @@ export async function tryLibrarySegmentedShortcut(
   userId: string,
   transcript: string,
 ): Promise<LibrarySegmentedShortcutResult | null> {
-  const segments = segmentTranscript(transcript)
+  const staticSegments = segmentTranscript(transcript)
   // Single-segment utterances are 4f's job; this helper is for
   // multi-item only. Return null so the route's existing 4g/Sonnet
   // path takes over without double work.
+  if (staticSegments.length < 2) return null
+
+  const runtimeCompositeNames = await loadRuntimeCompositeNames(supabase, userId)
+  const segments = runtimeCompositeNames.length > 0
+    ? segmentTranscript(transcript, runtimeCompositeNames)
+    : staticSegments
   if (segments.length < 2) return null
 
   // Search each segment in parallel using the STRIPPED form (which is
