@@ -419,6 +419,29 @@ function tierFor(r: LibrarySearchResult): number {
   return 3
 }
 
+function identityPriorityFor(r: LibrarySearchResult): number {
+  if (r.source === 'saved_meal' && r.is_favorite) return 1
+  if (r.source === 'saved_meal') return 2
+  if (r.source === 'product') return 3
+  return 4
+}
+
+function betterIdentityCandidate(
+  next: LibrarySearchResult,
+  existing: LibrarySearchResult,
+): LibrarySearchResult {
+  const nextPriority = identityPriorityFor(next)
+  const existingPriority = identityPriorityFor(existing)
+  if (nextPriority < existingPriority) return next
+  if (
+    nextPriority === existingPriority &&
+    next.match_confidence.score > existing.match_confidence.score
+  ) {
+    return next
+  }
+  return existing
+}
+
 function dedupKeyFor(r: LibrarySearchResult): string {
   if (r.source_ref && r.source_ref.length > 0) {
     // M.1 cascade-dedup (Brick Beta-1) — strip ratcheting
@@ -581,13 +604,7 @@ export async function searchUserLibrary(
       grouped.set(key, r)
       continue
     }
-    const tierR = tierFor(r)
-    const tierE = tierFor(existing)
-    if (tierR < tierE) {
-      grouped.set(key, r)
-    } else if (tierR === tierE && r.match_confidence.score > existing.match_confidence.score) {
-      grouped.set(key, r)
-    }
+    grouped.set(key, betterIdentityCandidate(r, existing))
   }
 
   // M.2 — NULL-ref name-cascade dedup (Brick Beta-1.5).
@@ -623,7 +640,7 @@ export async function searchUserLibrary(
       nameToCanonical.set(nameKey, key)
       continue
     }
-    if (tierFor(r) < tierFor(grouped.get(existing)!)) {
+    if (betterIdentityCandidate(r, grouped.get(existing)!) === r) {
       nameToCanonical.set(nameKey, key)
     }
   }
@@ -685,12 +702,7 @@ export async function searchUserLibrary(
       continue
     }
     const existingRow = grouped.get(existing)!
-    const tierR = tierFor(r)
-    const tierE = tierFor(existingRow)
-    if (
-      tierR < tierE ||
-      (tierR === tierE && r.match_confidence.score > existingRow.match_confidence.score)
-    ) {
+    if (betterIdentityCandidate(r, existingRow) === r) {
       normalizedNameWinners.set(nameKey, key)
     }
   }

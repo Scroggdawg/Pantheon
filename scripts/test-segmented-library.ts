@@ -65,6 +65,7 @@ interface TestCase {
   transcript: string
   runtimeCompositeNames?: string[]
   expectOriginals?: string[]
+  expectResolvedSourceRefPrefixes?: string[]
   expectSegmented: boolean // expect tryLibrarySegmentedShortcut to return non-null
   notes?: string
 }
@@ -107,9 +108,11 @@ const CASES: TestCase[] = [
     name: '1 — Two saved_meals resolve after Beta cascade cleanup',
     transcript: '3 eggs and a double espresso',
     expectSegmented: true,
+    expectResolvedSourceRefPrefixes: ['lib:saved_meal:', 'lib:saved_meal:'],
     notes:
       'Segments to ["3 eggs", "double espresso"]. Current Beta cascade cleanup resolves both saved meals '
-      + 'cleanly. This guards against regressing the source_ref / hourly_go_to canonical collapse work.',
+      + 'cleanly. This guards against regressing the source_ref / hourly_go_to canonical collapse work and '
+      + 'ensures hourly/legacy rows do not outrank durable saved_meal identities.',
   },
   {
     name: '2 — Cross-tier with "Churro" saved_meal having same variant issue',
@@ -261,7 +264,16 @@ async function main() {
       )
     }
 
-    const matched = fullResolve === c.expectSegmented && originalsMatched
+    const resolvedRefs = result?.resolved.map((r) => r.food.source_ref ?? '') ?? []
+    const refsMatched = c.expectResolvedSourceRefPrefixes === undefined
+      || c.expectResolvedSourceRefPrefixes.every((prefix, i) => resolvedRefs[i]?.startsWith(prefix))
+    if (c.expectResolvedSourceRefPrefixes !== undefined) {
+      console.log(
+        `  expected source_ref prefixes matched: ${refsMatched ? 'YES' : 'NO'}`,
+      )
+    }
+
+    const matched = fullResolve === c.expectSegmented && originalsMatched && refsMatched
     if (matched) {
       console.log(`  ✓ matches expectation (segmented=${c.expectSegmented})`)
       pass += 1
