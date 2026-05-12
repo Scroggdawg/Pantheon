@@ -103,6 +103,7 @@ export interface SearchUserLibraryCtx {
 function normalize(s: string | null | undefined): string {
   return (s || '')
     .toLowerCase()
+    .replace(/['’]/g, '')
     .replace(/[^a-z0-9 ]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()

@@ -431,6 +431,9 @@ const FILLER_TOKENS = new Set([
   'a',
   'an',
   'the',
+  // Generic single-serving count. Multi-count entries like "3 eggs" are
+  // intentionally preserved because Luke has saved meals named that way.
+  '1',
   // Conjunctions left over after splitter doesn't catch edge-position
   // ones (e.g., "...comma comma and stevia" splits on the leading
   // comma, leaving "and stevia" as the next segment with leading "and")
@@ -438,6 +441,7 @@ const FILLER_TOKENS = new Set([
   'or',
   // Quantifiers
   'of',
+  'from',
   'some',
   'few',
   'several',

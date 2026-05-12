@@ -79,10 +79,12 @@ const CASES: TestCase[] = [
       "One Bacon Egg and Cheese Biscuit from McDonald's",
       "one Sausage Burrito from McDonald's",
     ],
-    expectSegmented: false,
+    expectResolvedSourceRefPrefixes: ['lib:saved_meal:', 'lib:saved_meal:'],
+    expectSegmented: true,
     notes:
       'M.3 direct segmenter regression. Saved meal uses "&"; voice says "and". The segmenter should keep '
-      + '"Bacon Egg and Cheese Biscuit" intact and only split between the two foods.',
+      + '"Bacon Egg and Cheese Biscuit" intact and only split between the two foods. M.7 matching-side '
+      + 'cleanup lets "from McDonald\'s" restaurant context still resolve to saved meal identities.',
   },
   {
     name: 'M3/M4 — Runtime compound protect + generic coffee overmatch guard',
