@@ -56,7 +56,7 @@ const SHORTCUT_GAP_THRESHOLD = 0.15
 // Applied at every food.source_ref write site below (4 in this file).
 // Belt-and-suspenders cascade-dedup in dedupKeyFor() handles any chains
 // that bypass this normalization (e.g., legacy data pre-migration 020).
-function normalizeFoodSourceRef(ref: string | null | undefined): string | null {
+export function normalizeFoodSourceRef(ref: string | null | undefined): string | null {
   if (!ref) return null
   const cleaned = ref.replace(/^(lib:hourly_go_to:[^|]+\|)+/, '')
   // Degenerate case: input was solely the chain prefix with empty terminal.
@@ -498,7 +498,7 @@ function stripFillerTokens(segment: string): string {
     .trim()
 }
 
-function relaxedSegmentQuery(segment: string): string {
+export function relaxedSegmentQuery(segment: string): string {
   return segment
     .toLowerCase()
     .split(/\s+/)

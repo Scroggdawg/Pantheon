@@ -144,7 +144,7 @@ const GENERIC_SINGLE_TOKEN_QUERIES = new Set([
 ])
 const GENERIC_OVERMATCH_SCORE_CAP = 0.84
 
-function guardedLibraryNameSimilarity(
+export function guardedLibraryNameSimilarity(
   query: string,
   name: string,
   aliases: string[] = [],
@@ -413,7 +413,7 @@ function hourlyGoToCandidate(row: HourlyGoToRow, score: number): LibrarySearchRe
 }
 
 // ---------------------------------------------------------------------
-// Tier-priority sort + dedup (Op FASTRAK Alpha.6 Sub-fix D)
+// Identity-priority dedup + tier sort (Matcher Constitution)
 // ---------------------------------------------------------------------
 
 function tierFor(r: LibrarySearchResult): number {
@@ -460,6 +460,124 @@ function dedupKeyFor(r: LibrarySearchResult): string {
     return stripped.length > 0 ? stripped : r.source_ref
   }
   return `name:${r.name.toLowerCase().trim()}`
+}
+
+export function dedupeAndSortLibraryResults(matches: LibrarySearchResult[]): LibrarySearchResult[] {
+  // Matcher Constitution invariant: canonical identities beat temporary
+  // observations. The passes below preserve hourly_go_to as a recall
+  // signal while preventing it from surviving beside a matching product
+  // or saved_meal identity.
+  const grouped = new Map<string, LibrarySearchResult>()
+  for (const r of matches) {
+    const key = dedupKeyFor(r)
+    const existing = grouped.get(key)
+    if (!existing) {
+      grouped.set(key, r)
+      continue
+    }
+    grouped.set(key, betterIdentityCandidate(r, existing))
+  }
+
+  // M.2 — NULL-ref name-cascade dedup (Brick Beta-1.5).
+  //
+  // Symptom (live-test post-M.1): banana / eggs - large / McDonald's BEC
+  // still surfaced as candidates-mode (disambiguation: 1) because their
+  // matching hourly_go_to entries carry NULL source_ref (legacy pre-Gamma-
+  // A.2 logs). NULL refs fall through dedupKeyFor() to `name:NAME`, while
+  // the canonical product/saved_meal carries `lib:product:UUID` /
+  // `lib:saved_meal:UUID`. Pass 1 above can't collapse those — different
+  // keys.
+  //
+  // Pass 2 collapses every `name:X` survivor into the canonical `lib:*`
+  // survivor whose entry's name (case-insensitive, trimmed) equals X.
+  // Canonical wins always — its source_ref is the durable identity. The
+  // collapsed entry's tier/score boost is lost (acceptable: NULL-ref
+  // entries are legacy stragglers; their tier-2 "recently logged" signal
+  // is unreliable when the underlying source_ref is missing).
+  //
+  // When multiple canonical entries share a name (e.g., a product AND
+  // a saved_meal both named "Banana"), the higher-identity canonical wins
+  // the collapse target so NULL-hourlies fold into the strongest existing
+  // surface. Distinct canonical entries with different names STAY distinct.
+  // Same-name distinct canonicals resolve through identityPriorityFor()
+  // until a richer product/saved_meal collision rule exists.
+  const nameToCanonical = new Map<string, string>()
+  for (const [key, r] of grouped) {
+    if (key.startsWith('name:')) continue
+    const nameKey = `name:${r.name.toLowerCase().trim()}`
+    const existing = nameToCanonical.get(nameKey)
+    if (!existing) {
+      nameToCanonical.set(nameKey, key)
+      continue
+    }
+    if (betterIdentityCandidate(r, grouped.get(existing)!) === r) {
+      nameToCanonical.set(nameKey, key)
+    }
+  }
+  for (const key of [...grouped.keys()]) {
+    if (!key.startsWith('name:')) continue
+    if (nameToCanonical.has(key)) {
+      grouped.delete(key)
+    }
+  }
+
+  // M.2b — extension of Pass 2 to collapse ANY hourly_go_to entry whose
+  // name matches a canonical, not just NULL-ref ones. Catches the Class C
+  // case where an hourly has a non-NULL non-chain source_ref (e.g.,
+  // "usda:172069" for McDonald's BEC) but the name still matches a
+  // saved_meal/product canonical. The hourly view is a "this was logged
+  // at this hour" ranking signal, not a separate matcher entity — its
+  // existence shouldn't suppress the canonical's gap-gate.
+  //
+  // Self-collapse guard: when an hourly_go_to candidate's key IS the
+  // canonical for its name, `canonical === key` prevents dropping the
+  // surviving entry.
+  for (const [key, r] of [...grouped.entries()]) {
+    if (r.source !== 'hourly_go_to') continue
+    const nameKey = `name:${r.name.toLowerCase().trim()}`
+    const canonical = nameToCanonical.get(nameKey)
+    if (canonical && canonical !== key) {
+      grouped.delete(key)
+    }
+  }
+
+  // M.5 — singular/plural name-variant cascade.
+  //
+  // Class A live failure: "banana" produced separate high-confidence
+  // hourly_go_to variants named "banana", "Banana", and "Bananas". Exact
+  // name-cascade cannot collapse the plural form, leaving a 1.0/1.0
+  // gap-gate failure in segmented shortcut. Keep this conservative: only
+  // exact simple singular/plural normalized name keys collapse. Higher
+  // identity priority wins; score breaks same-priority ties.
+  const normalizedNameWinners = new Map<string, string>()
+  for (const [key, r] of grouped) {
+    const nameKey = normalizedNameKey(r.name)
+    if (!nameKey) continue
+    const existing = normalizedNameWinners.get(nameKey)
+    if (!existing) {
+      normalizedNameWinners.set(nameKey, key)
+      continue
+    }
+    const existingRow = grouped.get(existing)!
+    if (betterIdentityCandidate(r, existingRow) === r) {
+      normalizedNameWinners.set(nameKey, key)
+    }
+  }
+  for (const [key, r] of [...grouped.entries()]) {
+    const winner = normalizedNameWinners.get(normalizedNameKey(r.name))
+    if (winner && winner !== key) {
+      grouped.delete(key)
+    }
+  }
+
+  const deduped = [...grouped.values()]
+  deduped.sort((a, b) => {
+    const tierDiff = tierFor(a) - tierFor(b)
+    if (tierDiff !== 0) return tierDiff
+    return b.match_confidence.score - a.match_confidence.score
+  })
+
+  return deduped
 }
 
 // ---------------------------------------------------------------------
@@ -590,138 +708,7 @@ export async function searchUserLibrary(
     matches.push(candidate)
   }
 
-  // Op FASTRAK Alpha.6 — dedup by source_ref (or name fallback) keeping
-  // the highest-priority tier per group, then tier-asc + score-desc sort.
-  //
-  // M.2 cascade (Brick Beta-1.5, see comment block below) adds a second
-  // pass that collapses NULL-source_ref entries by name into canonical
-  // lib:* entries sharing the same name. M.1 covered the ratchet-chain
-  // case; M.2 covers the NULL-ref legacy-data case that produced the
-  // residual gap-gate failures post-M.1 deploy on banana / eggs - large /
-  // McDonald's BEC.
-  const grouped = new Map<string, LibrarySearchResult>()
-  for (const r of matches) {
-    const key = dedupKeyFor(r)
-    const existing = grouped.get(key)
-    if (!existing) {
-      grouped.set(key, r)
-      continue
-    }
-    grouped.set(key, betterIdentityCandidate(r, existing))
-  }
-
-  // M.2 — NULL-ref name-cascade dedup (Brick Beta-1.5).
-  //
-  // Symptom (live-test post-M.1): banana / eggs - large / McDonald's BEC
-  // still surfaced as candidates-mode (disambiguation: 1) because their
-  // matching hourly_go_to entries carry NULL source_ref (legacy pre-Gamma-
-  // A.2 logs). NULL refs fall through dedupKeyFor() to `name:NAME`, while
-  // the canonical product/saved_meal carries `lib:product:UUID` /
-  // `lib:saved_meal:UUID`. Pass 1 above can't collapse those — different
-  // keys.
-  //
-  // Pass 2 collapses every `name:X` survivor into the canonical `lib:*`
-  // survivor whose entry's name (case-insensitive, trimmed) equals X.
-  // Canonical wins always — its source_ref is the durable identity. The
-  // collapsed entry's tier/score boost is lost (acceptable: NULL-ref
-  // entries are legacy stragglers; their tier-2 "recently logged" signal
-  // is unreliable when the underlying source_ref is missing).
-  //
-  // When multiple canonical entries share a name (e.g., a product AND
-  // a saved_meal both named "Banana"), the higher-tier canonical wins
-  // the collapse target so NULL-hourlies fold into the strongest existing
-  // surface. Distinct canonical entries with the same name STAY distinct
-  // (e.g., Banana product vs Banana smoothie saved_meal stay separate
-  // because their names differ; same-name distinct entries surface
-  // together, which is the correct ambiguity to expose).
-  const nameToCanonical = new Map<string, string>()
-  for (const [key, r] of grouped) {
-    if (key.startsWith('name:')) continue
-    const nameKey = `name:${r.name.toLowerCase().trim()}`
-    const existing = nameToCanonical.get(nameKey)
-    if (!existing) {
-      nameToCanonical.set(nameKey, key)
-      continue
-    }
-    if (betterIdentityCandidate(r, grouped.get(existing)!) === r) {
-      nameToCanonical.set(nameKey, key)
-    }
-  }
-  for (const key of [...grouped.keys()]) {
-    if (!key.startsWith('name:')) continue
-    if (nameToCanonical.has(key)) {
-      grouped.delete(key)
-    }
-  }
-
-  // M.2b — extension of Pass 2 to collapse ANY hourly_go_to entry whose
-  // name matches a canonical, not just NULL-ref ones. Catches the Class C
-  // case where an hourly has a non-NULL non-chain source_ref (e.g.,
-  // "usda:172069" for McDonald's BEC) but the name still matches a
-  // saved_meal/product canonical. The hourly view is a "this was logged
-  // at this hour" ranking signal, not a separate matcher entity — its
-  // existence shouldn't suppress the canonical's gap-gate.
-  //
-  // Order matters: Pass 1 (cascade-dedup) collapses same-key entries
-  // first, so any hourly_go_to whose source_ref matches a canonical's
-  // key has already been merged at this point. The remaining hourly_*
-  // entries here are the ones with non-matching source_refs (usda:, off:,
-  // empty-tail lib:hourly_go_to:|, etc.) — those that wouldn't dedup
-  // via key alone.
-  //
-  // Self-collapse guard: when an hourly_go_to candidate's key IS the
-  // canonical for its name (because Pass 1 elevated it above a tier-3
-  // product at the same source_ref), `canonical === key` prevents
-  // dropping the surviving entry.
-  //
-  // Does NOT catch:
-  //   - Class B (Eggs - Large): product + saved_meal both canonical,
-  //     not hourly. M.2b only touches source='hourly_go_to'. Needs M.4
-  //     for same-name canonical collision.
-  for (const [key, r] of [...grouped.entries()]) {
-    if (r.source !== 'hourly_go_to') continue
-    const nameKey = `name:${r.name.toLowerCase().trim()}`
-    const canonical = nameToCanonical.get(nameKey)
-    if (canonical && canonical !== key) {
-      grouped.delete(key)
-    }
-  }
-
-  // M.5 — singular/plural name-variant cascade.
-  //
-  // Class A live failure: "banana" produced separate high-confidence
-  // hourly_go_to variants named "banana", "Banana", and "Bananas". Exact
-  // name-cascade cannot collapse the plural form, leaving a 1.0/1.0
-  // gap-gate failure in segmented shortcut. Keep this conservative: only
-  // exact simple singular/plural normalized name keys collapse. Higher
-  // priority tier wins; score breaks same-tier ties.
-  const normalizedNameWinners = new Map<string, string>()
-  for (const [key, r] of grouped) {
-    const nameKey = normalizedNameKey(r.name)
-    if (!nameKey) continue
-    const existing = normalizedNameWinners.get(nameKey)
-    if (!existing) {
-      normalizedNameWinners.set(nameKey, key)
-      continue
-    }
-    const existingRow = grouped.get(existing)!
-    if (betterIdentityCandidate(r, existingRow) === r) {
-      normalizedNameWinners.set(nameKey, key)
-    }
-  }
-  for (const [key, r] of [...grouped.entries()]) {
-    const winner = normalizedNameWinners.get(normalizedNameKey(r.name))
-    if (winner && winner !== key) {
-      grouped.delete(key)
-    }
-  }
-
-  const deduped = [...grouped.values()]
-  deduped.sort((a, b) => {
-    const tierDiff = tierFor(a) - tierFor(b)
-    if (tierDiff !== 0) return tierDiff
-    return b.match_confidence.score - a.match_confidence.score
-  })
+  const deduped = dedupeAndSortLibraryResults(matches)
 
   return { results: deduped.slice(0, limit) }
 }
