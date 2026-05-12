@@ -135,15 +135,6 @@ const CASES: TestCase[] = [
       + 'hourly_go_to canonicalization fixes.',
   },
   {
-    name: '4 — M5 singular/plural cascade resolves banana variants',
-    transcript: '3 eggs and a banana',
-    expectSegmented: true,
-    notes:
-      'Segments to ["3 eggs", "banana"]. M.5 collapses simple singular/plural hourly_go_to variants '
-      + '("banana" / "Bananas") into the canonical saved_meal/product when one exists, so the gap-gate no '
-      + 'longer fails on 1.0/1.0 plural duplicates.',
-  },
-  {
     name: '5 — Composite-allowlist protection ("half and half")',
     transcript:
       'Double espresso, with half an ounce of half and half, and stevia hazelnut liquid.',
@@ -151,7 +142,7 @@ const CASES: TestCase[] = [
     notes:
       'COMPOSITE_ALLOWLIST protects "half and half" from over-split on " and ". Three segments: '
       + '["double espresso", "with half an ounce of half and half", "stevia hazelnut liquid"]. Espresso '
-      + 'is a saved_meal (Tier 4) but the other two segments are LLM-only. Helper returns partial resolve '
+      + 'is a saved_meal but the other two segments are LLM-only. Helper returns partial resolve '
       + '(1/3). Full-resolve FALSE — not a regression; proves composite handling + Alpha.4 partial mode '
       + 'still work post-Alpha.6.',
   },

@@ -144,11 +144,11 @@ Future matcher work should add or update helper-level tests for the law it touch
 
 Claude's S28 audit is accepted. The follow-up cleanup queue is:
 
-1. Add this constitution.
-2. Add matcher invariant/helper tests before the next matcher rule stack grows.
-3. Remove duplicate `3 eggs and a banana` segmented replay case.
-4. Update stale M6 comments that still describe tier-priority when behavior is now identity-priority.
-5. Fence or relocate `scripts/verify-alpha6-d.ts`, because it temporarily mutates production `saved_meals.is_favorite` even though it reverts.
+1. Done — add this constitution.
+2. Done — add matcher invariant/helper tests before the next matcher rule stack grows.
+3. Done — remove duplicate `3 eggs and a banana` segmented replay case.
+4. Done — update stale M6 comments that still describe tier-priority when behavior is now identity-priority.
+5. Done — fence `scripts/verify-alpha6-d.ts`, because it temporarily mutates production `saved_meals.is_favorite` even though it reverts.
 6. Revisit `loadRuntimeCompositeNames` cost before library scale grows materially.
 7. Keep M8's broadening behavior Yellow until the risky alias/product-call pieces are resolved.
 

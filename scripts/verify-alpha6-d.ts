@@ -1,13 +1,14 @@
-// One-off verification harness for Op FASTRAK Alpha.6 Sub-fix D —
-// searchUserLibrary cascade extension with tier-priority sort.
+// DANGEROUS one-off verification harness for Op FASTRAK Alpha.6 Sub-fix D —
+// searchUserLibrary cascade extension with legacy tier-priority display.
 //
 // Runs the post-Alpha.6 matcher against canned queries and prints
 // the tier assignment + dedup behavior. Exits 0 on success.
 //
-// Run via:  npx tsx scripts/verify-alpha6-d.ts
+// This script temporarily mutates production saved_meals.is_favorite.
+// Prefer scripts/test-matcher-invariants.ts for normal regression checks.
 //
-// File is tagged as Alpha.6-only verification; can be deleted post-bundle
-// or kept as a light regression harness.
+// Run only with explicit opt-in:
+//   ALLOW_PROD_MUTATION=1 npx tsx scripts/verify-alpha6-d.ts
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
@@ -45,6 +46,7 @@ import {
 } from '../lib/claude/tools/search-user-library'
 
 const USER_ID = 'f1fc7a56-f4c1-4332-9cd1-b7622e782986'
+const ALLOW_PROD_MUTATION = process.env.ALLOW_PROD_MUTATION === '1'
 
 function tierFor(r: LibrarySearchResult): number {
   if (r.source === 'saved_meal' && r.is_favorite) return 1
@@ -64,6 +66,14 @@ function fmt(r: LibrarySearchResult): string {
 }
 
 async function main() {
+  if (!ALLOW_PROD_MUTATION) {
+    console.error(
+      'Refusing to run scripts/verify-alpha6-d.ts because it temporarily mutates production saved_meals.is_favorite.\n'
+      + 'Use scripts/test-matcher-invariants.ts for safe checks, or rerun with ALLOW_PROD_MUTATION=1 if you explicitly need this legacy harness.',
+    )
+    process.exit(1)
+  }
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -79,15 +89,15 @@ async function main() {
   const eggs = await searchUserLibrary({ query: 'eggs', limit: 10 }, ctx)
   for (const r of eggs.results) console.log(fmt(r))
 
-  // Query 2: "banana" — banana appears multiple times in recent_foods +
-  // hourly_go_tos but NOT in saved_meals. Should appear at tier 2 (hourly)
-  // if currentHour matches Luke's banana logging pattern, else tier 3 (recent).
+  // Query 2: "banana" — banana appears in hourly_go_tos and products.
+  // Current identity-priority dedup should prefer the canonical product
+  // when both surfaces match.
   console.log('\nQuery: "banana"')
   const banana = await searchUserLibrary({ query: 'banana', limit: 10 }, ctx)
   for (const r of banana.results) console.log(fmt(r))
 
-  // Query 3: "guacamole" — logged once via USDA. Post-Sub-fix-D.1
-  // (recent_foods dropped) appears at tier 2 via hourly_go_tos.
+  // Query 3: "guacamole" — logged once via USDA. With recent_foods
+  // dropped, ad hoc coverage comes from hourly_go_tos.
   console.log('\nQuery: "guacamole"')
   const guac = await searchUserLibrary({ query: 'guacamole', limit: 10 }, ctx)
   for (const r of guac.results) console.log(fmt(r))

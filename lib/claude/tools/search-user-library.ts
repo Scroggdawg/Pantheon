@@ -11,14 +11,16 @@
 // yield_servings before exposing to the LLM (with yield_servings + raw
 // total_batch retained as metadata for completeness).
 //
-// Op FASTRAK Alpha.6 Sub-fix D — tier-priority sort with dedup:
+// Op FASTRAK Alpha.6 Sub-fix D — tier sort with identity-priority dedup:
 //   Tier 1: saved_meal + is_favorite=true (Favorites)
 //   Tier 2: hourly_go_to (Hourly Go-Tos at current hour)
 //   Tier 3: saved_meal + is_favorite=false / product
 // Within tier: sort by match_confidence.score desc.
 // Dedup key: source_ref if present, else "name:<lower(name)>". The same
-// food appearing across multiple tiers (e.g., a saved_meal that's also
-// hourly-relevant) collapses to its highest-priority tier instance.
+// food appearing across multiple surfaces (e.g., a saved_meal that's also
+// hourly-relevant) collapses to the durable canonical identity first, then
+// tier order decides display ranking. This keeps hourly_go_to useful as a
+// recall signal without letting it outrank a product/saved_meal identity.
 //
 // Op FASTRAK Alpha.6 Sub-fix D.1 — recent_foods view dropped (migration
 // 018). Gaussian falloff in hourly_go_tos never decays to true zero, so
@@ -656,7 +658,7 @@ export async function searchUserLibrary(
   // When a hourly_go_to candidate's source_ref points back at a product
   // (lib:product:<uuid>), pull the unit_alternatives from that product so
   // the matcher's downstream FoodItem carries portion data even when the
-  // hit came via the Tier 2 hourly path. Same pattern for saved_meal-
+  // hit came via the hourly path. Same pattern for saved_meal-
   // backed hourly entries — though saved_meals store unit_alternatives
   // inside foods_json[i], not as a separate column.
   const productAltsById = new Map<string, UnitAlternative[]>()
