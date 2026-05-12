@@ -84,14 +84,15 @@ const CASES: TestCase[] = [
       + '"Bacon Egg and Cheese Biscuit" intact and only split between the two foods.',
   },
   {
-    name: 'M3.2 — Runtime saved_meal protects prefix compound plus coffee',
+    name: 'M3/M4 — Runtime compound protect + generic coffee overmatch guard',
     transcript: "McDonald's Bacon Egg and Cheese Biscuit and a coffee",
     runtimeCompositeNames: ["McDonald's Bacon Egg & Cheese Biscuit"],
     expectOriginals: ["McDonald's Bacon Egg and Cheese Biscuit", 'a coffee'],
-    expectSegmented: true,
+    expectSegmented: false,
     notes:
       'M.3 direct segmenter regression. Restaurant-prefixed library name should protect the full compound '
-      + 'food while still allowing the outer "and a coffee" delimiter to split.',
+      + 'food while still allowing the outer "and a coffee" delimiter to split. M.4 guardrail: generic '
+      + '"coffee" should not fully resolve to a specific branded product like REBBL Hazelnut Coffee Elixir.',
   },
   {
     name: 'M3.3 — True two-food "and" still splits without runtime compound',

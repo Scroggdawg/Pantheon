@@ -112,6 +112,36 @@ function tokens(s: string | null | undefined): Set<string> {
   return new Set(normalize(s).split(' ').filter((t) => t.length > 0))
 }
 
+const GENERIC_SINGLE_TOKEN_QUERIES = new Set([
+  'coffee',
+  'tea',
+  'water',
+  'orange',
+  'lime',
+])
+const GENERIC_OVERMATCH_SCORE_CAP = 0.84
+
+function guardedLibraryNameSimilarity(
+  query: string,
+  name: string,
+  aliases: string[] = [],
+): number {
+  const score = libraryNameSimilarity(query, name, aliases)
+  if (score < GENERIC_OVERMATCH_SCORE_CAP) return score
+
+  const queryTokens = [...tokens(query)]
+  if (queryTokens.length !== 1) return score
+
+  const queryToken = queryTokens[0]
+  if (!GENERIC_SINGLE_TOKEN_QUERIES.has(queryToken)) return score
+
+  const candidateTokens = tokens(name)
+  const exactishNames = new Set([queryToken, `${queryToken}s`])
+  if (candidateTokens.size <= 1 || exactishNames.has(normalize(name))) return score
+
+  return Math.min(score, GENERIC_OVERMATCH_SCORE_CAP)
+}
+
 /**
  * Two-tier scoring (prototype V15 H2.5 D1a):
  *   Tier 1: substring containment — every meaningful query token (>=3 chars
@@ -491,7 +521,7 @@ export async function searchUserLibrary(
   const matches: LibrarySearchResult[] = []
   for (const m of meals) {
     const aliases = m.tags ?? []
-    const score = libraryNameSimilarity(searchQuery, m.name ?? '', aliases)
+    const score = guardedLibraryNameSimilarity(searchQuery, m.name ?? '', aliases)
     if (score < minScore) continue
     matches.push(savedMealToCandidate(m, score))
   }
@@ -500,12 +530,12 @@ export async function searchUserLibrary(
       p.brand && !p.name.toLowerCase().startsWith(p.brand.toLowerCase())
         ? `${p.brand} ${p.name}`
         : p.name
-    const score = libraryNameSimilarity(searchQuery, displayName, [])
+    const score = guardedLibraryNameSimilarity(searchQuery, displayName, [])
     if (score < minScore) continue
     matches.push(productToCandidate(p, score))
   }
   for (const h of hourlies) {
-    const score = libraryNameSimilarity(searchQuery, h.name, [])
+    const score = guardedLibraryNameSimilarity(searchQuery, h.name, [])
     if (score < minScore) continue
     const candidate = hourlyGoToCandidate(h, score)
     // Backfill unit_alternatives from the product/saved_meal the hourly
