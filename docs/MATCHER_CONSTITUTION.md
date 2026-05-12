@@ -4,6 +4,8 @@ Date: 2026-05-12
 Status: Living doctrine. This document is binding for matcher and parse-pipeline work unless a future change explicitly updates it with evidence.
 Scope: Web matcher, parse-meal library shortcut, segmented shortcut, pantry/library identity, and the downstream native experience across Pantheon, Provisions, and Progress.
 
+Companion doctrine: `docs/MACROFACTOR_LESSONS_DOCTRINE.md`. That research amendment moves Plate/per-food editing, pantry coverage, and accompaniment decomposition ahead of additional broad matcher passes.
+
 ## 1. Mission
 
 Pantheon's matcher exists to make food logging elite: streamlined, lightning fast, and dead accurate.
@@ -111,6 +113,7 @@ Every future matcher change should fit one of these categories:
 - Coverage: adds missing food data so the matcher no longer has to infer.
 - Ranking: changes order among known candidates without changing identity.
 - Recovery: improves how ambiguity or uncertainty reaches the user.
+- Plate: stages resolved and estimated foods for fast user correction before commit.
 
 Before adding another dedup pass, ask:
 
