@@ -43,6 +43,7 @@ interface WhisperTelemetry {
 }
 
 export async function POST(request: Request) {
+  const routeStarted = Date.now()
   try {
     const body = await request.json()
     const transcript = body?.transcript
@@ -93,6 +94,8 @@ export async function POST(request: Request) {
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
+          total_route_latency_ms: Date.now() - routeStarted,
+          cache_lookup_ms: cacheLookupMs,
           ...whisperTelemetry,
         },
       })
@@ -123,6 +126,9 @@ export async function POST(request: Request) {
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
+          total_route_latency_ms: Date.now() - routeStarted,
+          cache_lookup_ms: cacheLookupMs,
+          library_shortcut_lookup_ms: shortcutLookupMs,
           ...whisperTelemetry,
         },
       })
@@ -176,6 +182,10 @@ export async function POST(request: Request) {
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
+          total_route_latency_ms: Date.now() - routeStarted,
+          cache_lookup_ms: cacheLookupMs,
+          library_shortcut_lookup_ms: shortcutLookupMs,
+          library_segmented_lookup_ms: segLookupMs,
           ...whisperTelemetry,
         },
       })
@@ -287,6 +297,12 @@ export async function POST(request: Request) {
           library_segmented_partial_hit: true,
           library_segmented_resolved_count: segmented.resolved.length,
           library_segmented_unresolved_count: segmented.unresolved.length,
+          fallback_llm_hit: false,
+          total_route_latency_ms: Date.now() - routeStarted,
+          cache_lookup_ms: cacheLookupMs,
+          library_shortcut_lookup_ms: shortcutLookupMs,
+          library_segmented_lookup_ms: segLookupMs,
+          llm_latency_ms: llmLatencyMs,
           ...whisperTelemetry,
         },
       })
@@ -319,6 +335,11 @@ export async function POST(request: Request) {
           tool_calls: 0,
           iters: 0,
           cache_hits: 0,
+          total_route_latency_ms: Date.now() - routeStarted,
+          cache_lookup_ms: cacheLookupMs,
+          library_shortcut_lookup_ms: shortcutLookupMs,
+          library_segmented_lookup_ms: segLookupMs,
+          library_candidates_lookup_ms: candidatesLookupMs,
           ...whisperTelemetry,
         },
       })
@@ -364,6 +385,13 @@ export async function POST(request: Request) {
         cache_hits: telemetry.cache_hits,
         response_cache_hit: false,
         library_shortcut_hit: false,
+        fallback_llm_hit: true,
+        total_route_latency_ms: Date.now() - routeStarted,
+        cache_lookup_ms: cacheLookupMs,
+        library_shortcut_lookup_ms: shortcutLookupMs,
+        library_segmented_lookup_ms: segLookupMs,
+        library_candidates_lookup_ms: candidatesLookupMs,
+        llm_latency_ms: telemetry.latency_ms,
         ...whisperTelemetry,
       },
     })

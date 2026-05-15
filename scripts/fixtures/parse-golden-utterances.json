@@ -1,0 +1,50 @@
+[
+  {
+    "id": "staple-eggs-bacon-shake",
+    "transcript": "3 eggs, 2 strips of bacon, and a protein shake with dextrose",
+    "target_path": "segmented_or_search_first",
+    "notes": "Common breakfast; should resolve without full fallback once identity coverage is strong."
+  },
+  {
+    "id": "mcdonalds-breakfast-two-items",
+    "transcript": "One bacon egg and cheese biscuit from McDonald's and one sausage burrito from McDonald's",
+    "target_path": "restaurant_identity",
+    "notes": "Compound restaurant names must stay intact while multi-item utterance still splits."
+  },
+  {
+    "id": "party-chips-guac",
+    "transcript": "20 chips with guacamole",
+    "target_path": "decomposition",
+    "notes": "Should decompose into chips plus guacamole; missing guacamole amount should be visible estimate."
+  },
+  {
+    "id": "party-churros-sauce",
+    "transcript": "2 churros with chocolate sauce",
+    "target_path": "decomposition",
+    "notes": "Should decompose into churros plus sauce; sauce quantity can be estimated but must be editable."
+  },
+  {
+    "id": "drink-margarita",
+    "transcript": "2 margaritas on the rocks",
+    "target_path": "drink_default_variant",
+    "notes": "Needs defined drink default/variant rather than arbitrary generic database row."
+  },
+  {
+    "id": "brand-coffee-overmatch",
+    "transcript": "coffee",
+    "target_path": "safe_generic",
+    "notes": "Must not overmatch generic coffee to REBBL or other branded drinks."
+  },
+  {
+    "id": "voice-brand-dos-equis",
+    "transcript": "3 dos xx 16 ounce",
+    "target_path": "brand_voice_alias",
+    "notes": "Voice alias should preserve Dos Equis identity and quantity."
+  },
+  {
+    "id": "partial-espresso-half-and-half",
+    "transcript": "Double espresso, with half an ounce of half and half, stevia hazelnut liquid",
+    "target_path": "partial_resolve",
+    "notes": "Regression guard for original-vs-stripped partial-resolve fragments."
+  }
+]
