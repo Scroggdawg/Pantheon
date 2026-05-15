@@ -280,6 +280,11 @@ async function buildDryRun(args: Args): Promise<void> {
   console.log(`Window: offset ${args.offset}, limit ${args.limit ?? 'full'}`)
   console.log(`Existing products: ${existing.length}`)
 
+  if (targets.length === 0) {
+    console.log('No targets in this window; no artifact written.')
+    return
+  }
+
   for (let i = 0; i < targets.length; i++) {
     const target = targets[i]
     process.stdout.write(`[${i + 1}/${targets.length}] ${target.query} ... `)
