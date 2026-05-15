@@ -12,6 +12,7 @@ import {
 import {
   normalizeFoodSourceRef,
   relaxedSegmentQuery,
+  segmentTranscript,
 } from '../lib/claude/parse-meal-library-shortcut'
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -168,6 +169,21 @@ const tests: Array<[string, () => void]> = [
     },
   ],
   [
+    'generic chip and bacon queries are capped below shortcut threshold for composite overmatches',
+    () => {
+      const chipBar = guardedLibraryNameSimilarity('chips', 'Yasso Greek Yogurt Bar - Mint Chocolate Chip')
+      const baconSandwich = guardedLibraryNameSimilarity(
+        'bacon',
+        "McDonald's Bacon Egg & Cheese Biscuit",
+      )
+      const exactBacon = guardedLibraryNameSimilarity('bacon', 'Bacon')
+
+      assert(chipBar === 0.84, `expected chip cap 0.84, got ${chipBar}`)
+      assert(baconSandwich === 0.84, `expected bacon cap 0.84, got ${baconSandwich}`)
+      assert(exactBacon === 1, `expected exact bacon score 1, got ${exactBacon}`)
+    },
+  ],
+  [
     'relaxed segment query strips quantity and filler but preserves identity words',
     () => {
       assert(
@@ -181,6 +197,30 @@ const tests: Array<[string, () => void]> = [
       assert(
         relaxedSegmentQuery('stevia hazelnut liquid') === 'stevia hazelnut liquid',
         'expected identity words to remain unchanged',
+      )
+    },
+  ],
+  [
+    'segmenter splits obvious accompaniment foods without splitting integrated shake ingredients',
+    () => {
+      const chips = segmentTranscript('20 chips with guacamole')
+      assert(chips.length === 2, `expected chips + guacamole, got ${JSON.stringify(chips)}`)
+      assert(chips[0].stripped === '20 chips', `expected 20 chips, got ${chips[0].stripped}`)
+      assert(chips[1].stripped === 'guacamole', `expected guacamole, got ${chips[1].stripped}`)
+
+      const churros = segmentTranscript('2 churros with chocolate sauce')
+      assert(churros.length === 2, `expected churros + sauce, got ${JSON.stringify(churros)}`)
+      assert(churros[0].stripped === '2 churros', `expected 2 churros, got ${churros[0].stripped}`)
+      assert(
+        churros[1].stripped === 'chocolate sauce',
+        `expected chocolate sauce, got ${churros[1].stripped}`,
+      )
+
+      const shake = segmentTranscript('protein shake with dextrose')
+      assert(shake.length === 1, `expected integrated shake segment, got ${JSON.stringify(shake)}`)
+      assert(
+        shake[0].stripped === 'protein shake with dextrose',
+        `expected shake to stay intact, got ${shake[0].stripped}`,
       )
     },
   ],

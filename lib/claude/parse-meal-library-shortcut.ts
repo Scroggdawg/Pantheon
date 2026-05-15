@@ -486,6 +486,50 @@ const FILLER_TOKENS = new Set([
   'sticks',
 ])
 
+const ACCOMPANIMENT_HOST_TOKENS = new Set([
+  'chip',
+  'chips',
+  'churro',
+  'churros',
+  'fry',
+  'fries',
+  'nacho',
+  'nachos',
+  'pancake',
+  'pancakes',
+  'waffle',
+  'waffles',
+])
+
+function shouldSplitAccompaniment(left: string, right: string): boolean {
+  const leftTokens = left
+    .toLowerCase()
+    .split(/\s+/)
+    .map((token) => token.replace(/[^\w]/g, ''))
+    .filter(Boolean)
+  const rightIdentityTokens = right
+    .toLowerCase()
+    .split(/\s+/)
+    .map((token) => token.replace(/[^\w]/g, ''))
+    .filter((token) => token.length > 0 && !FILLER_TOKENS.has(token))
+
+  return (
+    leftTokens.some((token) => ACCOMPANIMENT_HOST_TOKENS.has(token)) &&
+    rightIdentityTokens.length > 0
+  )
+}
+
+function expandAccompanimentSegments(segment: string): string[] {
+  const match = /^(.*?)\s+with\s+(.+)$/i.exec(segment)
+  if (!match) return [segment]
+
+  const left = match[1].trim()
+  const right = match[2].trim()
+  if (!left || !right || !shouldSplitAccompaniment(left, right)) return [segment]
+
+  return [left, right]
+}
+
 function stripFillerTokens(segment: string): string {
   return segment
     .toLowerCase()
@@ -575,18 +619,21 @@ export function segmentTranscript(
       // 5. Trim trailing periods + whitespace, drop empty
       p = p.replace(/\.\s*$/, '').trim()
       if (p.length === 0) continue
-      // 5a. Capture the natural-language form RIGHT HERE — after composite
-      //     restore + trim, BEFORE number normalization or filler stripping.
-      //     This is what the LLM wants to see for partial-resolve.
-      const original = p
-      // 6. Apply written-number → digit normalization (matching-side only)
-      const numbersNormalized = normalizeWrittenNumbers(p)
-      // 7. Strip filler tokens (matching-side only). Library matching
-      //    scores against the substantive food name; LLM input doesn't
-      //    need this aggressive cleanup.
-      const stripped = stripFillerTokens(numbersNormalized)
-      if (stripped.length === 0) continue
-      allSegments.push({ stripped, original })
+      for (const expanded of expandAccompanimentSegments(p)) {
+        // 5a. Capture the natural-language form RIGHT HERE — after composite
+        //     restore + trim + conservative accompaniment split, BEFORE number
+        //     normalization or filler stripping. This is what the LLM wants to
+        //     see for partial-resolve.
+        const original = expanded
+        // 6. Apply written-number → digit normalization (matching-side only)
+        const numbersNormalized = normalizeWrittenNumbers(expanded)
+        // 7. Strip filler tokens (matching-side only). Library matching
+        //    scores against the substantive food name; LLM input doesn't
+        //    need this aggressive cleanup.
+        const stripped = stripFillerTokens(numbersNormalized)
+        if (stripped.length === 0) continue
+        allSegments.push({ stripped, original })
+      }
     }
   }
 

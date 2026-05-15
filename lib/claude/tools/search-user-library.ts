@@ -138,6 +138,8 @@ function normalizedNameKey(name: string): string {
 }
 
 const GENERIC_SINGLE_TOKEN_QUERIES = new Set([
+  'bacon',
+  'chip',
   'coffee',
   'tea',
   'water',
