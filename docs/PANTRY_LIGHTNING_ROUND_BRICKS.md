@@ -135,7 +135,7 @@ Stop conditions:
 
 ## Brick PLR-3: Batch Report Aggregator
 
-Classification: Green.
+Classification: Green. Shipped in `scripts/summarize-pantry-runs.ts`.
 
 Goal: make repeated batches easy to inspect without opening giant JSON files.
 

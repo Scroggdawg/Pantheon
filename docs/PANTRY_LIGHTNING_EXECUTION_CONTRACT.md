@@ -45,6 +45,12 @@ Markdown artifacts under `scripts/output/` are the v1 review surface.
 
 Each report shows target query, candidate, source, macros, units, aliases, risk score, and reasons. Auto-approved rows are eligible for apply. Review-required rows are candidate inventory only. Rejected rows are duplicate, unsafe, or bad-match evidence.
 
+Use the read-only summarizer for quick review across recent artifacts:
+
+```bash
+npx tsx scripts/summarize-pantry-runs.ts --limit=3
+```
+
 ## First Live Apply Checklist
 
 1. Tests pass:
