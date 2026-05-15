@@ -149,6 +149,21 @@ interface HourlyGoToRow {
   unit: string | null
 }
 
+interface IdentityAliasRow {
+  target_source_ref: string
+  alias: string
+}
+
+interface IdentityRejectionRow {
+  rejected_source_ref: string
+  phrase: string
+}
+
+interface IdentityLearning {
+  aliasesByRef: Map<string, string[]>
+  rejectionsByRef: Map<string, string[]>
+}
+
 function normalize(value: string | null | undefined): string {
   return (value ?? '')
     .toLowerCase()
@@ -418,6 +433,69 @@ function hourlyDocument(row: HourlyGoToRow): FoodIdentityDocument {
   }
 }
 
+async function loadIdentityLearning(supabase: SupabaseClient): Promise<IdentityLearning> {
+  const aliasesByRef = new Map<string, string[]>()
+  const rejectionsByRef = new Map<string, string[]>()
+  const isMissingGovernanceTable = (error: { code?: string; message?: string }) =>
+    error.code === '42P01' ||
+    error.code === 'PGRST205' ||
+    /food_identity_(aliases|rejections)|does not exist|could not find/i.test(error.message ?? '')
+
+  const [aliasesRes, rejectionsRes] = await Promise.all([
+    supabase
+      .from('food_identity_aliases')
+      .select('target_source_ref, alias')
+      .eq('active', true),
+    supabase
+      .from('food_identity_rejections')
+      .select('rejected_source_ref, phrase')
+      .eq('active', true),
+  ])
+
+  if (aliasesRes.error && !isMissingGovernanceTable(aliasesRes.error)) {
+    console.warn('[food-identity] aliases unavailable:', aliasesRes.error.message)
+  } else if (!aliasesRes.error) {
+    for (const row of (aliasesRes.data ?? []) as IdentityAliasRow[]) {
+      const existing = aliasesByRef.get(row.target_source_ref) ?? []
+      existing.push(row.alias)
+      aliasesByRef.set(row.target_source_ref, existing)
+    }
+  }
+
+  if (rejectionsRes.error && !isMissingGovernanceTable(rejectionsRes.error)) {
+    console.warn('[food-identity] rejections unavailable:', rejectionsRes.error.message)
+  } else if (!rejectionsRes.error) {
+    for (const row of (rejectionsRes.data ?? []) as IdentityRejectionRow[]) {
+      const existing = rejectionsByRef.get(row.rejected_source_ref) ?? []
+      existing.push(row.phrase)
+      rejectionsByRef.set(row.rejected_source_ref, existing)
+    }
+  }
+
+  return { aliasesByRef, rejectionsByRef }
+}
+
+function applyIdentityLearning(
+  doc: FoodIdentityDocument,
+  learning: IdentityLearning,
+): FoodIdentityDocument {
+  if (!doc.canonical_source_ref) return doc
+
+  const learnedAliases = learning.aliasesByRef.get(doc.canonical_source_ref) ?? []
+  const learnedRejections = learning.rejectionsByRef.get(doc.canonical_source_ref) ?? []
+  if (learnedAliases.length === 0 && learnedRejections.length === 0) return doc
+
+  const aliases = [...new Set([...doc.aliases, ...learnedAliases])]
+  const rejectedAliases = [...new Set([...doc.rejected_aliases, ...learnedRejections])]
+  return {
+    ...doc,
+    aliases,
+    rejected_aliases: rejectedAliases,
+    search_text: [doc.display_name, ...aliases].join(' '),
+    identity_tokens: tokensFor(doc.display_name, ...aliases),
+  }
+}
+
 export async function buildFoodIdentityDocuments(
   supabase: SupabaseClient,
   userId: string,
@@ -451,13 +529,14 @@ export async function buildFoodIdentityDocuments(
   if (productsRes.error) throw productsRes.error
   if (recipesRes.error) throw recipesRes.error
   if (hourlyRes.error) throw hourlyRes.error
+  const learning = await loadIdentityLearning(supabase)
 
   const docs = [
     ...((mealsRes.data ?? []) as SavedMealRow[]).map(savedMealDocument),
     ...((productsRes.data ?? []) as ProductRow[]).map(productDocument),
     ...((recipesRes.data ?? []) as RecipeRow[]).map(recipeDocument),
     ...((hourlyRes.data ?? []) as HourlyGoToRow[]).map(hourlyDocument),
-  ]
+  ].map((doc) => applyIdentityLearning(doc, learning))
 
   return dedupeIdentityDocuments(docs)
 }
@@ -509,9 +588,11 @@ export function searchFoodIdentityDocuments(
   const minScore = options.minScore ?? 0.5
   const limit = options.limit ?? 5
   const { substituted } = applyBrandAliases(query)
+  const normalizedQuery = normalize(substituted)
 
   const hits = docs
     .map((doc): IdentitySearchHit | null => {
+      if (doc.rejected_aliases.some((alias) => normalize(alias) === normalizedQuery)) return null
       const textScore = guardedLibraryNameSimilarity(substituted, doc.search_text, doc.aliases)
       if (textScore < minScore) return null
       const boost =
@@ -560,4 +641,3 @@ function classifyHits(hits: IdentitySearchHit[]): IdentitySearchHit[] {
     outcome: index === 0 ? outcome : 'needs_choice',
   }))
 }
-

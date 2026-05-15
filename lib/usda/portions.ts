@@ -29,6 +29,7 @@ const USER_AGENT = 'Pantheon/1.0 (luke@scrog.dev)'
 export type UnitAlternativeSource =
   | 'usda'
   | 'off'
+  | 'standard'
   | 'user_corrected'
   | 'llm_estimated'
 

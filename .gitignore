@@ -49,3 +49,7 @@ next-env.d.ts
 
 # one-shot data seed payloads (loaded once, then live in DB)
 scripts/seed/*.json
+
+# generated pantry/import artifacts
+scripts/output/
+data/fdc/

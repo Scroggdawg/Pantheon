@@ -66,6 +66,7 @@ export interface MatchConfidence {
 export type UnitAlternativeSource =
   | 'usda'
   | 'off'
+  | 'standard'
   | 'user_corrected'
   | 'llm_estimated'
 export type UnitAlternativeConfidence = 'high' | 'medium' | 'low'
