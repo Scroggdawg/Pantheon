@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "name": "Breakfast Protein",
+  "target_count": 175,
+  "luke_food_profile": {
+    "core_cuisines": [],
+    "restaurants": [],
+    "protein_anchors": ["chicken", "turkey", "eggs", "cottage cheese", "Greek yogurt"],
+    "staple_categories": ["breakfast", "protein", "cereal", "granola", "milk"]
+  },
+  "already_covered": [
+    "Magic Spoon Cereal - Cocoa",
+    "Magic Spoon Cereal - Frosted",
+    "Magic Spoon Cereal - Strawberry",
+    "Good Culture Low-Fat Cottage Cheese",
+    "Mott's Applesauce",
+    "Chocolate Silk Soy Milk",
+    "Strawberries",
+    "Blueberries"
+  ],
+  "allocation": {
+    "whole_foods": 20,
+    "proteins": 70,
+    "cuisine_staples": 0,
+    "sauces_condiments_oils": 5,
+    "breakfast_snacks": 60,
+    "beverages": 20,
+    "prepared_common": 0,
+    "coverage_buffer": 20
+  },
+  "categories": {
+    "whole_foods": ["strawberries", "blueberries", "banana", "apple"],
+    "proteins": [
+      "whole egg",
+      "egg white",
+      "bacon cooked",
+      "turkey bacon cooked",
+      "chicken breast cooked",
+      "ground turkey cooked",
+      "cottage cheese low fat",
+      "Greek yogurt nonfat",
+      "protein powder whey",
+      "protein shake"
+    ],
+    "cuisine_staples": [],
+    "sauces_condiments_oils": ["honey", "maple syrup", "peanut butter"],
+    "breakfast_snacks": [
+      "rolled oats",
+      "protein oats",
+      "granola",
+      "Kashi cereal",
+      "Cracklin Oat Bran",
+      "Magic Spoon cereal",
+      "applesauce",
+      "low fat cottage cheese",
+      "Yasso Greek yogurt bar",
+      "ice cream sandwich low calorie",
+      "goji berries dried"
+    ],
+    "beverages": [
+      "Chocolate Silk soy milk",
+      "coffee black",
+      "coffee with half and half",
+      "half and half",
+      "almond milk unsweetened",
+      "green tea"
+    ],
+    "prepared_common": [],
+    "coverage_buffer": ["protein shake dextrose", "hazelnut stevia drops", "cottage cheese bowl"]
+  },
+  "count_unit_grams": {
+    "strawberry": 12,
+    "banana": 118,
+    "egg": 50,
+    "strip bacon": 8,
+    "slice bacon": 8,
+    "chip": 2,
+    "tortilla": 24,
+    "bar": 65,
+    "bottle": 240,
+    "can": 355,
+    "scoop": 31,
+    "dropper": 1,
+    "tbsp": 15,
+    "tsp": 5
+  },
+  "review_only_patterns": [
+    "rebbl",
+    "yasso",
+    "magic spoon",
+    "silk",
+    "kashi",
+    "cracklin",
+    "protein shake",
+    "protein powder"
+  ]
+}

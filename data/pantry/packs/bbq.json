@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "name": "BBQ",
+  "target_count": 150,
+  "luke_food_profile": {
+    "core_cuisines": ["bbq", "barbecue"],
+    "restaurants": [],
+    "protein_anchors": ["chicken", "turkey", "beef", "pork"],
+    "staple_categories": ["smoked meats", "sauce", "slaw", "beans", "cornbread"]
+  },
+  "already_covered": [],
+  "allocation": {
+    "whole_foods": 10,
+    "proteins": 55,
+    "cuisine_staples": 35,
+    "sauces_condiments_oils": 25,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 25,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": ["corn", "white onion", "pickle", "jalapeno"],
+    "proteins": [
+      "beef brisket cooked",
+      "beef brisket raw",
+      "pulled pork",
+      "pork shoulder raw",
+      "pork ribs cooked",
+      "baby back ribs cooked",
+      "chicken thigh cooked",
+      "grilled chicken breast",
+      "smoked turkey breast",
+      "turkey burger",
+      "beef hot dog",
+      "hamburger patty"
+    ],
+    "cuisine_staples": [
+      "baked beans",
+      "coleslaw",
+      "cornbread",
+      "macaroni and cheese",
+      "potato salad",
+      "hamburger bun",
+      "hot dog bun",
+      "pickles",
+      "french fries",
+      "sweet potato fries"
+    ],
+    "sauces_condiments_oils": [
+      "barbecue sauce",
+      "bbq sauce",
+      "mustard",
+      "ketchup",
+      "mayonnaise",
+      "hot sauce",
+      "apple cider vinegar",
+      "brown sugar"
+    ],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [
+      "pulled pork sandwich",
+      "brisket sandwich",
+      "bbq chicken",
+      "bbq ribs",
+      "bbq plate",
+      "smoked turkey sandwich"
+    ],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "strawberry": 12,
+    "banana": 118,
+    "egg": 50,
+    "strip bacon": 8,
+    "slice bacon": 8,
+    "chip": 2,
+    "tortilla": 24,
+    "bar": 65,
+    "bottle": 240,
+    "can": 355,
+    "scoop": 31,
+    "dropper": 1,
+    "tbsp": 15,
+    "tsp": 5,
+    "rib": 85,
+    "bun": 50,
+    "hot dog": 45,
+    "patty": 113
+  },
+  "review_only_patterns": [
+    "bbq",
+    "barbecue",
+    "sandwich",
+    "plate",
+    "sauce",
+    "hot dog"
+  ]
+}

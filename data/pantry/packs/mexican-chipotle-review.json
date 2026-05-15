@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "name": "Mexican Chipotle Review",
+  "target_count": 150,
+  "luke_food_profile": {
+    "core_cuisines": ["mexican", "tex-mex"],
+    "restaurants": ["Chipotle"],
+    "protein_anchors": ["chicken", "turkey", "steak"],
+    "staple_categories": ["rice", "beans", "tortillas", "salsa", "guacamole", "chips"]
+  },
+  "already_covered": ["McDonald's Bacon Egg & Cheese Biscuit", "McDonald's Sausage Burrito"],
+  "allocation": {
+    "whole_foods": 15,
+    "proteins": 30,
+    "cuisine_staples": 55,
+    "sauces_condiments_oils": 15,
+    "breakfast_snacks": 0,
+    "beverages": 5,
+    "prepared_common": 30,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": ["lime", "cilantro", "white onion", "red onion", "jalapeno", "avocado", "tomato"],
+    "proteins": [
+      "chicken breast cooked",
+      "chicken thigh cooked",
+      "steak cooked",
+      "barbacoa beef",
+      "carnitas pork",
+      "ground turkey taco meat",
+      "lean ground beef taco meat"
+    ],
+    "cuisine_staples": [
+      "tortilla chips",
+      "corn tortilla",
+      "flour tortilla",
+      "guacamole",
+      "salsa",
+      "pico de gallo",
+      "queso",
+      "Mexican crema",
+      "fajita vegetables",
+      "black beans cooked",
+      "pinto beans cooked",
+      "cilantro lime rice",
+      "taco seasoning",
+      "Mexican rice",
+      "refried beans",
+      "cotija cheese"
+    ],
+    "sauces_condiments_oils": ["lime juice", "hot sauce", "salsa verde", "sour cream"],
+    "breakfast_snacks": [],
+    "beverages": ["margarita on the rocks", "dos equis"],
+    "prepared_common": [
+      "Chipotle chicken",
+      "Chipotle steak",
+      "Chipotle barbacoa",
+      "Chipotle carnitas",
+      "Chipotle white rice",
+      "Chipotle brown rice",
+      "Chipotle black beans",
+      "Chipotle pinto beans",
+      "Chipotle fajita vegetables",
+      "Chipotle guacamole",
+      "Chipotle tortilla chips",
+      "Chipotle chicken bowl"
+    ],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "strawberry": 12,
+    "banana": 118,
+    "egg": 50,
+    "strip bacon": 8,
+    "slice bacon": 8,
+    "chip": 2,
+    "tortilla": 24,
+    "bar": 65,
+    "bottle": 240,
+    "can": 355,
+    "scoop": 31,
+    "dropper": 1,
+    "tbsp": 15,
+    "tsp": 5
+  },
+  "review_only_patterns": [
+    "chipotle",
+    "queso",
+    "margarita",
+    "dos equis",
+    "dos xx",
+    "barbacoa",
+    "carnitas",
+    "bowl"
+  ]
+}

@@ -1,12 +1,14 @@
 // LP-10..LP-19 Autonomous Pantry Builder.
 //
 // Default mode is DRY RUN:
-//   npx tsx scripts/autonomous-pantry-builder.ts --limit=25
+//   npx tsx scripts/autonomous-pantry-builder.ts --limit=25 --offset=0
+//   npx tsx scripts/autonomous-pantry-builder.ts --profile=data/pantry/packs/core-usda.json --limit=25 --offset=25
 //
 // Live apply is guarded:
 //   npx tsx scripts/autonomous-pantry-builder.ts --apply \
 //     --run-id=<run-id-from-dry-run> \
-//     --run-file=scripts/output/pantry-builder-<run-id>.json
+//     --run-file=scripts/output/pantry-builder-<run-id>.json \
+//     --max-insert=25
 //
 // Apply only writes candidates classified auto_approved. Branded/OFF,
 // restaurant, alcohol, LLM-estimated, duplicate, and review-required rows
@@ -18,7 +20,6 @@ import { join, resolve } from 'node:path'
 
 import { createClient } from '@supabase/supabase-js'
 
-import profileJson from '../data/pantry/luke-food-profile.json'
 import { bustResponseCacheForUser } from '../lib/claude/parse-meal-response-cache'
 import { getCanonicalUserId } from '../lib/pantheon-user'
 import { normalizeFoodText } from '../lib/pantry-builder/normalize'
@@ -39,6 +40,9 @@ import { usdaFetchPortions } from '../lib/usda/portions'
 interface Args {
   apply: boolean
   limit: number | null
+  offset: number
+  maxInsert: number
+  profilePath: string
   runId: string | null
   runFile: string | null
   outputDir: string
@@ -50,7 +54,11 @@ interface RunArtifact {
   generated_at: string
   profile_version: number
   source_release: string
+  profile_path: string
   mode: 'dry_run'
+  offset: number
+  limit: number | null
+  profile: PantryProfile
   targets: PantryTarget[]
   candidates: PantryCandidate[]
   counts: Record<string, number>
@@ -60,6 +68,9 @@ function parseArgs(argv: string[]): Args {
   const args: Args = {
     apply: false,
     limit: 25,
+    offset: 0,
+    maxInsert: 25,
+    profilePath: 'data/pantry/luke-food-profile.json',
     runId: null,
     runFile: null,
     outputDir: 'scripts/output',
@@ -70,13 +81,28 @@ function parseArgs(argv: string[]): Args {
     if (arg === '--apply') args.apply = true
     else if (arg === '--full') args.limit = null
     else if (arg.startsWith('--limit=')) args.limit = Number(arg.slice('--limit='.length))
+    else if (arg.startsWith('--offset=')) args.offset = Number(arg.slice('--offset='.length))
+    else if (arg.startsWith('--max-insert=')) args.maxInsert = Number(arg.slice('--max-insert='.length))
+    else if (arg.startsWith('--profile=')) args.profilePath = arg.slice('--profile='.length)
     else if (arg.startsWith('--run-id=')) args.runId = arg.slice('--run-id='.length)
     else if (arg.startsWith('--run-file=')) args.runFile = arg.slice('--run-file='.length)
     else if (arg.startsWith('--output-dir=')) args.outputDir = arg.slice('--output-dir='.length)
     else if (arg.startsWith('--source-release=')) args.sourceRelease = arg.slice('--source-release='.length)
     else throw new Error(`Unknown arg: ${arg}`)
   }
+  if (!Number.isInteger(args.offset) || args.offset < 0) throw new Error('--offset must be a non-negative integer')
+  if (args.limit != null && (!Number.isInteger(args.limit) || args.limit < 1)) {
+    throw new Error('--limit must be a positive integer or --full')
+  }
+  if (!Number.isInteger(args.maxInsert) || args.maxInsert < 1) {
+    throw new Error('--max-insert must be a positive integer')
+  }
   return args
+}
+
+function loadProfile(profilePath: string): PantryProfile {
+  const absolute = resolve(profilePath)
+  return JSON.parse(readFileSync(absolute, 'utf8')) as PantryProfile
 }
 
 function loadEnvLocal() {
@@ -109,6 +135,11 @@ function supabaseFromEnv() {
   return createClient(url, key)
 }
 
+function formatSupabaseError(error: { message?: string; code?: string; details?: string; hint?: string }) {
+  const parts = [error.message, error.code, error.details, error.hint].filter(Boolean)
+  return parts.length > 0 ? parts.join(' | ') : JSON.stringify(error)
+}
+
 async function loadExistingProducts(): Promise<ExistingProductSummary[]> {
   const supabase = supabaseFromEnv()
   const { data, error } = await supabase
@@ -116,6 +147,27 @@ async function loadExistingProducts(): Promise<ExistingProductSummary[]> {
     .select('id, name, brand, barcode')
   if (error) throw error
   return (data ?? []) as ExistingProductSummary[]
+}
+
+async function assertGovernanceSchema() {
+  const supabase = supabaseFromEnv()
+  const checks = [
+    supabase.from('pantry_import_runs').select('id', { head: true, count: 'exact' }),
+    supabase.from('pantry_import_candidates').select('id,target_query', { head: true, count: 'exact' }),
+    supabase.from('food_identity_aliases').select('id,normalized_alias', { head: true, count: 'exact' }),
+    supabase.from('food_identity_rejections').select('id,normalized_phrase', { head: true, count: 'exact' }),
+    supabase
+      .from('products')
+      .select('id,provenance_source_kind,provenance_external_id,import_confidence,canonical_category', {
+        head: true,
+        count: 'exact',
+      }),
+  ]
+  const results = await Promise.all(checks)
+  const firstError = results.find((result) => result.error)?.error
+  if (firstError) {
+    throw new Error(`Pantry governance schema is not ready: ${formatSupabaseError(firstError)}`)
+  }
 }
 
 function countsFor(candidates: PantryCandidate[]): Record<string, number> {
@@ -131,6 +183,12 @@ function countsFor(candidates: PantryCandidate[]): Record<string, number> {
     counts[`source:${candidate.source_kind}`] = (counts[`source:${candidate.source_kind}`] ?? 0) + 1
   }
   return counts
+}
+
+function targetsFor(profile: PantryProfile, args: Args): PantryTarget[] {
+  const targets = targetsFromProfile(profile, null)
+  const end = args.limit == null ? undefined : args.offset + args.limit
+  return targets.slice(args.offset, end)
 }
 
 function ensureDir(path: string) {
@@ -150,13 +208,37 @@ function writeArtifact(artifact: RunArtifact, outputDir: string) {
 }
 
 function renderMarkdown(artifact: RunArtifact): string {
+  const renderCandidate = (candidate: PantryCandidate) => {
+    const product = candidate.proposed_product
+    const macros = `${product.calories_per_serving} cal | ${product.protein_g_per_serving}P | ${product.carbs_g_per_serving}C | ${product.fat_g_per_serving}F`
+    const units = candidate.unit_alternatives
+      .slice(0, 8)
+      .map((unit) => `${unit.unit}=${unit.grams}g`)
+      .join(', ')
+    const aliases = candidate.aliases.slice(0, 10).join(', ') || 'none'
+    const reasons = candidate.reasons.join(', ') || 'none'
+    return [
+      `### ${candidate.target_query} -> ${candidate.display_name}`,
+      ``,
+      `- decision: ${candidate.decision}`,
+      `- category: ${candidate.category}`,
+      `- source: ${candidate.source_kind} / ${candidate.source_dataset ?? 'unknown'} / ${candidate.external_id ?? 'n/a'}`,
+      `- macros: ${macros}`,
+      `- units (${candidate.unit_alternatives.length}): ${units || 'none'}`,
+      `- aliases: ${aliases}`,
+      `- risk: ${candidate.risk_score}; reasons: ${reasons}`,
+      ``,
+    ].join('\n')
+  }
   const lines = [
     `# Pantry Builder Dry Run`,
     ``,
     `Run ID: \`${artifact.run_id}\``,
     `Generated: ${artifact.generated_at}`,
     `Profile version: ${artifact.profile_version}`,
+    `Profile: ${artifact.profile.name} (${artifact.profile_path})`,
     `Source release: ${artifact.source_release}`,
+    `Target window: offset ${artifact.offset}, limit ${artifact.limit ?? 'full'}`,
     ``,
     `## Counts`,
     ``,
@@ -167,40 +249,35 @@ function renderMarkdown(artifact: RunArtifact): string {
     ...artifact.candidates
       .filter((candidate) => candidate.decision === 'auto_approved')
       .slice(0, 75)
-      .map((candidate) => (
-        `- ${candidate.display_name} — ${candidate.source_dataset ?? 'unknown'} `
-        + `fdc=${candidate.external_id ?? 'n/a'} units=${candidate.unit_alternatives.length}`
-      )),
+      .map(renderCandidate),
     ``,
     `## Review Required`,
     ``,
     ...artifact.candidates
       .filter((candidate) => candidate.decision === 'review_required')
-      .map((candidate) => (
-        `- ${candidate.display_name} — ${candidate.reasons.join(', ') || 'review'}`
-      )),
+      .map(renderCandidate),
     ``,
     `## Rejected`,
     ``,
     ...artifact.candidates
       .filter((candidate) => candidate.decision === 'rejected')
-      .map((candidate) => (
-        `- ${candidate.display_name} — ${candidate.reasons.join(', ') || 'rejected'}`
-      )),
+      .map(renderCandidate),
     ``,
   ]
   return `${lines.join('\n')}\n`
 }
 
 async function buildDryRun(args: Args): Promise<void> {
-  const profile = profileJson as PantryProfile
-  const targets = targetsFromProfile(profile, args.limit)
+  const profile = loadProfile(args.profilePath)
+  const targets = targetsFor(profile, args)
   const existing = await loadExistingProducts()
   const runId = randomUUID()
   const candidates: PantryCandidate[] = []
 
   console.log(`Autonomous Pantry Builder dry-run`)
+  console.log(`Profile: ${profile.name} (${args.profilePath})`)
   console.log(`Targets: ${targets.length}`)
+  console.log(`Window: offset ${args.offset}, limit ${args.limit ?? 'full'}`)
   console.log(`Existing products: ${existing.length}`)
 
   for (let i = 0; i < targets.length; i++) {
@@ -231,7 +308,11 @@ async function buildDryRun(args: Args): Promise<void> {
     generated_at: new Date().toISOString(),
     profile_version: profile.version,
     source_release: args.sourceRelease,
+    profile_path: args.profilePath,
     mode: 'dry_run',
+    offset: args.offset,
+    limit: args.limit,
+    profile,
     targets,
     candidates,
     counts: countsFor(candidates),
@@ -290,9 +371,30 @@ async function applyRun(args: Args): Promise<void> {
   if (failedAuto.length > 0) {
     throw new Error(`refusing apply: ${failedAuto.length} auto candidates have high risk score`)
   }
+  if (autoCandidates.length === 0) throw new Error('refusing apply: no auto-approved candidates')
 
   const supabase = supabaseFromEnv()
+  await assertGovernanceSchema()
   const userId = await getCanonicalUserId(supabase)
+
+  const preflight = await Promise.all(
+    autoCandidates.map(async (candidate) => {
+      const { data: existing, error } = await supabase
+        .from('products')
+        .select('id, name')
+        .eq('provenance_source_kind', candidate.source_kind)
+        .eq('provenance_external_id', candidate.external_id)
+        .maybeSingle()
+      if (error) throw error
+      return { candidate, existing }
+    }),
+  )
+  const insertableCandidates = preflight.filter((entry) => !entry.existing?.id).map((entry) => entry.candidate)
+  if (insertableCandidates.length > args.maxInsert) {
+    throw new Error(
+      `refusing apply: ${insertableCandidates.length} insertable auto-approved candidates exceeds --max-insert=${args.maxInsert}`,
+    )
+  }
 
   const { error: runError } = await supabase
     .from('pantry_import_runs')
@@ -305,8 +407,8 @@ async function applyRun(args: Args): Promise<void> {
       target_count: artifact.targets.length,
       status: 'started',
       candidate_counts: artifact.counts,
-      profile: profileJson,
-      notes: 'Autonomous Pantry Builder tiered auto-apply.',
+      profile: artifact.profile,
+      notes: `Autonomous Pantry Builder tiered auto-apply from ${artifact.profile_path}.`,
     })
   if (runError) throw runError
 
@@ -315,9 +417,9 @@ async function applyRun(args: Args): Promise<void> {
       .from('pantry_import_candidates')
       .upsert({
         import_run_id: artifact.run_id,
-      candidate_key: candidate.candidate_key,
-      target_query: candidate.target_query,
-      normalized_name: candidate.normalized_name,
+        candidate_key: candidate.candidate_key,
+        target_query: candidate.target_query,
+        normalized_name: candidate.normalized_name,
         display_name: candidate.display_name,
         source_kind: candidate.source_kind,
         source_dataset: candidate.source_dataset,
@@ -338,14 +440,7 @@ async function applyRun(args: Args): Promise<void> {
 
   let inserted = 0
   let skipped = 0
-  for (const candidate of autoCandidates) {
-    const { data: existing, error: existingError } = await supabase
-      .from('products')
-      .select('id, name')
-      .eq('provenance_source_kind', candidate.source_kind)
-      .eq('provenance_external_id', candidate.external_id)
-      .maybeSingle()
-    if (existingError) throw existingError
+  for (const { candidate, existing } of preflight) {
     if (existing?.id) {
       skipped++
       await supabase
