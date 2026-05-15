@@ -4,8 +4,9 @@ import type { FoodIdentityDocument } from '../lib/claude/food-identity'
 import { searchFoodIdentityDocuments } from '../lib/claude/food-identity'
 import { normalizeFoodText } from '../lib/pantry-builder/normalize'
 import { classifyPantryCandidate } from '../lib/pantry-builder/risk'
-import type { ExistingProductSummary, PantryCandidate } from '../lib/pantry-builder/types'
+import type { ExistingProductSummary, PantryCandidate, PantryProfile } from '../lib/pantry-builder/types'
 import { resolveUnitGrams, withStandardUnits } from '../lib/pantry-builder/units'
+import { candidateFromUsdaFood } from '../lib/pantry-builder/usda-core'
 
 function candidate(overrides: Partial<PantryCandidate> = {}): PantryCandidate {
   const base: PantryCandidate = {
@@ -277,8 +278,86 @@ function testIdentityLearning() {
   assert.equal(hit?.outcome, 'resolved_high')
 }
 
+function testUsdaCandidateReviewReasons() {
+  const profile: PantryProfile = {
+    version: 1,
+    name: 'Test',
+    target_count: 1,
+    luke_food_profile: {
+      core_cuisines: [],
+      restaurants: [],
+      protein_anchors: [],
+      staple_categories: [],
+    },
+    already_covered: [],
+    allocation: {
+      whole_foods: 1,
+      proteins: 0,
+      cuisine_staples: 0,
+      sauces_condiments_oils: 0,
+      breakfast_snacks: 0,
+      beverages: 0,
+      prepared_common: 0,
+      coverage_buffer: 0,
+    },
+    categories: {
+      whole_foods: [],
+      proteins: [],
+      cuisine_staples: [],
+      sauces_condiments_oils: [],
+      breakfast_snacks: [],
+      beverages: [],
+      prepared_common: [],
+      coverage_buffer: [],
+    },
+    count_unit_grams: {},
+    review_only_patterns: [],
+  }
+
+  const riceNoodles = candidateFromUsdaFood(
+    { query: 'jasmine rice cooked', category: 'whole_foods', reviewOnly: false },
+    {
+      fdcId: 1,
+      description: 'Rice noodles, cooked',
+      dataType: 'SR Legacy',
+      foodNutrients: [
+        { nutrientId: 1008, value: 108 },
+        { nutrientId: 1003, value: 1.8 },
+        { nutrientId: 1005, value: 24 },
+        { nutrientId: 1004, value: 0.2 },
+      ],
+    },
+    profile,
+    [],
+    'test',
+  )
+  assert.equal(riceNoodles?.decision, 'review_required')
+  assert.ok(riceNoodles?.reasons.includes('low_target_token_coverage_50'))
+
+  const brandLikeRice = candidateFromUsdaFood(
+    { query: 'brown rice cooked', category: 'whole_foods', reviewOnly: false },
+    {
+      fdcId: 2,
+      description: 'Rice, brown, parboiled, cooked, UNCLE BENS',
+      dataType: 'Survey (FNDDS)',
+      foodNutrients: [
+        { nutrientId: 1008, value: 123 },
+        { nutrientId: 1003, value: 2.7 },
+        { nutrientId: 1005, value: 25.6 },
+        { nutrientId: 1004, value: 1 },
+      ],
+    },
+    profile,
+    [],
+    'test',
+  )
+  assert.equal(brandLikeRice?.decision, 'review_required')
+  assert.ok(brandLikeRice?.reasons.includes('brand_like_name_token_review_required'))
+}
+
 testUnits()
 testRisk()
 testIdentityLearning()
+testUsdaCandidateReviewReasons()
 
 console.log('test-pantry-builder: ok')
