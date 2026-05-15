@@ -215,7 +215,7 @@ Stop conditions:
 
 ## Brick PLR-6: Unit Intelligence Probe Pack
 
-Classification: Green unless it proposes live data writes.
+Classification: Green unless it proposes live data writes. Initial read-only probe shipped in `scripts/probe-pantry-units.ts`.
 
 Goal: prove newly imported rows are useful for natural speech quantities.
 
