@@ -254,6 +254,11 @@ function testRisk() {
       .decision,
     'auto_approved',
   )
+  assert.equal(
+    classifyPantryCandidate(candidate({ target_query: 'macaroni and cheese', display_name: 'Macaroni or noodles with cheese and meat' }), existing, [])
+      .decision,
+    'review_required',
+  )
 }
 
 function testIdentityLearning() {
@@ -313,6 +318,17 @@ function testUsdaCandidateReviewReasons() {
     count_unit_grams: {},
     review_only_patterns: [],
   }
+  const food = (fdcId: number, description: string) => ({
+    fdcId,
+    description,
+    dataType: 'SR Legacy',
+    foodNutrients: [
+      { nutrientId: 1008, value: 200 },
+      { nutrientId: 1003, value: 10 },
+      { nutrientId: 1005, value: 10 },
+      { nutrientId: 1004, value: 12 },
+    ],
+  })
 
   const riceNoodles = candidateFromUsdaFood(
     { query: 'jasmine rice cooked', category: 'whole_foods', reviewOnly: false },
@@ -393,6 +409,50 @@ function testUsdaCandidateReviewReasons() {
   )
   assert.equal(tacoMeatFallback?.decision, 'review_required')
   assert.ok(tacoMeatFallback?.reasons.includes('context_token_missing_taco'))
+
+  const bbqModifierCases = [
+    {
+      query: 'beef brisket cooked',
+      display: 'Beef, cured, corned beef, brisket, cooked',
+      reason: 'state_modifier_mismatch_cured',
+    },
+    {
+      query: 'pickle',
+      display: 'Pickle relish, sweet',
+      reason: 'state_modifier_mismatch_relish',
+    },
+    {
+      query: 'hamburger patty',
+      display: 'Hamburger, on wheat bun, 1 small patty',
+      reason: 'state_modifier_mismatch_bun',
+    },
+    {
+      query: 'hamburger patty',
+      display: 'Fast foods, hamburger; single, regular patty; plain',
+      reason: 'state_modifier_mismatch_fast foods',
+    },
+    {
+      query: 'cornbread',
+      display: 'Cornbread stuffing',
+      reason: 'state_modifier_mismatch_stuffing',
+    },
+    {
+      query: 'smoked turkey breast',
+      display: 'Turkey, breast, smoked, lemon pepper flavor, 97% fat-free',
+      reason: 'state_modifier_mismatch_flavor',
+    },
+  ]
+  for (const [index, row] of bbqModifierCases.entries()) {
+    const result = candidateFromUsdaFood(
+      { query: row.query, category: 'proteins', reviewOnly: false },
+      food(10 + index, row.display),
+      profile,
+      [],
+      'test',
+    )
+    assert.equal(result?.decision, 'review_required')
+    assert.ok(result?.reasons.includes(row.reason), `${row.query} should include ${row.reason}`)
+  }
 }
 
 testUnits()

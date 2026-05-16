@@ -289,7 +289,7 @@ Stop conditions:
 
 ## Brick PLR-9: BBQ Skill Disk
 
-Classification: Green for dry-run/report; Yellow for safe USDA live rows; Red for restaurant/branded/composite BBQ writes.
+Classification: Green for dry-run/report; Yellow for safe USDA live rows; Red for restaurant/branded/composite BBQ writes. Initial dry-run completed and risk guards tightened for BBQ-specific drift.
 
 Goal: prove the "add BBQ" training-pack flow.
 
