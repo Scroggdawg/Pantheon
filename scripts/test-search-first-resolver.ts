@@ -86,6 +86,10 @@ async function main() {
         'chips must not become a high-confidence chocolate-chip-bar match',
       )
       assert(
+        !/(yasso|yogurt|chocolate|dessert|bar)/i.test(draft.items[0].name ?? ''),
+        `chips must not stage dessert-chip product candidates, got ${draft.items[0].name}`,
+      )
+      assert(
         draft.items[1].query === 'guacamole',
         `expected guacamole second item, got ${draft.items[1].query}`,
       )
@@ -118,4 +122,3 @@ main().catch((err) => {
   console.error(err)
   process.exit(1)
 })
-

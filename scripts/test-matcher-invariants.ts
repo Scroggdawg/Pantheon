@@ -169,16 +169,22 @@ const tests: Array<[string, () => void]> = [
     },
   ],
   [
-    'generic chip and bacon queries are capped below shortcut threshold for composite overmatches',
+    'generic chip rejects dessert-chip products while bacon stays capped for composites',
     () => {
       const chipBar = guardedLibraryNameSimilarity('chips', 'Yasso Greek Yogurt Bar - Mint Chocolate Chip')
+      const tortillaChips = guardedLibraryNameSimilarity('chips', 'Tortilla chips')
+      const explicitTortillaChips = guardedLibraryNameSimilarity('tortilla chips', 'Tortilla chips')
+      const chocolateChips = guardedLibraryNameSimilarity('chocolate chips', 'Chocolate chips')
       const baconSandwich = guardedLibraryNameSimilarity(
         'bacon',
         "McDonald's Bacon Egg & Cheese Biscuit",
       )
       const exactBacon = guardedLibraryNameSimilarity('bacon', 'Bacon')
 
-      assert(chipBar === 0.84, `expected chip cap 0.84, got ${chipBar}`)
+      assert(chipBar === 0, `expected dessert-chip rejection score 0, got ${chipBar}`)
+      assert(tortillaChips === 0.84, `expected generic tortilla chips cap 0.84, got ${tortillaChips}`)
+      assert(explicitTortillaChips === 1, `expected explicit tortilla chips score 1, got ${explicitTortillaChips}`)
+      assert(chocolateChips === 1, `expected explicit chocolate chips score 1, got ${chocolateChips}`)
       assert(baconSandwich === 0.84, `expected bacon cap 0.84, got ${baconSandwich}`)
       assert(exactBacon === 1, `expected exact bacon score 1, got ${exactBacon}`)
     },

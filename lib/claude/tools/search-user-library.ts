@@ -147,6 +147,43 @@ const GENERIC_SINGLE_TOKEN_QUERIES = new Set([
   'lime',
 ])
 const GENERIC_OVERMATCH_SCORE_CAP = 0.84
+const DESSERT_CHIP_TOKENS = new Set([
+  'bar',
+  'brownie',
+  'candy',
+  'chocolate',
+  'cookie',
+  'cream',
+  'dessert',
+  'fudge',
+  'granola',
+  'greek',
+  'ice',
+  'mint',
+  'yasso',
+  'yogurt',
+])
+const SALTY_CHIP_TOKENS = new Set([
+  'corn',
+  'kettle',
+  'nacho',
+  'pita',
+  'potato',
+  'restaurant',
+  'snack',
+  'tortilla',
+])
+
+function hasAnyToken(haystack: Set<string>, needles: Set<string>): boolean {
+  for (const needle of needles) if (haystack.has(needle)) return true
+  return false
+}
+
+function isGenericChipDessertOvermatch(queryToken: string, candidateTokens: Set<string>): boolean {
+  if (queryToken !== 'chip') return false
+  if (hasAnyToken(candidateTokens, SALTY_CHIP_TOKENS)) return false
+  return hasAnyToken(candidateTokens, DESSERT_CHIP_TOKENS)
+}
 
 export function guardedLibraryNameSimilarity(
   query: string,
@@ -163,6 +200,8 @@ export function guardedLibraryNameSimilarity(
   if (!GENERIC_SINGLE_TOKEN_QUERIES.has(queryToken)) return score
 
   const candidateTokens = tokens(name)
+  if (isGenericChipDessertOvermatch(queryToken, candidateTokens)) return 0
+
   const exactishNames = new Set([queryToken, `${queryToken}s`])
   if (candidateTokens.size <= 1 || exactishNames.has(normalize(name))) return score
 
