@@ -61,6 +61,19 @@ interface PlainRow {
   sortScore: number
 }
 
+interface RefereePair {
+  target_contains: string
+  candidate_contains: string
+  notes: string
+}
+
+interface ReviewReferee {
+  version: number
+  name: string
+  compatible_pairs: RefereePair[]
+  mismatch_pairs: RefereePair[]
+}
+
 const LANE_TITLES: Record<ReviewLane, string> = {
   'obvious-no': 'Obvious No',
   'already-covered': 'Already Covered',
@@ -110,63 +123,10 @@ const COMPOSITE_TERMS = [
   'with ',
 ]
 
-const IDENTITY_COMPATIBLE_OVERRIDES = [
-  ['almond milk unsweetened', 'almond milk, unsweetened'],
-  ['balsamic vinegar', 'vinegar, balsamic'],
-  ['banana', 'bananas'],
-  ['cashews', 'cashews'],
-  ['apple cider vinegar', 'vinegar, cider'],
-  ['cilantro', 'coriander (cilantro) leaves'],
-  ['italian sausage cooked', 'sausage, italian'],
-  ['bbq ribs', 'beef, rib, back ribs'],
-  ['jalapeno', 'peppers, jalapeno'],
-  ['oregano', 'spices, oregano'],
-  ['sriracha', 'sauce, hot chile, sriracha'],
-]
-
-const IDENTITY_MISMATCH_OVERRIDES = [
-  ['apple', 'fruit butters'],
-  ['bean sprouts', 'brussels sprouts'],
-  ['cracklin oat bran', 'oat bran, raw'],
-  ['mint', 'mint julep'],
-  ['tom kha soup', 'tom collins'],
-  ['granola', 'granola bars'],
-  ['nuoc cham', 'willow'],
-  ['bbq plate', 'cracker barrel'],
-  ['lemongrass', 'smart soup'],
-  ['coconut juice', 'oil, coconut'],
-  ['greek yogurt bar', 'yogurt, greek, plain'],
-  ['jasmine rice cooked', 'rice noodles'],
-  ['magic spoon cereal', 'shredded wheat'],
-  ['mozzarella cheese', 'mozzarella cheese, tomato'],
-  ['turkey bolognese', 'turkey, ground'],
-  ['turkey meatballs', 'turkey, ground'],
-  ['rice paper wrapper', 'rice, black'],
-  ['rice vinegar', 'rice, black'],
-  ['thai basil', 'pad thai'],
-  ['water chestnuts', 'chestnuts, chinese'],
-  ['banh mi chicken', 'chicken, ground'],
-  ['brisket sandwich', 'beef, brisket'],
-  ['coffee black', 'plum, black'],
-  ['hazelnut stevia drops', 'hazelnuts'],
-  ['pho beef', 'beef'],
-  ['protein shake dextrose', 'nutritional drink or shake'],
-  ['rebbl drink', 'energy drink'],
-  ['red curry paste', 'cabbage, red'],
-  ['smoked turkey sandwich', 'sausage, turkey'],
-  ['spring roll shrimp', 'sushi roll'],
-  ['summer roll shrimp', 'shrimp'],
-  ['thai iced tea', 'oolong'],
-  ['vermicelli bowl chicken', 'burrito bowl'],
-  ['coffee with half and half', 'coffee, instant'],
-  ['green curry paste', 'beet greens'],
-  ['meatballs', 'puerto rican'],
-  ['tom yum soup', 'tomato soup'],
-  ['kashi cereal', 'kashi chewy'],
-  ['pulled pork sandwich', 'sandwich spread'],
-  ['chili garlic sauce', 'garlic sauce'],
-  ['tomato sauce', 'tomato chili sauce'],
-]
+function loadReviewReferee(): ReviewReferee {
+  const path = join(__dirname, '..', 'data/pantry/review-referee.json')
+  return JSON.parse(readFileSync(path, 'utf8')) as ReviewReferee
+}
 
 function parseArgs(argv: string[]): Args {
   const args: Args = {
@@ -243,8 +203,8 @@ function displayIncludes(row: CandidateRow, value: string) {
   return row.display_name.toLowerCase().includes(value)
 }
 
-function matchesOverride(row: CandidateRow, overrides: string[][]) {
-  return overrides.some(([target, display]) => targetIncludes(row, target) && displayIncludes(row, display))
+function matchesRefereePair(row: CandidateRow, pairs: RefereePair[]) {
+  return pairs.some((pair) => targetIncludes(row, pair.target_contains) && displayIncludes(row, pair.candidate_contains))
 }
 
 function reasonLabel(reason: string) {
@@ -289,9 +249,9 @@ function isComposite(row: CandidateRow) {
   return hasAny(text, COMPOSITE_TERMS) || hasReason(row, 'composite') || hasReason(row, 'prepared_dish')
 }
 
-function hasObviousMismatchReason(row: CandidateRow) {
-  if (matchesOverride(row, IDENTITY_COMPATIBLE_OVERRIDES)) return false
-  if (matchesOverride(row, IDENTITY_MISMATCH_OVERRIDES)) return true
+function hasObviousMismatchReason(row: CandidateRow, referee: ReviewReferee) {
+  if (matchesRefereePair(row, referee.compatible_pairs)) return false
+  if (matchesRefereePair(row, referee.mismatch_pairs)) return true
   return (
     hasReason(row, 'macro_sanity_failed') ||
     hasReason(row, 'low_target_token_coverage_0') ||
@@ -300,12 +260,12 @@ function hasObviousMismatchReason(row: CandidateRow) {
   )
 }
 
-function isAlreadyCovered(row: CandidateRow) {
-  return hasReason(row, 'duplicate_existing_product') && !hasObviousMismatchReason(row)
+function isAlreadyCovered(row: CandidateRow, referee: ReviewReferee) {
+  return hasReason(row, 'duplicate_existing_product') && !hasObviousMismatchReason(row, referee)
 }
 
-function isObviousNo(row: CandidateRow) {
-  return hasObviousMismatchReason(row) || (row.decision === 'rejected' && !isAlreadyCovered(row))
+function isObviousNo(row: CandidateRow, referee: ReviewReferee) {
+  return hasObviousMismatchReason(row, referee) || (row.decision === 'rejected' && !isAlreadyCovered(row, referee))
 }
 
 function isProbablyYes(row: CandidateRow) {
@@ -319,8 +279,8 @@ function isProbablyYes(row: CandidateRow) {
   return row.reasons.length === 0 || row.reasons.every((reason) => reason === 'not_further_specified_review_required')
 }
 
-function plainRowFor(row: CandidateRow): PlainRow {
-  if (isObviousNo(row)) {
+function plainRowFor(row: CandidateRow, referee: ReviewReferee): PlainRow {
+  if (isObviousNo(row, referee)) {
     return {
       row,
       lane: 'obvious-no',
@@ -332,7 +292,7 @@ function plainRowFor(row: CandidateRow): PlainRow {
     }
   }
 
-  if (isAlreadyCovered(row)) {
+  if (isAlreadyCovered(row, referee)) {
     return {
       row,
       lane: 'already-covered',
@@ -387,7 +347,7 @@ function formatUnits(row: CandidateRow) {
   return row.unit_alternatives.slice(0, 8).map((unit) => `${unit.unit}=${unit.grams}g`).join(', ') || 'none'
 }
 
-function renderPacket(rows: PlainRow[], generatedAt: string) {
+function renderPacket(rows: PlainRow[], generatedAt: string, referee: ReviewReferee) {
   const laneOrder: ReviewLane[] = ['obvious-no', 'already-covered', 'probably-yes', 'needs-choice', 'manual-source']
   const grouped: Record<ReviewLane, PlainRow[]> = {
     'obvious-no': [],
@@ -406,6 +366,7 @@ function renderPacket(rows: PlainRow[], generatedAt: string) {
     '# Plain Pantry Review',
     '',
     `Generated: ${generatedAt}`,
+    `Referee: ${referee.name} v${referee.version}`,
     `Rows: ${rows.length}`,
     '',
     '## What You Are Reviewing',
@@ -512,13 +473,14 @@ async function loadRows(limit: number): Promise<CandidateRow[]> {
 
 async function main() {
   loadEnvLocal()
+  const referee = loadReviewReferee()
   const args = parseArgs(process.argv)
   const generatedAt = new Date().toISOString()
-  const rows = (await loadRows(args.limit)).map(plainRowFor)
+  const rows = (await loadRows(args.limit)).map((row) => plainRowFor(row, referee))
   const outputPath = resolve(args.output ?? defaultOutputPath())
   const outputDir = dirname(outputPath)
   if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true })
-  writeFileSync(outputPath, renderPacket(rows, generatedAt))
+  writeFileSync(outputPath, renderPacket(rows, generatedAt, referee))
   console.log(`Wrote ${outputPath}`)
   const counts = rows.reduce<Record<string, number>>((acc, row) => {
     acc[row.lane] = (acc[row.lane] ?? 0) + 1

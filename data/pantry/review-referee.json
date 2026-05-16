@@ -1,0 +1,297 @@
+{
+  "version": 1,
+  "name": "Pantry Review Referee",
+  "purpose": "Machine-readable identity calls for autonomous pantry review. These rules answer: if Luke says target_contains, is candidate_contains the same food identity?",
+  "principles": [
+    "Identity comes before macros.",
+    "Already-covered duplicates should route to existing rows or aliases, not create new products.",
+    "Obvious common-sense mismatches should become rejection memory without Luke review.",
+    "Restaurant, branded, recipe, cocktail, supplement, and personal-preference rows stay review/source-gated unless an exact trusted source exists."
+  ],
+  "compatible_pairs": [
+    {
+      "target_contains": "almond milk unsweetened",
+      "candidate_contains": "almond milk, unsweetened",
+      "notes": "Identity-compatible; duplicate/alias problem if Pantheon already has a row."
+    },
+    {
+      "target_contains": "balsamic vinegar",
+      "candidate_contains": "vinegar, balsamic",
+      "notes": "Same identity."
+    },
+    {
+      "target_contains": "banana",
+      "candidate_contains": "bananas",
+      "notes": "Same identity."
+    },
+    {
+      "target_contains": "cashews",
+      "candidate_contains": "cashews",
+      "notes": "Same identity, NFS acceptable as generic cashew."
+    },
+    {
+      "target_contains": "apple cider vinegar",
+      "candidate_contains": "vinegar, cider",
+      "notes": "USDA wording for cider vinegar; macros effectively irrelevant."
+    },
+    {
+      "target_contains": "cilantro",
+      "candidate_contains": "coriander (cilantro) leaves",
+      "notes": "Fresh coriander leaves are cilantro. Coriander seed/dried coriander would be a different row."
+    },
+    {
+      "target_contains": "italian sausage cooked",
+      "candidate_contains": "sausage, italian",
+      "notes": "Compatible generic sausage identity; still keep as covered/source-gated if duplicate."
+    },
+    {
+      "target_contains": "bbq ribs",
+      "candidate_contains": "beef, rib, back ribs",
+      "notes": "Compatible ingredient direction, but BBQ/ribs serving remains source-gated."
+    },
+    {
+      "target_contains": "jalapeno",
+      "candidate_contains": "peppers, jalapeno",
+      "notes": "Same identity."
+    },
+    {
+      "target_contains": "oregano",
+      "candidate_contains": "spices, oregano",
+      "notes": "Compatible if Luke means dried oregano; fresh oregano should be separate."
+    },
+    {
+      "target_contains": "sriracha",
+      "candidate_contains": "sauce, hot chile, sriracha",
+      "notes": "Same sauce identity; brand-specific sriracha may be separate later."
+    }
+  ],
+  "mismatch_pairs": [
+    {
+      "target_contains": "apple",
+      "candidate_contains": "fruit butters",
+      "notes": "Apple is a fruit; apple butter is a jarred spread."
+    },
+    {
+      "target_contains": "bean sprouts",
+      "candidate_contains": "brussels sprouts",
+      "notes": "Different foods."
+    },
+    {
+      "target_contains": "cracklin oat bran",
+      "candidate_contains": "oat bran, raw",
+      "notes": "Cracklin Oat Bran is branded cereal; raw oat bran is an ingredient."
+    },
+    {
+      "target_contains": "mint",
+      "candidate_contains": "mint julep",
+      "notes": "Mint is an herb; mint julep is a cocktail."
+    },
+    {
+      "target_contains": "tom kha soup",
+      "candidate_contains": "tom collins",
+      "notes": "Thai soup vs cocktail."
+    },
+    {
+      "target_contains": "granola",
+      "candidate_contains": "granola bars",
+      "notes": "Granola defaults to loose cereal/topping, not a bar."
+    },
+    {
+      "target_contains": "nuoc cham",
+      "candidate_contains": "willow",
+      "notes": "Vietnamese dipping sauce vs unrelated Alaska Native food."
+    },
+    {
+      "target_contains": "bbq plate",
+      "candidate_contains": "cracker barrel",
+      "notes": "Luke would specify components; a restaurant mac plate is not BBQ plate."
+    },
+    {
+      "target_contains": "lemongrass",
+      "candidate_contains": "smart soup",
+      "notes": "Herb vs branded soup."
+    },
+    {
+      "target_contains": "coconut juice",
+      "candidate_contains": "oil, coconut",
+      "notes": "Coconut water/juice is not coconut oil."
+    },
+    {
+      "target_contains": "greek yogurt bar",
+      "candidate_contains": "yogurt, greek, plain",
+      "notes": "Frozen bar/product vs plain yogurt."
+    },
+    {
+      "target_contains": "jasmine rice cooked",
+      "candidate_contains": "rice noodles",
+      "notes": "Rice grain vs noodle."
+    },
+    {
+      "target_contains": "magic spoon cereal",
+      "candidate_contains": "shredded wheat",
+      "notes": "Wrong cereal/product."
+    },
+    {
+      "target_contains": "mozzarella cheese",
+      "candidate_contains": "mozzarella cheese, tomato",
+      "notes": "Plain cheese vs dressed caprese-style food."
+    },
+    {
+      "target_contains": "turkey bolognese",
+      "candidate_contains": "turkey, ground",
+      "notes": "Recipe/sauce vs raw ingredient."
+    },
+    {
+      "target_contains": "turkey meatballs",
+      "candidate_contains": "turkey, ground",
+      "notes": "Prepared meatballs include binders/seasoning/fat; not just ground turkey."
+    },
+    {
+      "target_contains": "rice paper wrapper",
+      "candidate_contains": "rice, black",
+      "notes": "Wrapper vs rice grain."
+    },
+    {
+      "target_contains": "rice vinegar",
+      "candidate_contains": "rice, black",
+      "notes": "Vinegar vs rice grain."
+    },
+    {
+      "target_contains": "thai basil",
+      "candidate_contains": "pad thai",
+      "notes": "Herb vs noodle dish."
+    },
+    {
+      "target_contains": "water chestnuts",
+      "candidate_contains": "chestnuts, chinese",
+      "notes": "Water chestnuts and Chinese chestnuts are different foods."
+    },
+    {
+      "target_contains": "banh mi chicken",
+      "candidate_contains": "chicken, ground",
+      "notes": "Sandwich/composite vs ingredient."
+    },
+    {
+      "target_contains": "brisket sandwich",
+      "candidate_contains": "beef, brisket",
+      "notes": "Sandwich/composite vs meat ingredient."
+    },
+    {
+      "target_contains": "coffee black",
+      "candidate_contains": "plum, black",
+      "notes": "Black coffee vs black plum."
+    },
+    {
+      "target_contains": "hazelnut stevia drops",
+      "candidate_contains": "hazelnuts",
+      "notes": "Liquid sweetener/flavoring vs nut."
+    },
+    {
+      "target_contains": "pho beef",
+      "candidate_contains": "beef",
+      "notes": "Soup/composite vs beef ingredient."
+    },
+    {
+      "target_contains": "protein shake dextrose",
+      "candidate_contains": "nutritional drink or shake",
+      "notes": "Should route to Luke's saved protein shake, not a generic drink."
+    },
+    {
+      "target_contains": "rebbl drink",
+      "candidate_contains": "energy drink",
+      "notes": "REBBL is a branded product family, not generic energy drink."
+    },
+    {
+      "target_contains": "red curry paste",
+      "candidate_contains": "cabbage, red",
+      "notes": "Paste vs vegetable."
+    },
+    {
+      "target_contains": "smoked turkey sandwich",
+      "candidate_contains": "sausage, turkey",
+      "notes": "Sandwich vs sausage."
+    },
+    {
+      "target_contains": "spring roll shrimp",
+      "candidate_contains": "sushi roll",
+      "notes": "Spring roll vs sushi roll."
+    },
+    {
+      "target_contains": "summer roll shrimp",
+      "candidate_contains": "shrimp",
+      "notes": "Composite roll vs ingredient."
+    },
+    {
+      "target_contains": "thai iced tea",
+      "candidate_contains": "oolong",
+      "notes": "Thai iced tea is sweetened milk tea, usually black tea based, not plain oolong."
+    },
+    {
+      "target_contains": "vermicelli bowl chicken",
+      "candidate_contains": "burrito bowl",
+      "notes": "Vietnamese vermicelli bowl vs burrito bowl."
+    },
+    {
+      "target_contains": "coffee with half and half",
+      "candidate_contains": "coffee, instant",
+      "notes": "Prepared coffee with dairy vs instant coffee base."
+    },
+    {
+      "target_contains": "green curry paste",
+      "candidate_contains": "beet greens",
+      "notes": "Paste vs greens."
+    },
+    {
+      "target_contains": "meatballs",
+      "candidate_contains": "puerto rican",
+      "notes": "Do not default generic meatballs to a regional style."
+    },
+    {
+      "target_contains": "tom yum soup",
+      "candidate_contains": "tomato soup",
+      "notes": "Thai soup vs tomato soup."
+    },
+    {
+      "target_contains": "kashi cereal",
+      "candidate_contains": "kashi chewy",
+      "notes": "Cereal vs bar."
+    },
+    {
+      "target_contains": "pulled pork sandwich",
+      "candidate_contains": "sandwich spread",
+      "notes": "Sandwich vs spread."
+    },
+    {
+      "target_contains": "chili garlic sauce",
+      "candidate_contains": "garlic sauce",
+      "notes": "Not specific enough; do not collapse to plain garlic sauce."
+    },
+    {
+      "target_contains": "tomato sauce",
+      "candidate_contains": "tomato chili sauce",
+      "notes": "Plain tomato sauce vs chili sauce."
+    }
+  ],
+  "ask_luke_classes": [
+    {
+      "class": "brand_flavor_or_exact_product",
+      "examples": ["REBBL flavor", "Yasso flavor", "Magic Spoon flavor", "Kashi exact cereal"],
+      "why": "Luke may care about exact brand/flavor macros."
+    },
+    {
+      "class": "recipe_or_composite",
+      "examples": ["bolognese", "banh mi", "pho", "vermicelli bowl", "mango sticky rice"],
+      "why": "Macros depend on recipe/portion."
+    },
+    {
+      "class": "restaurant_default",
+      "examples": ["Chipotle bowl", "McDonald's item not already saved"],
+      "why": "Needs official/menu source or Luke-specific default."
+    },
+    {
+      "class": "ambiguous_generic",
+      "examples": ["tomato", "mushrooms", "granola", "chips", "coffee"],
+      "why": "Requires default policy or existing-row alias routing."
+    }
+  ]
+}
