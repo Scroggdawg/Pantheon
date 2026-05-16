@@ -153,6 +153,18 @@ function testRisk() {
     ).decision,
     'rejected',
   )
+  assert.equal(
+    classifyPantryCandidate(
+      candidate({
+        target_query: 'whole egg',
+        display_name: 'Eggs, Grade A, Large, egg whole',
+        aliases: ['eggs grade a large egg whole'],
+      }),
+      [{ id: '1', name: 'Egg, whole, raw', brand: null, barcode: null }],
+      [],
+    ).decision,
+    'rejected',
+  )
 
   const badMacroCandidate = candidate()
   badMacroCandidate.proposed_product.calories_per_serving = 0
@@ -259,6 +271,17 @@ function testRisk() {
       .decision,
     'review_required',
   )
+  const compositeTarget = classifyPantryCandidate(
+    candidate({
+      target_query: 'coffee with half and half',
+      display_name: 'Beverages, coffee, instant, regular, half the caffeine',
+      category: 'beverages',
+    }),
+    existing,
+    [],
+  )
+  assert.equal(compositeTarget.decision, 'review_required')
+  assert.ok(compositeTarget.reasons.includes('composite_target_review_required'))
 }
 
 function testIdentityLearning() {

@@ -97,6 +97,20 @@ const STATE_MODIFIERS = [
   'topping',
   'wing',
 ]
+const DUPLICATE_TARGET_STOP_TOKENS = new Set([
+  'and',
+  'cooked',
+  'fresh',
+  'grade',
+  'large',
+  'low',
+  'medium',
+  'plain',
+  'raw',
+  'regular',
+  'small',
+  'with',
+])
 
 function macroCalories(candidate: PantryCandidate): number {
   const p = candidate.proposed_product
@@ -123,10 +137,21 @@ function duplicateHit(candidate: PantryCandidate, existing: ExistingProductSumma
   const aliases = candidate.aliases
     .map((alias) => normalizeFoodText(alias))
     .filter((alias) => alias.length >= 5)
+  const targetTokens = normalizeFoodText(candidate.target_query)
+    .split(' ')
+    .map((token) => (token.endsWith('s') && token.length > 4 ? token.slice(0, -1) : token))
+    .filter((token) => token.length > 1 && !DUPLICATE_TARGET_STOP_TOKENS.has(token))
+
   return existing.some((row) => {
     const rowName = normalizeFoodText(row.name)
+    const rowTokens = new Set(
+      rowName
+        .split(' ')
+        .map((token) => (token.endsWith('s') && token.length > 4 ? token.slice(0, -1) : token)),
+    )
     if (rowName === normalized) return true
     if (rowName.replace(/\s+/g, '') === compact) return true
+    if (targetTokens.length >= 2 && targetTokens.every((token) => rowTokens.has(token))) return true
     if (
       aliases.some(
         (alias) =>
@@ -178,6 +203,11 @@ export function classifyPantryCandidate(
     reasons.add('missing_unit_alternatives')
     decision = decision === 'rejected' ? decision : 'review_required'
     score += 20
+  }
+  if (/\bwith\b/.test(targetQuery)) {
+    reasons.add('composite_target_review_required')
+    decision = decision === 'rejected' ? decision : 'review_required'
+    score += 25
   }
   if (duplicateHit(candidate, existing)) {
     reasons.add('duplicate_existing_product')
