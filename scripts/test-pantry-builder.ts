@@ -263,6 +263,16 @@ function testRisk() {
     classifyPantryCandidate(candidate({ target_query: 'mint', display_name: 'Mint julep' }), existing, []).decision,
     'review_required',
   )
+  assert.equal(
+    classifyPantryCandidate(candidate({ target_query: 'mustard', display_name: 'Mustard greens, raw' }), existing, [])
+      .decision,
+    'review_required',
+  )
+  assert.equal(
+    classifyPantryCandidate(candidate({ target_query: 'mayonnaise', display_name: 'Mayonnaise, made with tofu' }), existing, [])
+      .decision,
+    'review_required',
+  )
   const brandedCandidate = candidate()
   brandedCandidate.proposed_product.brand = 'Example Brand'
   assert.equal(classifyPantryCandidate(brandedCandidate, existing, []).decision, 'review_required')

@@ -65,6 +65,7 @@ const STATE_MODIFIERS = [
   'flavored',
   'frozen',
   'german',
+  'greens',
   'hopi',
   'juice',
   'mission',
@@ -95,6 +96,7 @@ const STATE_MODIFIERS = [
   'sprouted',
   'tartare',
   'thigh',
+  'tofu',
   'topping',
   'wing',
 ]
