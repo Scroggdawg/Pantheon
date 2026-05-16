@@ -73,11 +73,17 @@ function defaultNote(candidate: PantryCandidate) {
 }
 
 function selectedCandidates(artifact: RunArtifact, includeAuto: boolean) {
+  const seen = new Set<string>()
   return artifact.candidates
     .filter((candidate) => includeAuto || candidate.decision !== 'auto_approved')
     .sort((a, b) => {
       const order = { review_required: 0, rejected: 1, auto_approved: 2 }
       return order[a.decision] - order[b.decision] || a.target_query.localeCompare(b.target_query)
+    })
+    .filter((candidate) => {
+      if (seen.has(candidate.candidate_key)) return false
+      seen.add(candidate.candidate_key)
+      return true
     })
 }
 
