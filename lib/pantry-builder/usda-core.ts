@@ -85,6 +85,10 @@ const STATE_MODIFIERS = [
   'topping',
   'sprouted',
   'wing',
+  'baby',
+  'fat added',
+  'whole wheat',
+  'white',
 ]
 
 const TARGET_STOP_TOKENS = new Set([

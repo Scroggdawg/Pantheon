@@ -109,6 +109,10 @@ const STATE_MODIFIERS = [
   'tofu',
   'topping',
   'wing',
+  'baby',
+  'fat added',
+  'whole wheat',
+  'white',
 ]
 const DUPLICATE_TARGET_STOP_TOKENS = new Set([
   'and',
