@@ -54,6 +54,14 @@ Validate the ledger before any future apply path consumes it:
 npx tsx scripts/validate-pantry-approval-ledger.ts data/pantry/approvals/<ledger>.md
 ```
 
+Preview the read-only apply plan:
+
+```bash
+npx tsx scripts/plan-pantry-approval-apply.ts \
+  --artifact=scripts/output/pantry-builder-<run-id>.json \
+  --ledger=data/pantry/approvals/<ledger>.md
+```
+
 ## Apply Boundary
 
 This format intentionally does not grant write permission.

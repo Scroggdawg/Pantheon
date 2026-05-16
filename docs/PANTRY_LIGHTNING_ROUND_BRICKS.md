@@ -343,7 +343,7 @@ Stop conditions:
 
 ## Brick PLR-11: Approved Review Apply Path
 
-Classification: Red for live branded/restaurant writes.
+Classification: Red for live branded/restaurant writes. Read-only apply planner shipped; live write path remains unimplemented.
 
 Goal: apply Luke-approved review rows after the approval ledger proves itself.
 
