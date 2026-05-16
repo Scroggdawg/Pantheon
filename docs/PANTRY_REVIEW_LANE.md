@@ -41,7 +41,14 @@ npx tsx scripts/validate-pantry-approval-ledger.ts \
   data/pantry/approvals/live-review-YYYY-MM-DD.md
 ```
 
-Plan an approval apply from an artifact-backed ledger:
+Plan an approval apply from a live DB-backed ledger:
+
+```bash
+npx tsx scripts/plan-live-pantry-review.ts \
+  --ledger=data/pantry/approvals/live-review-YYYY-MM-DD.md
+```
+
+Plan an approval apply from an older artifact-backed ledger:
 
 ```bash
 npx tsx scripts/plan-pantry-approval-apply.ts \
@@ -77,10 +84,10 @@ Then detail below each row:
 
 ## Next Build Step
 
-The next implementation step is not blind apply. It is a review-apply planner that reads the live queue packet and produces three buckets:
+The current implementation step is not blind apply. The live review planner reads the live queue packet and produces three buckets:
 
 - safe approved USDA writes
 - rejection memory writes
 - manual/edit-needed rows
 
-Only after that planner is boring should Codex add a guarded review apply command.
+Only after that planner is boring on real Luke-edited ledgers should Codex add a guarded review apply command.
