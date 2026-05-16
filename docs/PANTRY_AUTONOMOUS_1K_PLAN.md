@@ -127,6 +127,21 @@ Actions:
 - It must skip when multiple plausible existing products exist.
 - Apply aliases under a guarded cap.
 
+Command:
+
+```bash
+npx tsx scripts/plan-already-covered-aliases.ts \
+  --ledger=data/pantry/approvals/plain-review-2026-05-16.md
+```
+
+Live writes, when the dry-run is boring, require explicit write flags and a cap:
+
+```bash
+npx tsx scripts/plan-already-covered-aliases.ts \
+  --ledger=data/pantry/approvals/plain-review-2026-05-16.md \
+  --apply --allow-alias-writes --max-alias=25
+```
+
 Expected product gain: 0
 
 Expected speed gain: meaningful, because parser skips more fallbacks.

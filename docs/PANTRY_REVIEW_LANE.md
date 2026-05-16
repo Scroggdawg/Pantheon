@@ -139,3 +139,26 @@ The current implementation step is not blind apply. The live review planner read
 - manual/edit-needed rows
 
 The guarded review apply command now exists, but its default mode is dry-run. Live writes require both `--apply` and `--allow-review-writes`; branded, restaurant, alcohol, OFF, supplement, recipe, composite, and LLM-estimated rows still need explicit approval before they leave the review lane.
+
+## Already-Covered Alias Lane
+
+`Already Covered` rows should not create duplicate products. They either become safe aliases to one existing product or they stay unresolved.
+
+Dry-run:
+
+```bash
+npx tsx scripts/plan-already-covered-aliases.ts \
+  --ledger=data/pantry/approvals/plain-review-2026-05-16.md
+```
+
+The planner only proposes an alias when one existing product is unambiguous. It marks composites like bowls, shakes, soups, sandwiches, and bars as `not_aliasable`, because those need saved-meal or recipe handling instead of a product alias.
+
+Live alias writes are guarded:
+
+```bash
+npx tsx scripts/plan-already-covered-aliases.ts \
+  --ledger=data/pantry/approvals/plain-review-2026-05-16.md \
+  --apply --allow-alias-writes --max-alias=25
+```
+
+Alias writes do not increase `products`; they improve parser routing into rows Pantheon already has.
