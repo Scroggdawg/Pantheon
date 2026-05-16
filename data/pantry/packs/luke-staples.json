@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "name": "Luke Staples",
+  "target_count": 160,
+  "luke_food_profile": {
+    "core_cuisines": [],
+    "restaurants": [],
+    "protein_anchors": ["cottage cheese", "Greek yogurt", "whey", "egg"],
+    "staple_categories": ["coconut water", "REBBL", "cereal", "granola", "applesauce", "healthy ice cream"]
+  },
+  "already_covered": [
+    "Yasso Greek Yogurt Bar - Sea Salt Caramel",
+    "Yasso Greek Yogurt Bar - Mint Chocolate Chip",
+    "Magic Spoon Cereal - Cocoa",
+    "Magic Spoon Cereal - Frosted",
+    "Magic Spoon Cereal - Strawberry",
+    "Good Culture Low-Fat Cottage Cheese",
+    "Mott's Applesauce",
+    "Taste Nirvana Coconut Water",
+    "Harmless Harvest Coconut Water",
+    "Goya Coconut Water with Pulp",
+    "REBBL Reishi Chocolate Elixir",
+    "REBBL Hazelnut Coffee Elixir",
+    "Chocolate Silk Soy Milk"
+  ],
+  "allocation": {
+    "whole_foods": 10,
+    "proteins": 12,
+    "cuisine_staples": 0,
+    "sauces_condiments_oils": 8,
+    "breakfast_snacks": 22,
+    "beverages": 18,
+    "prepared_common": 0,
+    "coverage_buffer": 5
+  },
+  "categories": {
+    "whole_foods": [
+      "strawberries",
+      "blueberries",
+      "banana",
+      "apple",
+      "goji berries dried",
+      "raisins"
+    ],
+    "proteins": [
+      "cottage cheese low fat",
+      "cottage cheese nonfat",
+      "Greek yogurt nonfat",
+      "Greek yogurt low fat",
+      "whole egg",
+      "egg white",
+      "whey protein powder"
+    ],
+    "cuisine_staples": [],
+    "sauces_condiments_oils": [
+      "honey",
+      "manuka honey",
+      "maple syrup",
+      "peanut butter",
+      "almond butter",
+      "hazelnut stevia drops"
+    ],
+    "breakfast_snacks": [
+      "rolled oats",
+      "granola",
+      "Kashi cereal",
+      "Cracklin Oat Bran",
+      "Magic Spoon cereal",
+      "applesauce unsweetened",
+      "ice cream bar low calorie",
+      "Greek yogurt bar",
+      "cereal oat bran"
+    ],
+    "beverages": [
+      "coconut water",
+      "coconut juice",
+      "chocolate soy milk",
+      "almond milk unsweetened",
+      "coffee black",
+      "coffee with half and half",
+      "half and half",
+      "green tea",
+      "REBBL drink"
+    ],
+    "prepared_common": [],
+    "coverage_buffer": [
+      "protein shake",
+      "protein shake dextrose",
+      "cottage cheese bowl"
+    ]
+  },
+  "count_unit_grams": {
+    "strawberry": 12,
+    "banana": 118,
+    "egg": 50,
+    "strip bacon": 8,
+    "slice bacon": 8,
+    "chip": 2,
+    "tortilla": 24,
+    "bar": 65,
+    "bottle": 240,
+    "can": 355,
+    "scoop": 31,
+    "dropper": 1,
+    "tbsp": 15,
+    "tsp": 5,
+    "cup": 240,
+    "packet": 43,
+    "container": 150
+  },
+  "review_only_patterns": [
+    "rebbl",
+    "yasso",
+    "magic spoon",
+    "silk",
+    "kashi",
+    "cracklin",
+    "protein shake",
+    "protein powder",
+    "stevia drops",
+    "ice cream bar",
+    "Greek yogurt bar"
+  ]
+}

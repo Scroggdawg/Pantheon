@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "name": "Thai",
+  "target_count": 120,
+  "luke_food_profile": {
+    "core_cuisines": ["thai"],
+    "restaurants": [],
+    "protein_anchors": ["chicken", "shrimp", "turkey", "egg"],
+    "staple_categories": ["rice", "noodles", "curry", "herbs", "sauces"]
+  },
+  "already_covered": [
+    "Chicken breast, cooked",
+    "Chicken thigh, cooked",
+    "Shrimp, cooked",
+    "Rice, white, cooked",
+    "Rice, jasmine, cooked",
+    "Rice noodles, cooked",
+    "Coconut water",
+    "Lime juice"
+  ],
+  "allocation": {
+    "whole_foods": 12,
+    "proteins": 8,
+    "cuisine_staples": 18,
+    "sauces_condiments_oils": 12,
+    "breakfast_snacks": 0,
+    "beverages": 2,
+    "prepared_common": 8,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": [
+      "thai basil",
+      "mint",
+      "cilantro",
+      "lime",
+      "bean sprouts",
+      "green onion",
+      "garlic",
+      "ginger",
+      "lemongrass",
+      "mango"
+    ],
+    "proteins": [
+      "chicken breast cooked",
+      "chicken thigh cooked",
+      "shrimp cooked",
+      "egg cooked",
+      "tofu firm",
+      "ground turkey cooked"
+    ],
+    "cuisine_staples": [
+      "jasmine rice cooked",
+      "sticky rice cooked",
+      "rice noodles cooked",
+      "vermicelli rice noodles cooked",
+      "coconut milk canned",
+      "peanuts",
+      "cashews",
+      "bamboo shoots",
+      "water chestnuts"
+    ],
+    "sauces_condiments_oils": [
+      "fish sauce",
+      "soy sauce",
+      "coconut oil",
+      "sesame oil",
+      "chili garlic sauce",
+      "red curry paste",
+      "green curry paste",
+      "peanut sauce",
+      "rice vinegar",
+      "brown sugar"
+    ],
+    "breakfast_snacks": [],
+    "beverages": ["coconut water", "thai iced tea"],
+    "prepared_common": [
+      "pad thai",
+      "green curry chicken",
+      "red curry chicken",
+      "larb chicken",
+      "tom yum soup",
+      "tom kha soup",
+      "mango sticky rice"
+    ],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "strawberry": 12,
+    "banana": 118,
+    "egg": 50,
+    "strip bacon": 8,
+    "slice bacon": 8,
+    "chip": 2,
+    "tortilla": 24,
+    "bar": 65,
+    "bottle": 240,
+    "can": 355,
+    "scoop": 31,
+    "dropper": 1,
+    "tbsp": 15,
+    "tsp": 5,
+    "lime": 67,
+    "clove garlic": 3,
+    "mango": 207
+  },
+  "review_only_patterns": [
+    "pad thai",
+    "curry",
+    "larb",
+    "tom yum",
+    "tom kha",
+    "thai iced tea",
+    "sauce",
+    "paste",
+    "soup"
+  ]
+}

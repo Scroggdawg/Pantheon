@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "name": "Italian",
+  "target_count": 120,
+  "luke_food_profile": {
+    "core_cuisines": ["italian"],
+    "restaurants": [],
+    "protein_anchors": ["turkey", "chicken", "sausage", "beef"],
+    "staple_categories": ["pasta", "tomatoes", "sauce", "cheese", "bolognese"]
+  },
+  "already_covered": [
+    "Tomato paste",
+    "Olive oil",
+    "Whole wheat pasta, cooked",
+    "Ground turkey, cooked",
+    "Italian sausage"
+  ],
+  "allocation": {
+    "whole_foods": 12,
+    "proteins": 10,
+    "cuisine_staples": 18,
+    "sauces_condiments_oils": 8,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 8,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": [
+      "tomato",
+      "San Marzano tomatoes canned",
+      "white onion",
+      "green bell pepper",
+      "garlic",
+      "basil",
+      "oregano",
+      "mushrooms",
+      "zucchini",
+      "eggplant"
+    ],
+    "proteins": [
+      "ground turkey 93 lean raw",
+      "ground turkey cooked",
+      "mild Italian sausage",
+      "Italian sausage cooked",
+      "chicken breast cooked",
+      "lean ground beef cooked",
+      "turkey meatballs"
+    ],
+    "cuisine_staples": [
+      "whole wheat pasta cooked",
+      "spaghetti cooked",
+      "penne pasta cooked",
+      "lasagna noodles cooked",
+      "gnocchi",
+      "tomato sauce",
+      "tomato paste",
+      "crushed tomatoes canned",
+      "marinara sauce",
+      "parmesan cheese",
+      "mozzarella cheese",
+      "ricotta cheese part skim"
+    ],
+    "sauces_condiments_oils": [
+      "olive oil",
+      "balsamic vinegar",
+      "red wine vinegar",
+      "pesto",
+      "butter"
+    ],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [
+      "turkey bolognese",
+      "spaghetti with meat sauce",
+      "chicken parmesan",
+      "lasagna",
+      "meatballs",
+      "pizza cheese"
+    ],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "strawberry": 12,
+    "banana": 118,
+    "egg": 50,
+    "strip bacon": 8,
+    "slice bacon": 8,
+    "chip": 2,
+    "tortilla": 24,
+    "bar": 65,
+    "bottle": 240,
+    "can": 355,
+    "scoop": 31,
+    "dropper": 1,
+    "tbsp": 15,
+    "tsp": 5,
+    "clove garlic": 3,
+    "meatball": 28,
+    "slice pizza": 107
+  },
+  "review_only_patterns": [
+    "sauce",
+    "pesto",
+    "bolognese",
+    "parmesan",
+    "lasagna",
+    "pizza",
+    "meatballs",
+    "chicken parmesan",
+    "San Marzano"
+  ]
+}

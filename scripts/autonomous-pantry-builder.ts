@@ -386,7 +386,7 @@ async function applyRun(args: Args): Promise<void> {
     autoCandidates.map(async (candidate) => {
       const { data: existing, error } = await supabase
         .from('products')
-        .select('id, name')
+        .select('id, name, provenance_import_run_id')
         .eq('provenance_source_kind', candidate.source_kind)
         .eq('provenance_external_id', candidate.external_id)
         .maybeSingle()
@@ -401,9 +401,19 @@ async function applyRun(args: Args): Promise<void> {
     )
   }
 
+  const { data: existingRun, error: existingRunError } = await supabase
+    .from('pantry_import_runs')
+    .select('id,status')
+    .eq('id', artifact.run_id)
+    .maybeSingle()
+  if (existingRunError) throw existingRunError
+  if (existingRun && existingRun.status === 'completed') {
+    throw new Error(`refusing apply: run ${artifact.run_id} is already completed`)
+  }
+
   const { error: runError } = await supabase
     .from('pantry_import_runs')
-    .insert({
+    .upsert({
       id: artifact.run_id,
       mode: 'apply',
       source_kind: 'usda',
@@ -414,7 +424,7 @@ async function applyRun(args: Args): Promise<void> {
       candidate_counts: artifact.counts,
       profile: artifact.profile,
       notes: `Autonomous Pantry Builder tiered auto-apply from ${artifact.profile_path}.`,
-    })
+    }, { onConflict: 'id' })
   if (runError) throw runError
 
   for (const candidate of artifact.candidates) {
@@ -438,6 +448,7 @@ async function applyRun(args: Args): Promise<void> {
         risk_score: candidate.risk_score,
         decision: candidate.decision,
         reasons: candidate.reasons,
+        applied_product_id: null,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'candidate_key' })
     if (error) throw error
@@ -448,9 +459,10 @@ async function applyRun(args: Args): Promise<void> {
   for (const { candidate, existing } of preflight) {
     if (existing?.id) {
       skipped++
+      const candidateDecision = existing.provenance_import_run_id === artifact.run_id ? 'applied' : 'skipped'
       await supabase
         .from('pantry_import_candidates')
-        .update({ decision: 'skipped', applied_product_id: existing.id, updated_at: new Date().toISOString() })
+        .update({ decision: candidateDecision, applied_product_id: existing.id, updated_at: new Date().toISOString() })
         .eq('candidate_key', candidate.candidate_key)
       continue
     }

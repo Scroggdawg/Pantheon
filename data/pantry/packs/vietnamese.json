@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "name": "Vietnamese",
+  "target_count": 120,
+  "luke_food_profile": {
+    "core_cuisines": ["vietnamese"],
+    "restaurants": [],
+    "protein_anchors": ["chicken", "beef", "shrimp", "pork", "egg"],
+    "staple_categories": ["rice", "noodles", "herbs", "fish sauce", "pho"]
+  },
+  "already_covered": [
+    "Rice, white, cooked",
+    "Rice noodles, cooked",
+    "Vermicelli rice noodles, cooked",
+    "Chicken breast, cooked",
+    "Shrimp, cooked",
+    "Lime juice"
+  ],
+  "allocation": {
+    "whole_foods": 14,
+    "proteins": 10,
+    "cuisine_staples": 18,
+    "sauces_condiments_oils": 8,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 8,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": [
+      "mint",
+      "cilantro",
+      "thai basil",
+      "bean sprouts",
+      "lime",
+      "cucumber",
+      "carrot",
+      "daikon radish",
+      "jalapeno",
+      "green onion",
+      "garlic",
+      "ginger"
+    ],
+    "proteins": [
+      "chicken breast cooked",
+      "beef sirloin cooked",
+      "shrimp cooked",
+      "pork tenderloin cooked",
+      "egg cooked",
+      "tofu firm"
+    ],
+    "cuisine_staples": [
+      "jasmine rice cooked",
+      "white rice cooked",
+      "rice noodles cooked",
+      "vermicelli rice noodles cooked",
+      "rice paper wrapper",
+      "french bread",
+      "peanuts",
+      "pickled vegetables"
+    ],
+    "sauces_condiments_oils": [
+      "fish sauce",
+      "soy sauce",
+      "hoisin sauce",
+      "sriracha",
+      "rice vinegar",
+      "sesame oil",
+      "lime juice"
+    ],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [
+      "pho chicken",
+      "pho beef",
+      "banh mi chicken",
+      "spring roll shrimp",
+      "summer roll shrimp",
+      "vermicelli bowl chicken",
+      "nuoc cham"
+    ],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "strawberry": 12,
+    "banana": 118,
+    "egg": 50,
+    "strip bacon": 8,
+    "slice bacon": 8,
+    "chip": 2,
+    "tortilla": 24,
+    "bar": 65,
+    "bottle": 240,
+    "can": 355,
+    "scoop": 31,
+    "dropper": 1,
+    "tbsp": 15,
+    "tsp": 5,
+    "lime": 67,
+    "roll": 85,
+    "wrapper": 22
+  },
+  "review_only_patterns": [
+    "pho",
+    "banh mi",
+    "spring roll",
+    "summer roll",
+    "vermicelli bowl",
+    "nuoc cham",
+    "sauce"
+  ]
+}
