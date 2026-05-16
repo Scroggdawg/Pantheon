@@ -27,6 +27,16 @@ function formatSupabaseError(error: { message?: string; code?: string; details?:
   return parts.length > 0 ? parts.join(' | ') : JSON.stringify(error)
 }
 
+const REQUIRED_PRODUCT_PROVENANCE_COLUMNS = [
+  'provenance_source_kind',
+  'provenance_dataset',
+  'provenance_external_id',
+  'provenance_release',
+  'provenance_import_run_id',
+  'import_confidence',
+  'canonical_category',
+]
+
 async function main() {
   loadEnvLocal()
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -48,15 +58,6 @@ async function main() {
       'food_identity_rejections',
       supabase.from('food_identity_rejections').select('id,normalized_phrase', { head: true, count: 'exact' }),
     ],
-    [
-      'products provenance columns',
-      supabase
-        .from('products')
-        .select('id,provenance_source_kind,provenance_external_id,import_confidence,canonical_category', {
-          head: true,
-          count: 'exact',
-        }),
-    ],
   ] as const
 
   for (const [label, promise] of checks) {
@@ -64,6 +65,27 @@ async function main() {
     if (error) throw new Error(`${label}: ${formatSupabaseError(error)}`)
     console.log(`ok ${label}`)
   }
+
+  const missingProductColumns: string[] = []
+  const columnErrors: string[] = []
+  for (const column of REQUIRED_PRODUCT_PROVENANCE_COLUMNS) {
+    const { error } = await supabase.from('products').select(`id,${column}`).limit(1)
+    if (!error) continue
+    missingProductColumns.push(column)
+    columnErrors.push(`${column}: ${formatSupabaseError(error)}`)
+  }
+
+  if (missingProductColumns.length > 0) {
+    throw new Error(
+      [
+        `products provenance columns missing/inaccessible: ${missingProductColumns.join(', ')}`,
+        'expected migration: supabase/migrations/021_pantry_builder_governance.sql',
+        ...columnErrors,
+      ].join('\n'),
+    )
+  }
+
+  console.log('ok products provenance columns')
 }
 
 main().catch((err) => {
