@@ -93,6 +93,7 @@ const STATE_MODIFIERS = [
   'sweetened',
   'syrup',
   'sprouted',
+  'tartare',
   'thigh',
   'topping',
   'wing',
