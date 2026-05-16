@@ -110,6 +110,25 @@ const COMPOSITE_TERMS = [
   'with ',
 ]
 
+const IDENTITY_COMPATIBLE_OVERRIDES = [
+  ['cilantro', 'coriander (cilantro) leaves'],
+  ['bbq ribs', 'beef, rib, back ribs'],
+  ['jalapeno', 'peppers, jalapeno'],
+  ['oregano', 'spices, oregano'],
+  ['sriracha', 'sauce, hot chile, sriracha'],
+]
+
+const IDENTITY_MISMATCH_OVERRIDES = [
+  ['apple', 'fruit butters'],
+  ['cracklin oat bran', 'oat bran, raw'],
+  ['mint', 'mint julep'],
+  ['tom kha soup', 'tom collins'],
+  ['granola', 'granola bars'],
+  ['nuoc cham', 'willow'],
+  ['bbq plate', 'cracker barrel'],
+  ['lemongrass', 'smart soup'],
+]
+
 function parseArgs(argv: string[]): Args {
   const args: Args = {
     limit: 120,
@@ -177,6 +196,18 @@ function hasReason(row: CandidateRow, pattern: string) {
   return row.reasons.some((reason) => reason.includes(pattern))
 }
 
+function targetIncludes(row: CandidateRow, value: string) {
+  return (row.target_query ?? row.normalized_name).toLowerCase().includes(value)
+}
+
+function displayIncludes(row: CandidateRow, value: string) {
+  return row.display_name.toLowerCase().includes(value)
+}
+
+function matchesOverride(row: CandidateRow, overrides: string[][]) {
+  return overrides.some(([target, display]) => targetIncludes(row, target) && displayIncludes(row, display))
+}
+
 function reasonLabel(reason: string) {
   if (reason.includes('duplicate_existing_product')) return 'Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.'
   if (reason.includes('macro_sanity_failed')) return 'The calories or macros look physically suspicious.'
@@ -220,6 +251,8 @@ function isComposite(row: CandidateRow) {
 }
 
 function hasObviousMismatchReason(row: CandidateRow) {
+  if (matchesOverride(row, IDENTITY_COMPATIBLE_OVERRIDES)) return false
+  if (matchesOverride(row, IDENTITY_MISMATCH_OVERRIDES)) return true
   return (
     hasReason(row, 'macro_sanity_failed') ||
     hasReason(row, 'low_target_token_coverage_0') ||
