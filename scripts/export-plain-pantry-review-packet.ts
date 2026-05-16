@@ -23,7 +23,7 @@ import type {
 } from '../lib/pantry-builder/types'
 
 type CandidateDecision = PantryDecision | 'applied' | 'skipped' | 'failed'
-type ReviewLane = 'obvious-no' | 'probably-yes' | 'needs-choice' | 'manual-source'
+type ReviewLane = 'obvious-no' | 'already-covered' | 'probably-yes' | 'needs-choice' | 'manual-source'
 
 interface Args {
   limit: number
@@ -63,6 +63,7 @@ interface PlainRow {
 
 const LANE_TITLES: Record<ReviewLane, string> = {
   'obvious-no': 'Obvious No',
+  'already-covered': 'Already Covered',
   'probably-yes': 'Probably Yes',
   'needs-choice': 'Needs Your Choice',
   'manual-source': 'Needs Better Source',
@@ -177,7 +178,7 @@ function hasReason(row: CandidateRow, pattern: string) {
 }
 
 function reasonLabel(reason: string) {
-  if (reason.includes('duplicate_existing_product')) return 'Pantheon already has something too close to this.'
+  if (reason.includes('duplicate_existing_product')) return 'Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.'
   if (reason.includes('macro_sanity_failed')) return 'The calories or macros look physically suspicious.'
   if (reason.includes('low_target_token_coverage_0')) return 'The database result does not contain the words you actually said.'
   if (reason.includes('low_target_token_coverage')) return 'Only part of what you said matched this food.'
@@ -218,16 +219,21 @@ function isComposite(row: CandidateRow) {
   return hasAny(text, COMPOSITE_TERMS) || hasReason(row, 'composite') || hasReason(row, 'prepared_dish')
 }
 
-function isObviousNo(row: CandidateRow) {
+function hasObviousMismatchReason(row: CandidateRow) {
   return (
-    row.decision === 'rejected' ||
-    hasReason(row, 'duplicate_existing_product') ||
     hasReason(row, 'macro_sanity_failed') ||
     hasReason(row, 'low_target_token_coverage_0') ||
     hasReason(row, 'context_token_missing') ||
-    hasReason(row, 'single_token_secondary_match_review_required') ||
-    hasReason(row, 'state_modifier_mismatch')
+    hasReason(row, 'single_token_secondary_match_review_required')
   )
+}
+
+function isAlreadyCovered(row: CandidateRow) {
+  return hasReason(row, 'duplicate_existing_product') && !hasObviousMismatchReason(row)
+}
+
+function isObviousNo(row: CandidateRow) {
+  return hasObviousMismatchReason(row) || (row.decision === 'rejected' && !isAlreadyCovered(row))
 }
 
 function isProbablyYes(row: CandidateRow) {
@@ -251,6 +257,18 @@ function plainRowFor(row: CandidateRow): PlainRow {
       plainReason: describeReason(row),
       action: 'Leave this as rejected unless you know the robot match is actually what you meant.',
       sortScore: row.decision === 'rejected' ? 0 : 10 + row.risk_score,
+    }
+  }
+
+  if (isAlreadyCovered(row)) {
+    return {
+      row,
+      lane: 'already-covered',
+      defaultDecision: 'edit_needed',
+      plainCall: 'COVERED',
+      plainReason: describeReason(row),
+      action: 'Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.',
+      sortScore: row.risk_score,
     }
   }
 
@@ -298,9 +316,10 @@ function formatUnits(row: CandidateRow) {
 }
 
 function renderPacket(rows: PlainRow[], generatedAt: string) {
-  const laneOrder: ReviewLane[] = ['obvious-no', 'probably-yes', 'needs-choice', 'manual-source']
+  const laneOrder: ReviewLane[] = ['obvious-no', 'already-covered', 'probably-yes', 'needs-choice', 'manual-source']
   const grouped: Record<ReviewLane, PlainRow[]> = {
     'obvious-no': [],
+    'already-covered': [],
     'probably-yes': [],
     'needs-choice': [],
     'manual-source': [],
@@ -331,16 +350,27 @@ function renderPacket(rows: PlainRow[], generatedAt: string) {
     '',
     'Macros matter after identity is right. If the identity is wrong, the macros are automatically useless.',
     '',
+    'Important: `Already Covered` does not mean the robot match is wrong. It usually means Pantheon already has a close product, so the fix is to use the existing row or add an alias, not create a duplicate.',
+    '',
     'Example:',
     '',
     '- You said: `steak cooked`',
     '- Robot found: `Steak tartare`',
     '- Your call: reject, because tartare is raw steak, not cooked steak.',
     '',
+    'A few concrete calls:',
+    '',
+    '- `almond milk unsweetened` -> `Almond milk, unsweetened, plain, shelf stable`: identity-compatible, but do not add a duplicate if Pantheon already has it.',
+    '- `apple` -> `Fruit butters, apple`: reject. Apple butter is not an apple.',
+    '- `balsamic vinegar` -> `Vinegar, balsamic`: identity-compatible.',
+    '- `coconut juice` -> `Oil, coconut`: reject. Coconut juice/water is not coconut oil.',
+    '- `mint` -> `Mint julep`: reject. Mint is an herb; mint julep is a cocktail.',
+    '- `tom yum soup` -> `Campbell tomato soup`: reject. Different food.',
+    '',
     'Decision words:',
     '',
     '- `approved`: yes, this is the right identity.',
-    '- `rejected`: no, this is the wrong identity or a duplicate.',
+    '- `rejected`: no, this is the wrong identity.',
     '- `edit_needed`: not sure yet, or it needs a better source/name.',
     '',
     '## The Only Table You Edit',
@@ -365,6 +395,8 @@ function renderPacket(rows: PlainRow[], generatedAt: string) {
 
     if (lane === 'obvious-no') {
       lines.push('These are rows where the robot match is probably not what you meant, or the system already found a strong risk.', '')
+    } else if (lane === 'already-covered') {
+      lines.push('These may be identity-compatible, but Pantheon already has a close row. The job here is only to catch true mismatches; compatible duplicates stay edit_needed.', '')
     } else if (lane === 'probably-yes') {
       lines.push('These are boring USDA rows. You only need to approve them if the phrase and match mean the same food to you.', '')
     } else if (lane === 'needs-choice') {
