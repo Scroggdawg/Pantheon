@@ -1,6 +1,6 @@
 # Plain Pantry Review
 
-Generated: 2026-05-16T21:29:56.487Z
+Generated: 2026-05-16T21:39:04.135Z
 Rows: 120
 
 ## What You Are Reviewing
@@ -45,18 +45,50 @@ Decision words:
 | candidate_key | decision | corrected_name | notes |
 | --- | --- | --- | --- |
 | usda:sr legacy:168816:whole foods | rejected | Fruit butters, apple | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: The phrase is too broad, so the second-best match might be a trap. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
+| usda:foundation:2685575:whole foods | rejected | Brussels sprouts, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
+| usda:foundation:330458:beverages | rejected | Oil, coconut | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:168872:breakfast snacks | rejected | Oat bran, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. The calories or macros look physically suspicious. |
+| usda:foundation:330137:breakfast snacks | rejected | Yogurt, Greek, plain, nonfat | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
+| usda:sr legacy:168914:cuisine staples | rejected | Rice noodles, cooked | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
+| usda:sr legacy:167715:breakfast snacks | rejected | Cereals ready-to-eat, POST, Shredded Wheat n' Bran, spoon-size | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2710643:whole foods | rejected | Mint julep | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: The calories or macros look physically suspicious. This is brand-like, so it needs a human source check. |
+| usda:survey fndds:2705818:cuisine staples | rejected | Mozzarella cheese, tomato, and basil, with oil and vinegar dressing | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2710653:prepared common | rejected | Tom Collins | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. The calories or macros look physically suspicious. |
+| usda:foundation:2514747:prepared common | rejected | Turkey, ground, 93% lean/ 7% fat, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
+| usda:foundation:2514747:proteins | rejected | Turkey, ground, 93% lean/ 7% fat, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
+| usda:foundation:2514746:prepared common | rejected | Chicken, ground, with additives, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:sr legacy:168607:prepared common | rejected | Beef, brisket, whole, separable lean only, all grades, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:foundation:2710837:beverages | rejected | Plum, black, with skin, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Only part of what you said matched this food. |
 | usda:sr legacy:167542:breakfast snacks | rejected | Snacks, granola bars, hard, plain | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: The phrase is too broad, so the second-best match might be a trap. |
+| usda:foundation:2515375:sauces condiments oils | rejected | Nuts, hazelnuts or filberts, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
 | usda:sr legacy:168035:prepared common | rejected | Willow, leaves in oil (Alaska Native) | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. The database result does not contain the words you actually said. |
+| usda:foundation:2727573:prepared common | rejected | Beef, tenderloin steak, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:survey fndds:2710726:coverage buffer | rejected | Nutritional drink or shake, high protein, ready-to-drink, NFS | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. It is probably fine, but the source says "not further specified." |
+| usda:survey fndds:2710756:beverages | rejected | Energy Drink | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:foundation:2346408:sauces condiments oils | rejected | Cabbage, red, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:foundation:2710825:cuisine staples | rejected | Rice, black, unenriched, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Only part of what you said matched this food. |
+| usda:foundation:2710825:sauces condiments oils | rejected | Rice, black, unenriched, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Only part of what you said matched this food. |
+| usda:sr legacy:174606:prepared common | rejected | Sausage, turkey, hot, smoked | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:survey fndds:2708964:prepared common | rejected | Sushi roll, shrimp | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:foundation:2684443:prepared common | rejected | Crustaceans, shrimp, farm raised, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:survey fndds:2708805:whole foods | rejected | Pad Thai, meatless | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Only part of what you said matched this food. |
+| usda:sr legacy:174120:beverages | rejected | Beverages, tea, Oolong, brewed | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:survey fndds:2708560:prepared common | rejected | Burrito bowl, chicken | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
+| usda:sr legacy:170164:cuisine staples | rejected | Nuts, chestnuts, chinese, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: Only part of what you said matched this food. |
+| usda:sr legacy:174126:beverages | rejected | Beverages, coffee, instant, regular, half the caffeine | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This is a combined dish, not a simple ingredient. |
+| usda:foundation:2747653:sauces condiments oils | rejected | Beet greens, raw | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. The state is different: cooked/raw/dried/peeled/canned/frozen/etc. |
 | usda:sr legacy:167671:prepared common | rejected | CRACKER BARREL, macaroni n' cheese plate, from kid's menu | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. An important word from your phrase is missing from the match. This is in Luke-preference territory, so it needs a human look. |
 | usda:sr legacy:171184:whole foods | rejected | SMART SOUP, Vietnamese Carrot Lemongrass | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: The phrase is too broad, so the second-best match might be a trap. This is brand-like, so it needs a human source check. This is in Luke-preference territory, so it needs a human look. |
+| usda:survey fndds:2706395:prepared common | rejected | Meatballs, Puerto Rican style | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. |
+| usda:sr legacy:174583:prepared common | rejected | Sandwich spread, pork, beef | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look. |
+| usda:sr legacy:174547:prepared common | rejected | CAMPBELL'S, Tomato Soup, condensed | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. This is in Luke-preference territory, so it needs a human look. |
+| usda:survey fndds:2710169:sauces condiments oils | rejected | Garlic sauce | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
+| usda:survey fndds:2709735:cuisine staples | rejected | Tomato chili sauce | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
+| usda:survey fndds:2708088:breakfast snacks | rejected | Cereal or granola bar (Kashi Chewy) | NO: Leave this as rejected unless you know the robot match is actually what you meant. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is brand-like, so it needs a human source check. |
 | usda:foundation:1999631:beverages | edit_needed | Almond milk, unsweetened, plain, shelf stable | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:172241:sauces condiments oils | edit_needed | Vinegar, balsamic | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:1105314:whole foods | edit_needed | Bananas, ripe and slightly ripe, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2709780:whole foods | edit_needed | Basil, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
-| usda:foundation:2685575:whole foods | edit_needed | Brussels sprouts, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:169458:proteins | edit_needed | Beef, top sirloin, steak, separable lean and fat, trimmed to 0" fat, choice, cooked, broiled | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:2346411:whole foods | edit_needed | Blueberries, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2710260:sauces condiments oils | edit_needed | Sugar, brown | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
@@ -65,7 +97,6 @@ Decision words:
 | usda:survey fndds:2705406:beverages | edit_needed | Soy milk, chocolate | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:169997:whole foods | edit_needed | Coriander (cilantro) leaves, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: The phrase is too broad, so the second-best match might be a trap. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2709782:whole foods | edit_needed | Cilantro, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
-| usda:foundation:330458:beverages | edit_needed | Oil, coconut | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2710182:sauces condiments oils | edit_needed | Coconut oil | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:170174:beverages | edit_needed | Nuts, coconut water (liquid from coconuts) | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:328841:coverage buffer | edit_needed | Cheese, cottage, lowfat, 2% milkfat | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
@@ -75,7 +106,6 @@ Decision words:
 | usda:foundation:1104647:whole foods | edit_needed | Garlic, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:169231:whole foods | edit_needed | Ginger root, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:173032:whole foods | edit_needed | Goji berries, dried | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
-| usda:foundation:330137:breakfast snacks | edit_needed | Yogurt, Greek, plain, nonfat | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2705431:proteins | edit_needed | Yogurt, Greek, low fat milk, fruit | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:330137:proteins | edit_needed | Yogurt, Greek, plain, nonfat | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:170006:whole foods | edit_needed | Onions, young green, tops only | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
@@ -84,14 +114,11 @@ Decision words:
 | usda:sr legacy:171255:beverages | edit_needed | Cream, fluid, half and half | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:169640:sauces condiments oils | edit_needed | Honey | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:746780:proteins | edit_needed | Sausage, Italian, pork, mild, cooked, pan-fried | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. This is a combined dish, not a simple ingredient. |
-| usda:sr legacy:168914:cuisine staples | edit_needed | Rice noodles, cooked | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2708352:cuisine staples | edit_needed | Noodles, cooked | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:174032:proteins | edit_needed | Beef, ground, 85% lean meat / 15% fat, patty, cooked, broiled | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2709170:whole foods | edit_needed | Lime, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
-| usda:sr legacy:167715:breakfast snacks | edit_needed | Cereals ready-to-eat, POST, Shredded Wheat n' Bran, spoon-size | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2710281:sauces condiments oils | edit_needed | Honey | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:sr legacy:169661:sauces condiments oils | edit_needed | Syrups, maple | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
-| usda:survey fndds:2705818:cuisine staples | edit_needed | Mozzarella cheese, tomato, and basil, with oil and vinegar dressing | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:325036:cuisine staples | edit_needed | Cheese, parmesan, grated | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: This touches a Luke-specific preference and should not be auto-written. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. This is in Luke-preference territory, so it needs a human look. |
 | usda:survey fndds:2707537:sauces condiments oils | edit_needed | Peanut butter | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:2515376:cuisine staples | edit_needed | Peanuts, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
@@ -100,8 +127,6 @@ Decision words:
 | usda:foundation:2346396:breakfast snacks | edit_needed | Oats, whole grain, rolled, old fashioned | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:2346409:whole foods | edit_needed | Strawberries, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:321360:whole foods | edit_needed | Tomatoes, grape, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
-| usda:foundation:2514747:prepared common | edit_needed | Turkey, ground, 93% lean/ 7% fat, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
-| usda:foundation:2514747:proteins | edit_needed | Turkey, ground, 93% lean/ 7% fat, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:foundation:1104962:whole foods | edit_needed | Onions, white, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2708422:cuisine staples | edit_needed | Rice, white, cooked, glutinous | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
 | usda:survey fndds:2707152:proteins | edit_needed | Egg, whole, raw | COVERED: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected. Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible. |
@@ -111,11 +136,7 @@ Decision words:
 | usda:foundation:2747661:whole foods | edit_needed | Peppers, jalapeno, seeded, raw | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: The phrase is too broad, so the second-best match might be a trap. |
 | usda:survey fndds:2709242:prepared common | edit_needed | Mango, raw | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: Only part of what you said matched this food. |
 | usda:survey fndds:2708357:cuisine staples | edit_needed | Pasta, cooked | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: Only part of what you said matched this food. |
-| usda:foundation:2710825:cuisine staples | edit_needed | Rice, black, unenriched, raw | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: Only part of what you said matched this food. |
-| usda:foundation:2710825:sauces condiments oils | edit_needed | Rice, black, unenriched, raw | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: Only part of what you said matched this food. |
 | usda:survey fndds:2708402:cuisine staples | edit_needed | Rice, cooked, NFS | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: Only part of what you said matched this food. It is probably fine, but the source says "not further specified." |
-| usda:survey fndds:2708805:whole foods | edit_needed | Pad Thai, meatless | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: Only part of what you said matched this food. |
-| usda:sr legacy:170164:cuisine staples | edit_needed | Nuts, chestnuts, chinese, raw | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: Only part of what you said matched this food. |
 | usda:sr legacy:168422:whole foods | edit_needed | Mushrooms, Chanterelle, raw | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: This is a specific mushroom subtype, not just generic mushrooms. |
 | usda:sr legacy:171328:whole foods | edit_needed | Spices, oregano, dried | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: The state is different: cooked/raw/dried/peeled/canned/frozen/etc. The phrase is too broad, so the second-best match might be a trap. |
 | usda:sr legacy:171016:sauces condiments oils | edit_needed | Oil, sesame, salad or cooking | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: The state is different: cooked/raw/dried/peeled/canned/frozen/etc. |
@@ -123,51 +144,30 @@ Decision words:
 | usda:survey fndds:2710104:whole foods | edit_needed | Zucchini, pickled | YOUR CALL: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes. Why: The state is different: cooked/raw/dried/peeled/canned/frozen/etc. |
 | usda:survey fndds:2709217:breakfast snacks | edit_needed | Applesauce, unsweetened | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This is a combined dish, not a simple ingredient. |
 | usda:sr legacy:173423:proteins | edit_needed | Egg, whole, cooked, fried | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This is a combined dish, not a simple ingredient. |
-| usda:foundation:2514746:prepared common | edit_needed | Chicken, ground, with additives, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
 | usda:sr legacy:172147:prepared common | edit_needed | Beef, rib, back ribs, bone-in, separable lean only, trimmed to 0" fat, choice, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. An important word from your phrase is missing from the match. |
-| usda:sr legacy:168607:prepared common | edit_needed | Beef, brisket, whole, separable lean only, all grades, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
 | usda:sr legacy:172986:breakfast snacks | edit_needed | Cereals ready-to-eat, QUAKER, MOTHER'S Toasted Oat Bran cereal | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This is brand-like, so it needs a human source check. |
-| usda:foundation:2710837:beverages | edit_needed | Plum, black, with skin, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: Only part of what you said matched this food. |
-| usda:foundation:2515375:sauces condiments oils | edit_needed | Nuts, hazelnuts or filberts, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
 | usda:survey fndds:2705640:breakfast snacks | edit_needed | Ice cream candy bar | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. |
-| usda:foundation:2727573:prepared common | edit_needed | Beef, tenderloin steak, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
-| usda:survey fndds:2710726:coverage buffer | edit_needed | Nutritional drink or shake, high protein, ready-to-drink, NFS | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. It is probably fine, but the source says "not further specified." |
-| usda:survey fndds:2710756:beverages | edit_needed | Energy Drink | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
-| usda:foundation:2346408:sauces condiments oils | edit_needed | Cabbage, red, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
 | usda:foundation:2685582:whole foods | edit_needed | Tomato, puree, canned | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
-| usda:sr legacy:174606:prepared common | edit_needed | Sausage, turkey, hot, smoked | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
-| usda:survey fndds:2708964:prepared common | edit_needed | Sushi roll, shrimp | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
-| usda:foundation:2684443:prepared common | edit_needed | Crustaceans, shrimp, farm raised, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
-| usda:sr legacy:174120:beverages | edit_needed | Beverages, tea, Oolong, brewed | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
-| usda:survey fndds:2708560:prepared common | edit_needed | Burrito bowl, chicken | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. |
-| usda:sr legacy:174126:beverages | edit_needed | Beverages, coffee, instant, regular, half the caffeine | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This is a combined dish, not a simple ingredient. |
-| usda:foundation:2747653:sauces condiments oils | edit_needed | Beet greens, raw | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. The state is different: cooked/raw/dried/peeled/canned/frozen/etc. |
 | usda:sr legacy:171524:prepared common | edit_needed | Chicken, broiler, rotisserie, BBQ, skin | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. |
 | usda:sr legacy:169857:prepared common | edit_needed | CARRABBA'S ITALIAN GRILL, chicken parmesan without cavatappi pasta | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is brand-like, so it needs a human source check. This is in Luke-preference territory, so it needs a human look. |
 | usda:survey fndds:2708758:prepared common | edit_needed | Lasagna, meatless | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. |
-| usda:survey fndds:2706395:prepared common | edit_needed | Meatballs, Puerto Rican style | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. |
 | usda:survey fndds:2708804:prepared common | edit_needed | Pad Thai, NFS | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. It is probably fine, but the source says "not further specified." This is in Luke-preference territory, so it needs a human look. |
-| usda:sr legacy:174583:prepared common | edit_needed | Sandwich spread, pork, beef | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look. |
 | usda:survey fndds:2706437:prepared common | edit_needed | Chicken curry | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look. |
 | usda:sr legacy:172461:proteins | edit_needed | MORI-NU, Tofu, silken, firm | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This is brand-like, so it needs a human source check. This is brand-like, so it needs a human source check. |
-| usda:sr legacy:174547:prepared common | edit_needed | CAMPBELL'S, Tomato Soup, condensed | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. This is in Luke-preference territory, so it needs a human look. |
 | usda:sr legacy:173180:proteins | edit_needed | Beverages, Protein powder whey based | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. |
-| usda:survey fndds:2710169:sauces condiments oils | edit_needed | Garlic sauce | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
 | usda:survey fndds:2706457:sauces condiments oils | edit_needed | Fish sauce | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
 | usda:sr legacy:172886:sauces condiments oils | edit_needed | Sauce, hoisin, ready-to-serve | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
 | usda:survey fndds:2709744:sauces condiments oils | edit_needed | Hot Thai sauce | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
 | usda:foundation:332282:cuisine staples | edit_needed | Sauce, pasta, spaghetti/marinara, ready-to-serve | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
 | usda:sr legacy:171575:sauces condiments oils | edit_needed | Sauce, peanut, made from coconut, water, sugar, peanuts | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
 | usda:survey fndds:2707442:sauces condiments oils | edit_needed | Soy sauce | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
-| usda:survey fndds:2709735:cuisine staples | edit_needed | Tomato chili sauce | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
-| usda:survey fndds:2708088:breakfast snacks | edit_needed | Cereal or granola bar (Kashi Chewy) | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is brand-like, so it needs a human source check. |
 | usda:survey fndds:2706470:prepared common | edit_needed | Spaghetti sauce with meat | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. This is a combined dish, not a simple ingredient. This is in Luke-preference territory, so it needs a human look. |
 | usda:survey fndds:2710175:sauces condiments oils | edit_needed | Pesto sauce | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: This touches a Luke-specific preference and should not be auto-written. The state is different: cooked/raw/dried/peeled/canned/frozen/etc. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
 | usda:sr legacy:171186:sauces condiments oils | edit_needed | Sauce, hot chile, sriracha | NOT AUTO: Do not approve from this packet unless you are confident the source and serving are right. Why: The state is different: cooked/raw/dried/peeled/canned/frozen/etc. The phrase is too broad, so the second-best match might be a trap. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient. |
 
 ## Plain-English Detail
 
-## Obvious No (8)
+## Obvious No (41)
 
 These are rows where the robot match is probably not what you meant, or the system already found a strong risk.
 
@@ -182,6 +182,28 @@ These are rows where the robot match is probably not what you meant, or the syst
 - Source: usda / SR Legacy / 168816
 - Candidate key: `usda:sr legacy:168816:whole foods`
 
+### You said: bean sprouts
+
+- Robot found: Brussels sprouts, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
+- Macros, only after identity is right: 48.8 cal, 3.98P, 9.62C, 0.56F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2685575
+- Candidate key: `usda:foundation:2685575:whole foods`
+
+### You said: coconut juice
+
+- Robot found: Oil, coconut
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
+- Macros, only after identity is right: 833 cal, 0P, 0.84C, 99.1F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=11.6g
+- Source: usda / Foundation / 330458
+- Candidate key: `usda:foundation:330458:beverages`
+
 ### You said: Cracklin Oat Bran
 
 - Robot found: Oat bran, raw
@@ -192,6 +214,39 @@ These are rows where the robot match is probably not what you meant, or the syst
 - Natural speech units: cup=94g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
 - Source: usda / SR Legacy / 168872
 - Candidate key: `usda:sr legacy:168872:breakfast snacks`
+
+### You said: Greek yogurt bar
+
+- Robot found: Yogurt, Greek, plain, nonfat
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
+- Macros, only after identity is right: 61 cal, 10.3P, 3.64C, 0.37F
+- Natural speech units: bar=65g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 330137
+- Candidate key: `usda:foundation:330137:breakfast snacks`
+
+### You said: jasmine rice cooked
+
+- Robot found: Rice noodles, cooked
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
+- Macros, only after identity is right: 108 cal, 1.79P, 24C, 0.2F
+- Natural speech units: cup=176g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / SR Legacy / 168914
+- Candidate key: `usda:sr legacy:168914:cuisine staples`
+
+### You said: Magic Spoon cereal
+
+- Robot found: Cereals ready-to-eat, POST, Shredded Wheat n' Bran, spoon-size
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
+- Macros, only after identity is right: 339 cal, 10.9P, 80.6C, 2.06F
+- Natural speech units: cup 1 nlea serving=47.2g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / SR Legacy / 167715
+- Candidate key: `usda:sr legacy:167715:breakfast snacks`
 
 ### You said: mint
 
@@ -204,6 +259,17 @@ These are rows where the robot match is probably not what you meant, or the syst
 - Source: usda / Survey (FNDDS) / 2710643
 - Candidate key: `usda:survey fndds:2710643:whole foods`
 
+### You said: mozzarella cheese
+
+- Robot found: Mozzarella cheese, tomato, and basil, with oil and vinegar dressing
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
+- Macros, only after identity is right: 139 cal, 7.17P, 3.86C, 10.87F
+- Natural speech units: cup=160g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Survey (FNDDS) / 2705818
+- Candidate key: `usda:survey fndds:2705818:cuisine staples`
+
 ### You said: tom kha soup
 
 - Robot found: Tom Collins
@@ -214,6 +280,61 @@ These are rows where the robot match is probably not what you meant, or the syst
 - Natural speech units: drink=225g, fl oz=30g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
 - Source: usda / Survey (FNDDS) / 2710653
 - Candidate key: `usda:survey fndds:2710653:prepared common`
+
+### You said: turkey bolognese
+
+- Robot found: Turkey, ground, 93% lean/ 7% fat, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
+- Macros, only after identity is right: 158 cal, 17.3P, 0C, 9.59F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2514747
+- Candidate key: `usda:foundation:2514747:prepared common`
+
+### You said: turkey meatballs
+
+- Robot found: Turkey, ground, 93% lean/ 7% fat, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
+- Macros, only after identity is right: 158 cal, 17.3P, 0C, 9.59F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, meatball=28g, oz=28.35g
+- Source: usda / Foundation / 2514747
+- Candidate key: `usda:foundation:2514747:proteins`
+
+### You said: banh mi chicken
+
+- Robot found: Chicken, ground, with additives, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 138 cal, 17.9P, 0C, 7.16F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2514746
+- Candidate key: `usda:foundation:2514746:prepared common`
+
+### You said: brisket sandwich
+
+- Robot found: Beef, brisket, whole, separable lean only, all grades, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 157 cal, 20.7P, 0.6C, 7.37F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / SR Legacy / 168607
+- Candidate key: `usda:sr legacy:168607:prepared common`
+
+### You said: coffee black
+
+- Robot found: Plum, black, with skin, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Only part of what you said matched this food.
+- Macros, only after identity is right: 52.7 cal, 0.58P, 13.5C, 0.28F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2710837
+- Candidate key: `usda:foundation:2710837:beverages`
 
 ### You said: granola
 
@@ -226,6 +347,17 @@ These are rows where the robot match is probably not what you meant, or the syst
 - Source: usda / SR Legacy / 167542
 - Candidate key: `usda:sr legacy:167542:breakfast snacks`
 
+### You said: hazelnut stevia drops
+
+- Robot found: Nuts, hazelnuts or filberts, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 602 cal, 13.5P, 26.5C, 53.5F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2515375
+- Candidate key: `usda:foundation:2515375:sauces condiments oils`
+
 ### You said: nuoc cham
 
 - Robot found: Willow, leaves in oil (Alaska Native)
@@ -236,6 +368,171 @@ These are rows where the robot match is probably not what you meant, or the syst
 - Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
 - Source: usda / SR Legacy / 168035
 - Candidate key: `usda:sr legacy:168035:prepared common`
+
+### You said: pho beef
+
+- Robot found: Beef, tenderloin steak, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 149 cal, 21.1P, 0.18C, 6.46F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2727573
+- Candidate key: `usda:foundation:2727573:prepared common`
+
+### You said: protein shake dextrose
+
+- Robot found: Nutritional drink or shake, high protein, ready-to-drink, NFS
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. It is probably fine, but the source says "not further specified."
+- Macros, only after identity is right: 61 cal, 6.59P, 0.85C, 3.38F
+- Natural speech units: bottle 14 fl oz myoplex=448g, bottle 20 fl oz monster milk=640g, bottle or box nfs=544g, cup=256g, fl oz=32g, g=1g, kg=1000g, lb=453.59g
+- Source: usda / Survey (FNDDS) / 2710726
+- Candidate key: `usda:survey fndds:2710726:coverage buffer`
+
+### You said: REBBL drink
+
+- Robot found: Energy Drink
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 43 cal, 0.46P, 10.23C, 0F
+- Natural speech units: can or bottle 12 fl oz=372g, can or bottle 16 fl oz=496g, can or bottle 24 fl oz=744g, can or bottle 32 fl oz=992g, can or bottle 8 fl oz=248g, cup=248g, fl oz=31g, g=1g
+- Source: usda / Survey (FNDDS) / 2710756
+- Candidate key: `usda:survey fndds:2710756:beverages`
+
+### You said: red curry paste
+
+- Robot found: Cabbage, red, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 29.9 cal, 1.24P, 6.79C, 0.21F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2346408
+- Candidate key: `usda:foundation:2346408:sauces condiments oils`
+
+### You said: rice paper wrapper
+
+- Robot found: Rice, black, unenriched, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Only part of what you said matched this food.
+- Macros, only after identity is right: 361 cal, 7.57P, 77.2C, 3.44F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, wrapper=22g
+- Source: usda / Foundation / 2710825
+- Candidate key: `usda:foundation:2710825:cuisine staples`
+
+### You said: rice vinegar
+
+- Robot found: Rice, black, unenriched, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Only part of what you said matched this food.
+- Macros, only after identity is right: 361 cal, 7.57P, 77.2C, 3.44F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2710825
+- Candidate key: `usda:foundation:2710825:sauces condiments oils`
+
+### You said: smoked turkey sandwich
+
+- Robot found: Sausage, turkey, hot, smoked
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 158 cal, 15P, 4.65C, 8.75F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / SR Legacy / 174606
+- Candidate key: `usda:sr legacy:174606:prepared common`
+
+### You said: spring roll shrimp
+
+- Robot found: Sushi roll, shrimp
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 100 cal, 7.01P, 15.67C, 0.55F
+- Natural speech units: cup=150g, g=1g, kg=1000g, lb=453.59g, oz=28.35g, piece=30g, roll=85g
+- Source: usda / Survey (FNDDS) / 2708964
+- Candidate key: `usda:survey fndds:2708964:prepared common`
+
+### You said: summer roll shrimp
+
+- Robot found: Crustaceans, shrimp, farm raised, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 75.7 cal, 15.6P, 0.49C, 0.8F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, roll=85g
+- Source: usda / Foundation / 2684443
+- Candidate key: `usda:foundation:2684443:prepared common`
+
+### You said: thai basil
+
+- Robot found: Pad Thai, meatless
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Only part of what you said matched this food.
+- Macros, only after identity is right: 165 cal, 5.79P, 16.34C, 9.2F
+- Natural speech units: cup=200g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Survey (FNDDS) / 2708805
+- Candidate key: `usda:survey fndds:2708805:whole foods`
+
+### You said: thai iced tea
+
+- Robot found: Beverages, tea, Oolong, brewed
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 1 cal, 0P, 0.15C, 0F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / SR Legacy / 174120
+- Candidate key: `usda:sr legacy:174120:beverages`
+
+### You said: vermicelli bowl chicken
+
+- Robot found: Burrito bowl, chicken
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
+- Macros, only after identity is right: 161 cal, 21.04P, 0.27C, 8.11F
+- Natural speech units: cup=120g, g=1g, item any size=225g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Survey (FNDDS) / 2708560
+- Candidate key: `usda:survey fndds:2708560:prepared common`
+
+### You said: water chestnuts
+
+- Robot found: Nuts, chestnuts, chinese, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: Only part of what you said matched this food.
+- Macros, only after identity is right: 224 cal, 4.2P, 49.1C, 1.11F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / SR Legacy / 170164
+- Candidate key: `usda:sr legacy:170164:cuisine staples`
+
+### You said: coffee with half and half
+
+- Robot found: Beverages, coffee, instant, regular, half the caffeine
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This is a combined dish, not a simple ingredient.
+- Macros, only after identity is right: 352 cal, 14.4P, 73.2C, 0.5F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, packet=2g, tsp=1g
+- Source: usda / SR Legacy / 174126
+- Candidate key: `usda:sr legacy:174126:beverages`
+
+### You said: green curry paste
+
+- Robot found: Beet greens, raw
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. The state is different: cooked/raw/dried/peeled/canned/frozen/etc.
+- Macros, only after identity is right: 26.4 cal, 1.61P, 4.66C, 0.14F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Foundation / 2747653
+- Candidate key: `usda:foundation:2747653:sauces condiments oils`
 
 ### You said: bbq plate
 
@@ -259,7 +556,73 @@ These are rows where the robot match is probably not what you meant, or the syst
 - Source: usda / SR Legacy / 171184
 - Candidate key: `usda:sr legacy:171184:whole foods`
 
-## Already Covered (53)
+### You said: meatballs
+
+- Robot found: Meatballs, Puerto Rican style
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look.
+- Macros, only after identity is right: 225 cal, 14.33P, 6.9C, 15.31F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, meatball=28g, meatball with sauce=50g, oz=28.35g
+- Source: usda / Survey (FNDDS) / 2706395
+- Candidate key: `usda:survey fndds:2706395:prepared common`
+
+### You said: pulled pork sandwich
+
+- Robot found: Sandwich spread, pork, beef
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look.
+- Macros, only after identity is right: 235 cal, 7.66P, 11.9C, 17.3F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=15g
+- Source: usda / SR Legacy / 174583
+- Candidate key: `usda:sr legacy:174583:prepared common`
+
+### You said: tom yum soup
+
+- Robot found: CAMPBELL'S, Tomato Soup, condensed
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. This is in Luke-preference territory, so it needs a human look.
+- Macros, only after identity is right: 71 cal, 1.46P, 15.2C, 0.44F
+- Natural speech units: cup condensed=248g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / SR Legacy / 174547
+- Candidate key: `usda:sr legacy:174547:prepared common`
+
+### You said: chili garlic sauce
+
+- Robot found: Garlic sauce
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient.
+- Macros, only after identity is right: 683 cal, 1.43P, 2.87C, 74.02F
+- Natural speech units: dipping size container=28g, g=1g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=16g
+- Source: usda / Survey (FNDDS) / 2710169
+- Candidate key: `usda:survey fndds:2710169:sauces condiments oils`
+
+### You said: tomato sauce
+
+- Robot found: Tomato chili sauce
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient.
+- Macros, only after identity is right: 92 cal, 2.5P, 19.79C, 0.3F
+- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=17g
+- Source: usda / Survey (FNDDS) / 2709735
+- Candidate key: `usda:survey fndds:2709735:cuisine staples`
+
+### You said: Kashi cereal
+
+- Robot found: Cereal or granola bar (Kashi Chewy)
+- My suggested call: NO
+- What you do: Leave this as rejected unless you know the robot match is actually what you meant.
+- Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is brand-like, so it needs a human source check.
+- Macros, only after identity is right: 390 cal, 16.67P, 63.42C, 7.69F
+- Natural speech units: bar=78g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
+- Source: usda / Survey (FNDDS) / 2708088
+- Candidate key: `usda:survey fndds:2708088:breakfast snacks`
+
+## Already Covered (45)
 
 These may be identity-compatible, but Pantheon already has a close row. The job here is only to catch true mismatches; compatible duplicates stay edit_needed.
 
@@ -306,17 +669,6 @@ These may be identity-compatible, but Pantheon already has a close row. The job 
 - Natural speech units: cup=24g, g=1g, kg=1000g, lb=453.59g, leaf=0.5g, oz=28.35g, tbsp=3g
 - Source: usda / Survey (FNDDS) / 2709780
 - Candidate key: `usda:survey fndds:2709780:whole foods`
-
-### You said: bean sprouts
-
-- Robot found: Brussels sprouts, raw
-- My suggested call: COVERED
-- What you do: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.
-- Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
-- Macros, only after identity is right: 48.8 cal, 3.98P, 9.62C, 0.56F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2685575
-- Candidate key: `usda:foundation:2685575:whole foods`
 
 ### You said: beef sirloin cooked
 
@@ -405,17 +757,6 @@ These may be identity-compatible, but Pantheon already has a close row. The job 
 - Natural speech units: cup=16g, g=1g, guideline amount per item=0.3g, kg=1000g, lb=453.59g, oz=28.35g, sprig=1g
 - Source: usda / Survey (FNDDS) / 2709782
 - Candidate key: `usda:survey fndds:2709782:whole foods`
-
-### You said: coconut juice
-
-- Robot found: Oil, coconut
-- My suggested call: COVERED
-- What you do: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.
-- Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
-- Macros, only after identity is right: 833 cal, 0P, 0.84C, 99.1F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=11.6g
-- Source: usda / Foundation / 330458
-- Candidate key: `usda:foundation:330458:beverages`
 
 ### You said: coconut oil
 
@@ -516,17 +857,6 @@ These may be identity-compatible, but Pantheon already has a close row. The job 
 - Source: usda / SR Legacy / 173032
 - Candidate key: `usda:sr legacy:173032:whole foods`
 
-### You said: Greek yogurt bar
-
-- Robot found: Yogurt, Greek, plain, nonfat
-- My suggested call: COVERED
-- What you do: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
-- Macros, only after identity is right: 61 cal, 10.3P, 3.64C, 0.37F
-- Natural speech units: bar=65g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 330137
-- Candidate key: `usda:foundation:330137:breakfast snacks`
-
 ### You said: Greek yogurt low fat
 
 - Robot found: Yogurt, Greek, low fat milk, fruit
@@ -615,17 +945,6 @@ These may be identity-compatible, but Pantheon already has a close row. The job 
 - Source: usda / Foundation / 746780
 - Candidate key: `usda:foundation:746780:proteins`
 
-### You said: jasmine rice cooked
-
-- Robot found: Rice noodles, cooked
-- My suggested call: COVERED
-- What you do: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.
-- Why: Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
-- Macros, only after identity is right: 108 cal, 1.79P, 24C, 0.2F
-- Natural speech units: cup=176g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / SR Legacy / 168914
-- Candidate key: `usda:sr legacy:168914:cuisine staples`
-
 ### You said: lasagna noodles cooked
 
 - Robot found: Noodles, cooked
@@ -659,17 +978,6 @@ These may be identity-compatible, but Pantheon already has a close row. The job 
 - Source: usda / Survey (FNDDS) / 2709170
 - Candidate key: `usda:survey fndds:2709170:whole foods`
 
-### You said: Magic Spoon cereal
-
-- Robot found: Cereals ready-to-eat, POST, Shredded Wheat n' Bran, spoon-size
-- My suggested call: COVERED
-- What you do: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
-- Macros, only after identity is right: 339 cal, 10.9P, 80.6C, 2.06F
-- Natural speech units: cup 1 nlea serving=47.2g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / SR Legacy / 167715
-- Candidate key: `usda:sr legacy:167715:breakfast snacks`
-
 ### You said: manuka honey
 
 - Robot found: Honey
@@ -691,17 +999,6 @@ These may be identity-compatible, but Pantheon already has a close row. The job 
 - Natural speech units: cup=315g, g=1g, kg=1000g, lb=453.59g, oz=28.35g, serving 1 4 cup=83g, tbsp=20g
 - Source: usda / SR Legacy / 169661
 - Candidate key: `usda:sr legacy:169661:sauces condiments oils`
-
-### You said: mozzarella cheese
-
-- Robot found: Mozzarella cheese, tomato, and basil, with oil and vinegar dressing
-- My suggested call: COVERED
-- What you do: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.
-- Why: Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
-- Macros, only after identity is right: 139 cal, 7.17P, 3.86C, 10.87F
-- Natural speech units: cup=160g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Survey (FNDDS) / 2705818
-- Candidate key: `usda:survey fndds:2705818:cuisine staples`
 
 ### You said: parmesan cheese
 
@@ -791,28 +1088,6 @@ These may be identity-compatible, but Pantheon already has a close row. The job 
 - Source: usda / Foundation / 321360
 - Candidate key: `usda:foundation:321360:whole foods`
 
-### You said: turkey bolognese
-
-- Robot found: Turkey, ground, 93% lean/ 7% fat, raw
-- My suggested call: COVERED
-- What you do: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
-- Macros, only after identity is right: 158 cal, 17.3P, 0C, 9.59F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2514747
-- Candidate key: `usda:foundation:2514747:prepared common`
-
-### You said: turkey meatballs
-
-- Robot found: Turkey, ground, 93% lean/ 7% fat, raw
-- My suggested call: COVERED
-- What you do: Do not approve a duplicate product. If the identity is compatible, leave edit_needed; if it is a true mismatch, change decision to rejected.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. Pantheon already has something close. Do not add another pantry row just because this candidate is compatible.
-- Macros, only after identity is right: 158 cal, 17.3P, 0C, 9.59F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, meatball=28g, oz=28.35g
-- Source: usda / Foundation / 2514747
-- Candidate key: `usda:foundation:2514747:proteins`
-
 ### You said: white onion
 
 - Robot found: Onions, white, raw
@@ -861,7 +1136,7 @@ These are boring USDA rows. You only need to approve them if the phrase and matc
 - Source: usda / Survey (FNDDS) / 2707493
 - Candidate key: `usda:survey fndds:2707493:cuisine staples`
 
-## Needs Your Choice (15)
+## Needs Your Choice (11)
 
 These need a human call because the system cannot safely infer your intent.
 
@@ -920,28 +1195,6 @@ These need a human call because the system cannot safely infer your intent.
 - Source: usda / Survey (FNDDS) / 2708357
 - Candidate key: `usda:survey fndds:2708357:cuisine staples`
 
-### You said: rice paper wrapper
-
-- Robot found: Rice, black, unenriched, raw
-- My suggested call: YOUR CALL
-- What you do: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes.
-- Why: Only part of what you said matched this food.
-- Macros, only after identity is right: 361 cal, 7.57P, 77.2C, 3.44F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, wrapper=22g
-- Source: usda / Foundation / 2710825
-- Candidate key: `usda:foundation:2710825:cuisine staples`
-
-### You said: rice vinegar
-
-- Robot found: Rice, black, unenriched, raw
-- My suggested call: YOUR CALL
-- What you do: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes.
-- Why: Only part of what you said matched this food.
-- Macros, only after identity is right: 361 cal, 7.57P, 77.2C, 3.44F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2710825
-- Candidate key: `usda:foundation:2710825:sauces condiments oils`
-
 ### You said: sticky rice cooked
 
 - Robot found: Rice, cooked, NFS
@@ -952,28 +1205,6 @@ These need a human call because the system cannot safely infer your intent.
 - Natural speech units: cup cooked=158g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
 - Source: usda / Survey (FNDDS) / 2708402
 - Candidate key: `usda:survey fndds:2708402:cuisine staples`
-
-### You said: thai basil
-
-- Robot found: Pad Thai, meatless
-- My suggested call: YOUR CALL
-- What you do: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes.
-- Why: Only part of what you said matched this food.
-- Macros, only after identity is right: 165 cal, 5.79P, 16.34C, 9.2F
-- Natural speech units: cup=200g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Survey (FNDDS) / 2708805
-- Candidate key: `usda:survey fndds:2708805:whole foods`
-
-### You said: water chestnuts
-
-- Robot found: Nuts, chestnuts, chinese, raw
-- My suggested call: YOUR CALL
-- What you do: Decide whether this identity is right. If not, leave edit_needed and write the better food in notes.
-- Why: Only part of what you said matched this food.
-- Macros, only after identity is right: 224 cal, 4.2P, 49.1C, 1.11F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / SR Legacy / 170164
-- Candidate key: `usda:sr legacy:170164:cuisine staples`
 
 ### You said: mushrooms
 
@@ -1030,7 +1261,7 @@ These need a human call because the system cannot safely infer your intent.
 - Source: usda / Survey (FNDDS) / 2710104
 - Candidate key: `usda:survey fndds:2710104:whole foods`
 
-## Needs Better Source (43)
+## Needs Better Source (22)
 
 These need better source work before auto-writing: brands, restaurants, cocktails, supplements, or combined dishes.
 
@@ -1056,17 +1287,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Source: usda / SR Legacy / 173423
 - Candidate key: `usda:sr legacy:173423:proteins`
 
-### You said: banh mi chicken
-
-- Robot found: Chicken, ground, with additives, raw
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 138 cal, 17.9P, 0C, 7.16F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2514746
-- Candidate key: `usda:foundation:2514746:prepared common`
-
 ### You said: bbq ribs
 
 - Robot found: Beef, rib, back ribs, bone-in, separable lean only, trimmed to 0" fat, choice, raw
@@ -1077,17 +1297,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, rib=85g, ribs=1604g
 - Source: usda / SR Legacy / 172147
 - Candidate key: `usda:sr legacy:172147:prepared common`
-
-### You said: brisket sandwich
-
-- Robot found: Beef, brisket, whole, separable lean only, all grades, raw
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 157 cal, 20.7P, 0.6C, 7.37F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / SR Legacy / 168607
-- Candidate key: `usda:sr legacy:168607:prepared common`
 
 ### You said: cereal oat bran
 
@@ -1100,28 +1309,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Source: usda / SR Legacy / 172986
 - Candidate key: `usda:sr legacy:172986:breakfast snacks`
 
-### You said: coffee black
-
-- Robot found: Plum, black, with skin, raw
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: Only part of what you said matched this food.
-- Macros, only after identity is right: 52.7 cal, 0.58P, 13.5C, 0.28F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2710837
-- Candidate key: `usda:foundation:2710837:beverages`
-
-### You said: hazelnut stevia drops
-
-- Robot found: Nuts, hazelnuts or filberts, raw
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 602 cal, 13.5P, 26.5C, 53.5F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2515375
-- Candidate key: `usda:foundation:2515375:sauces condiments oils`
-
 ### You said: ice cream bar low calorie
 
 - Robot found: Ice cream candy bar
@@ -1133,50 +1320,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Source: usda / Survey (FNDDS) / 2705640
 - Candidate key: `usda:survey fndds:2705640:breakfast snacks`
 
-### You said: pho beef
-
-- Robot found: Beef, tenderloin steak, raw
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 149 cal, 21.1P, 0.18C, 6.46F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2727573
-- Candidate key: `usda:foundation:2727573:prepared common`
-
-### You said: protein shake dextrose
-
-- Robot found: Nutritional drink or shake, high protein, ready-to-drink, NFS
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. It is probably fine, but the source says "not further specified."
-- Macros, only after identity is right: 61 cal, 6.59P, 0.85C, 3.38F
-- Natural speech units: bottle 14 fl oz myoplex=448g, bottle 20 fl oz monster milk=640g, bottle or box nfs=544g, cup=256g, fl oz=32g, g=1g, kg=1000g, lb=453.59g
-- Source: usda / Survey (FNDDS) / 2710726
-- Candidate key: `usda:survey fndds:2710726:coverage buffer`
-
-### You said: REBBL drink
-
-- Robot found: Energy Drink
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 43 cal, 0.46P, 10.23C, 0F
-- Natural speech units: can or bottle 12 fl oz=372g, can or bottle 16 fl oz=496g, can or bottle 24 fl oz=744g, can or bottle 32 fl oz=992g, can or bottle 8 fl oz=248g, cup=248g, fl oz=31g, g=1g
-- Source: usda / Survey (FNDDS) / 2710756
-- Candidate key: `usda:survey fndds:2710756:beverages`
-
-### You said: red curry paste
-
-- Robot found: Cabbage, red, raw
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 29.9 cal, 1.24P, 6.79C, 0.21F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2346408
-- Candidate key: `usda:foundation:2346408:sauces condiments oils`
-
 ### You said: San Marzano tomatoes canned
 
 - Robot found: Tomato, puree, canned
@@ -1187,83 +1330,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
 - Source: usda / Foundation / 2685582
 - Candidate key: `usda:foundation:2685582:whole foods`
-
-### You said: smoked turkey sandwich
-
-- Robot found: Sausage, turkey, hot, smoked
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 158 cal, 15P, 4.65C, 8.75F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / SR Legacy / 174606
-- Candidate key: `usda:sr legacy:174606:prepared common`
-
-### You said: spring roll shrimp
-
-- Robot found: Sushi roll, shrimp
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 100 cal, 7.01P, 15.67C, 0.55F
-- Natural speech units: cup=150g, g=1g, kg=1000g, lb=453.59g, oz=28.35g, piece=30g, roll=85g
-- Source: usda / Survey (FNDDS) / 2708964
-- Candidate key: `usda:survey fndds:2708964:prepared common`
-
-### You said: summer roll shrimp
-
-- Robot found: Crustaceans, shrimp, farm raised, raw
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 75.7 cal, 15.6P, 0.49C, 0.8F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, roll=85g
-- Source: usda / Foundation / 2684443
-- Candidate key: `usda:foundation:2684443:prepared common`
-
-### You said: thai iced tea
-
-- Robot found: Beverages, tea, Oolong, brewed
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 1 cal, 0P, 0.15C, 0F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / SR Legacy / 174120
-- Candidate key: `usda:sr legacy:174120:beverages`
-
-### You said: vermicelli bowl chicken
-
-- Robot found: Burrito bowl, chicken
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food.
-- Macros, only after identity is right: 161 cal, 21.04P, 0.27C, 8.11F
-- Natural speech units: cup=120g, g=1g, item any size=225g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Survey (FNDDS) / 2708560
-- Candidate key: `usda:survey fndds:2708560:prepared common`
-
-### You said: coffee with half and half
-
-- Robot found: Beverages, coffee, instant, regular, half the caffeine
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This is a combined dish, not a simple ingredient.
-- Macros, only after identity is right: 352 cal, 14.4P, 73.2C, 0.5F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, packet=2g, tsp=1g
-- Source: usda / SR Legacy / 174126
-- Candidate key: `usda:sr legacy:174126:beverages`
-
-### You said: green curry paste
-
-- Robot found: Beet greens, raw
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. The state is different: cooked/raw/dried/peeled/canned/frozen/etc.
-- Macros, only after identity is right: 26.4 cal, 1.61P, 4.66C, 0.14F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Foundation / 2747653
-- Candidate key: `usda:foundation:2747653:sauces condiments oils`
 
 ### You said: bbq chicken
 
@@ -1298,17 +1364,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Source: usda / Survey (FNDDS) / 2708758
 - Candidate key: `usda:survey fndds:2708758:prepared common`
 
-### You said: meatballs
-
-- Robot found: Meatballs, Puerto Rican style
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look.
-- Macros, only after identity is right: 225 cal, 14.33P, 6.9C, 15.31F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, meatball=28g, meatball with sauce=50g, oz=28.35g
-- Source: usda / Survey (FNDDS) / 2706395
-- Candidate key: `usda:survey fndds:2706395:prepared common`
-
 ### You said: pad thai
 
 - Robot found: Pad Thai, NFS
@@ -1319,17 +1374,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Natural speech units: cup=200g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
 - Source: usda / Survey (FNDDS) / 2708804
 - Candidate key: `usda:survey fndds:2708804:prepared common`
-
-### You said: pulled pork sandwich
-
-- Robot found: Sandwich spread, pork, beef
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look.
-- Macros, only after identity is right: 235 cal, 7.66P, 11.9C, 17.3F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=15g
-- Source: usda / SR Legacy / 174583
-- Candidate key: `usda:sr legacy:174583:prepared common`
 
 ### You said: red curry chicken
 
@@ -1353,17 +1397,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Source: usda / SR Legacy / 172461
 - Candidate key: `usda:sr legacy:172461:proteins`
 
-### You said: tom yum soup
-
-- Robot found: CAMPBELL'S, Tomato Soup, condensed
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is brand-like, so it needs a human source check. This is in Luke-preference territory, so it needs a human look.
-- Macros, only after identity is right: 71 cal, 1.46P, 15.2C, 0.44F
-- Natural speech units: cup condensed=248g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / SR Legacy / 174547
-- Candidate key: `usda:sr legacy:174547:prepared common`
-
 ### You said: whey protein powder
 
 - Robot found: Beverages, Protein powder whey based
@@ -1374,17 +1407,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Natural speech units: cup=96.97g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
 - Source: usda / SR Legacy / 173180
 - Candidate key: `usda:sr legacy:173180:proteins`
-
-### You said: chili garlic sauce
-
-- Robot found: Garlic sauce
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. Only part of what you said matched this food. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient.
-- Macros, only after identity is right: 683 cal, 1.43P, 2.87C, 74.02F
-- Natural speech units: dipping size container=28g, g=1g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=16g
-- Source: usda / Survey (FNDDS) / 2710169
-- Candidate key: `usda:survey fndds:2710169:sauces condiments oils`
 
 ### You said: fish sauce
 
@@ -1451,28 +1473,6 @@ These need better source work before auto-writing: brands, restaurants, cocktail
 - Natural speech units: g=1g, guideline amount per piece of sushi=2g, individual packet=9g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=16g
 - Source: usda / Survey (FNDDS) / 2707442
 - Candidate key: `usda:survey fndds:2707442:sauces condiments oils`
-
-### You said: tomato sauce
-
-- Robot found: Tomato chili sauce
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is a combined dish, not a simple ingredient.
-- Macros, only after identity is right: 92 cal, 2.5P, 19.79C, 0.3F
-- Natural speech units: g=1g, kg=1000g, lb=453.59g, oz=28.35g, tbsp=17g
-- Source: usda / Survey (FNDDS) / 2709735
-- Candidate key: `usda:survey fndds:2709735:cuisine staples`
-
-### You said: Kashi cereal
-
-- Robot found: Cereal or granola bar (Kashi Chewy)
-- My suggested call: NOT AUTO
-- What you do: Do not approve from this packet unless you are confident the source and serving are right.
-- Why: This touches a Luke-specific preference and should not be auto-written. This is in Luke-preference territory, so it needs a human look. This is brand-like, so it needs a human source check.
-- Macros, only after identity is right: 390 cal, 16.67P, 63.42C, 7.69F
-- Natural speech units: bar=78g, g=1g, kg=1000g, lb=453.59g, oz=28.35g
-- Source: usda / Survey (FNDDS) / 2708088
-- Candidate key: `usda:survey fndds:2708088:breakfast snacks`
 
 ### You said: spaghetti with meat sauce
 
