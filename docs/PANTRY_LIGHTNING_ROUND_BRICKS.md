@@ -317,7 +317,7 @@ Stop conditions:
 
 ## Brick PLR-10: Markdown Approval Ledger
 
-Classification: Green for docs/data format; Red for applying branded/restaurant approvals.
+Classification: Green for docs/data format; Red for applying branded/restaurant approvals. Draft format and validator shipped.
 
 Goal: make Luke review fewer but better decisions.
 
