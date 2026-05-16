@@ -15,6 +15,8 @@ const products: AliasProductTarget[] = [
   { id: 'p-coconut-a', name: 'Coconut water', brand: 'Harmless Harvest' },
   { id: 'p-coconut-b', name: 'Coconut water', brand: 'Taste Nirvana' },
   { id: 'p-oats-protein', name: 'Quaker Protein Old-Fashioned Rolled Oats', brand: null },
+  { id: 'p-tomato-paste', name: 'Aicha Tomato Paste', brand: null },
+  { id: 'p-evoo', name: 'EXTRA VIRGIN OLIVE OIL', brand: null },
 ]
 
 function aliases(rows: ExistingIdentityAlias[] = []) {
@@ -88,6 +90,16 @@ function plan(input: { candidate_key: string; target_query: string | null; displ
 
 {
   const result = plan({ candidate_key: 'specific-formula', target_query: 'rolled oats', display_name: 'Quaker Protein Old-Fashioned Rolled Oats' })
+  assert.equal(result.type, 'no_match')
+}
+
+{
+  const result = plan({ candidate_key: 'branded-name', target_query: 'tomato paste', display_name: 'Aicha Tomato Paste' })
+  assert.equal(result.type, 'no_match')
+}
+
+{
+  const result = plan({ candidate_key: 'specific-subtype', target_query: 'olive oil', display_name: 'EXTRA VIRGIN OLIVE OIL' })
   assert.equal(result.type, 'no_match')
 }
 

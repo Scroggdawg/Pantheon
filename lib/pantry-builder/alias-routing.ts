@@ -83,6 +83,13 @@ const COMPOSITE_TOKENS = new Set([
   'taco',
   'wrap',
 ])
+const PRODUCT_SPECIFIC_TOKENS = new Set([
+  'aicha',
+  'extra',
+  'old',
+  'quaker',
+  'virgin',
+])
 
 function singularize(token: string) {
   if (token.endsWith('ies') && token.length > 4) return `${token.slice(0, -3)}y`
@@ -127,6 +134,18 @@ function hasAnyToken(tokens: Set<string>, values: string[]) {
   return values.some((value) => tokens.has(value))
 }
 
+function productSpecificConflictReason(alias: string, product: AliasProductTarget) {
+  const aliasTokens = tokenSetFor(alias)
+  const productTokens = tokenSetFor(product.brand ? `${product.brand} ${product.name}` : product.name)
+  const missingSpecificTokens = [...PRODUCT_SPECIFIC_TOKENS].filter(
+    (token) => productTokens.has(token) && !aliasTokens.has(token),
+  )
+  if (missingSpecificTokens.length > 0) {
+    return `existing product has specific token(s) not present in alias: ${missingSpecificTokens.join(', ')}`
+  }
+  return null
+}
+
 function modifierConflictReason(alias: string, product: AliasProductTarget) {
   const aliasTokens = modifierTokenSetFor(alias)
   const productTokens = modifierTokenSetFor(product.brand ? `${product.brand} ${product.name}` : product.name)
@@ -152,6 +171,8 @@ function modifierConflictReason(alias: string, product: AliasProductTarget) {
 function scoreProduct(alias: string, displayName: string, product: AliasProductTarget) {
   const modifierConflict = modifierConflictReason(alias, product)
   if (modifierConflict) return { score: 0, reason: modifierConflict }
+  const productSpecificConflict = productSpecificConflictReason(alias, product)
+  if (productSpecificConflict) return { score: 0, reason: productSpecificConflict }
 
   const normalizedAlias = normalizeFoodText(alias)
   const normalizedDisplay = normalizeFoodText(displayName)
