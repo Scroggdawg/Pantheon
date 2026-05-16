@@ -82,6 +82,21 @@ const TARGET_STOP_TOKENS = new Set([
   'without',
 ])
 
+const CONTEXT_REQUIRED_TOKENS = new Set([
+  'barbacoa',
+  'bbq',
+  'carnitas',
+  'chipotle',
+  'crema',
+  'fajita',
+  'gallo',
+  'guacamole',
+  'pico',
+  'queso',
+  'salsa',
+  'taco',
+])
+
 interface UsdaFoodNutrient {
   nutrientId?: number
   value?: number
@@ -253,15 +268,22 @@ export function candidateFromUsdaFood(
   const brandReasons =
     food.brandName || food.brandOwner
       ? ['branded_usda_candidate_review_required']
+      : /\bNFS\b/.test(displayName)
+        ? ['not_further_specified_review_required']
       : /\b(?!NFS\b)[A-Z]{4,}\b/.test(displayName)
         ? ['brand_like_name_token_review_required']
         : []
+  const descTokens = new Set(importantTokens(displayName))
+  const contextReasons = importantTokens(target.query)
+    .filter((token) => CONTEXT_REQUIRED_TOKENS.has(token) && !descTokens.has(token))
+    .map((token) => `context_token_missing_${token}`)
   const reviewReasons = [
     ...(target.reviewOnly ? ['profile_review_only'] : []),
     ...descriptorMismatches.map((term) => `state_modifier_mismatch_${term}`),
     ...coverageReasons,
     ...primaryReasons,
     ...brandReasons,
+    ...contextReasons,
   ]
 
   const candidate: PantryCandidate = {

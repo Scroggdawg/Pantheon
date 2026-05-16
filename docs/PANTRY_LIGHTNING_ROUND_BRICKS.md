@@ -192,7 +192,7 @@ Stop conditions:
 
 ## Brick PLR-5: Risk Engine Tightening From First Batches
 
-Classification: Green for code/tests; Yellow if behavior affects live apply decisions.
+Classification: Green for code/tests; Yellow if behavior affects live apply decisions. Initial tightening shipped for NFS and missing cuisine-context tokens.
 
 Goal: convert anything learned from batches 1 to 3 into durable safeguards.
 

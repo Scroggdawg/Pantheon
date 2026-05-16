@@ -353,6 +353,46 @@ function testUsdaCandidateReviewReasons() {
   )
   assert.equal(brandLikeRice?.decision, 'review_required')
   assert.ok(brandLikeRice?.reasons.includes('brand_like_name_token_review_required'))
+
+  const guacamoleNfs = candidateFromUsdaFood(
+    { query: 'guacamole', category: 'cuisine_staples', reviewOnly: false },
+    {
+      fdcId: 3,
+      description: 'Guacamole, NFS',
+      dataType: 'Survey (FNDDS)',
+      foodNutrients: [
+        { nutrientId: 1008, value: 157 },
+        { nutrientId: 1003, value: 1.9 },
+        { nutrientId: 1005, value: 8.6 },
+        { nutrientId: 1004, value: 14.1 },
+      ],
+    },
+    profile,
+    [],
+    'test',
+  )
+  assert.equal(guacamoleNfs?.decision, 'review_required')
+  assert.ok(guacamoleNfs?.reasons.includes('not_further_specified_review_required'))
+
+  const tacoMeatFallback = candidateFromUsdaFood(
+    { query: 'lean ground beef taco meat', category: 'proteins', reviewOnly: false },
+    {
+      fdcId: 4,
+      description: 'Beef, ground, 80% lean meat / 20% fat, raw',
+      dataType: 'SR Legacy',
+      foodNutrients: [
+        { nutrientId: 1008, value: 254 },
+        { nutrientId: 1003, value: 17.2 },
+        { nutrientId: 1005, value: 0 },
+        { nutrientId: 1004, value: 20 },
+      ],
+    },
+    profile,
+    [],
+    'test',
+  )
+  assert.equal(tacoMeatFallback?.decision, 'review_required')
+  assert.ok(tacoMeatFallback?.reasons.includes('context_token_missing_taco'))
 }
 
 testUnits()
