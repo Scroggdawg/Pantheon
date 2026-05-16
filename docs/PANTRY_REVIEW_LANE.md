@@ -48,6 +48,23 @@ npx tsx scripts/plan-live-pantry-review.ts \
   --ledger=data/pantry/approvals/live-review-YYYY-MM-DD.md
 ```
 
+Dry-run the guarded live apply command:
+
+```bash
+npx tsx scripts/apply-live-pantry-review.ts \
+  --ledger=data/pantry/approvals/live-review-YYYY-MM-DD.md
+```
+
+Apply a reviewed ledger only after the planner is boring and Luke has explicitly approved the review writes:
+
+```bash
+npx tsx scripts/apply-live-pantry-review.ts \
+  --ledger=data/pantry/approvals/live-review-YYYY-MM-DD.md \
+  --apply \
+  --allow-review-writes \
+  --max-insert=25
+```
+
 Plan an approval apply from an older artifact-backed ledger:
 
 ```bash
@@ -90,4 +107,4 @@ The current implementation step is not blind apply. The live review planner read
 - rejection memory writes
 - manual/edit-needed rows
 
-Only after that planner is boring on real Luke-edited ledgers should Codex add a guarded review apply command.
+The guarded review apply command now exists, but its default mode is dry-run. Live writes require both `--apply` and `--allow-review-writes`; branded, restaurant, alcohol, OFF, supplement, recipe, composite, and LLM-estimated rows still need explicit approval before they leave the review lane.
