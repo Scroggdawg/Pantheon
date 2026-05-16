@@ -70,6 +70,16 @@ export function dedupeUnitAlternatives(alternatives: UnitAlternative[]): UnitAlt
   return [...byUnit.values()].sort((a, b) => a.unit.localeCompare(b.unit))
 }
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function hasUnitPhrase(normalizedQuery: string, normalizedUnit: string) {
+  const singular = new RegExp(`(?:^| )${escapeRegex(normalizedUnit)}(?: |$)`)
+  const plural = new RegExp(`(?:^| )${escapeRegex(`${normalizedUnit}s`)}(?: |$)`)
+  return singular.test(normalizedQuery) || plural.test(normalizedQuery)
+}
+
 export function withStandardUnits(
   alternatives: UnitAlternative[],
   countUnitGrams: Record<string, number>,
@@ -89,8 +99,7 @@ export function withStandardUnits(
       normalizedQuery === normalizedUnit ||
       normalizeUnit(normalizedQuery) === normalizedUnit ||
       queryUnits.has(normalizedUnit) ||
-      normalizedQuery.includes(normalizedUnit) ||
-      normalizedQuery.includes(`${normalizedUnit}s`)
+      hasUnitPhrase(normalizedQuery, normalizedUnit)
     ) {
       countUnits.push({
         unit: normalizedUnit,

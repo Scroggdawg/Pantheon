@@ -46,6 +46,7 @@ const STATE_MODIFIERS = [
   'bun',
   'canned',
   'cake',
+  'cheese',
   'chip',
   'chips',
   'cooked',
@@ -58,6 +59,7 @@ const STATE_MODIFIERS = [
   'drumstick',
   'dry',
   'egg',
+  'enoki',
   'fast foods',
   'flour',
   'florida',
@@ -68,18 +70,23 @@ const STATE_MODIFIERS = [
   'greens',
   'hopi',
   'juice',
+  'maitake',
   'mission',
   'mix',
+  'morel',
   'nugget',
   'nuggets',
   'overripe',
+  'oyster',
   'pastry',
   'peel',
   'pickled',
   'pie',
   'powder',
   'powdered',
+  'portabella',
   'prepackaged',
+  'protein fortified',
   'refrigerated',
   'relish',
   'restaurant',
@@ -87,6 +94,9 @@ const STATE_MODIFIERS = [
   'sauce',
   'scampi',
   'sliced',
+  'shiitake',
+  'spinach',
+  'squash',
   'strawberry',
   'strudel',
   'stew',
@@ -209,6 +219,11 @@ export function classifyPantryCandidate(
   }
   if (/\bwith\b/.test(targetQuery)) {
     reasons.add('composite_target_review_required')
+    decision = decision === 'rejected' ? decision : 'review_required'
+    score += 25
+  }
+  if (targetQuery === 'mushrooms' && name !== 'mushrooms raw') {
+    reasons.add('generic_mushroom_subtype_review_required')
     decision = decision === 'rejected' ? decision : 'review_required'
     score += 25
   }
