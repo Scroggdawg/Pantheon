@@ -209,7 +209,7 @@ async function main() {
   console.log('Next executable gate:')
   if (liveStatus.gateOpen) {
     console.log('1. Review the previous apply counts and regression checks.')
-    console.log('2. Dry-run or apply the next conservative artifact with --max-insert=25.')
+    console.log('2. Dry-run or apply the next conservative artifact with --max-insert=50.')
     console.log('3. Stop before raising the cap or writing review-only branded/restaurant rows.')
   } else {
     console.log('1. Luke runs supabase login.')
