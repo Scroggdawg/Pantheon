@@ -37,6 +37,23 @@ Rules:
 - Duplicate `candidate_key` values fail validation.
 - A ledger may contain comments and normal Markdown text outside the table.
 
+## Generate From A Dry Run
+
+Use the read-only generator to create a starter ledger from a Pantry Builder artifact:
+
+```bash
+npx tsx scripts/generate-pantry-approval-ledger.ts \
+  --artifact=scripts/output/pantry-builder-<run-id>.json
+```
+
+Generated ledgers default `review_required` candidates to `edit_needed`, default `rejected` candidates to `rejected`, and omit `auto_approved` rows unless `--include-auto` is passed.
+
+Validate the ledger before any future apply path consumes it:
+
+```bash
+npx tsx scripts/validate-pantry-approval-ledger.ts data/pantry/approvals/<ledger>.md
+```
+
 ## Apply Boundary
 
 This format intentionally does not grant write permission.
