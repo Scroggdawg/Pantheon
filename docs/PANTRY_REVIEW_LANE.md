@@ -34,6 +34,21 @@ npx tsx scripts/export-pantry-review-queue.ts \
   --output=data/pantry/approvals/live-review-prepared-common.md
 ```
 
+Export smart review packets:
+
+```bash
+npx tsx scripts/export-smart-pantry-review-packets.ts \
+  --limit=250 \
+  --output-dir=data/pantry/approvals/smart-review-YYYY-MM-DD
+```
+
+Smart packet order:
+
+- `01_quick_reject.md`: rows already rejected or carrying strong bad-match signals. These can become rejection memory after review.
+- `02_quick_approve_usda.md`: very boring USDA review rows. These stay `edit_needed` until Luke flips a row to `approved`.
+- `03_brands_restaurants.md`: protected rows for branded, restaurant, alcohol, supplement, composite, or profile-specific decisions.
+- `04_manual_needed.md`: rows needing corrected source data or future importer guardrails.
+
 Validate a reviewed ledger:
 
 ```bash
@@ -78,6 +93,8 @@ npx tsx scripts/plan-pantry-approval-apply.ts \
 - `approved`: Candidate is acceptable for a future explicit review apply.
 - `edit_needed`: Candidate needs a corrected name, richer source data, or manual replacement.
 - `rejected`: Candidate is a known bad match and should become rejection memory.
+
+For smart review packets, Luke only edits the top approval table. The details below the table are reference material.
 
 ## What Luke Should See
 
