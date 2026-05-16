@@ -42,6 +42,14 @@ npx tsx scripts/export-smart-pantry-review-packets.ts \
   --output-dir=data/pantry/approvals/smart-review-YYYY-MM-DD
 ```
 
+Export the plain-English identity worksheet:
+
+```bash
+npx tsx scripts/export-plain-pantry-review-packet.ts \
+  --limit=120 \
+  --output=data/pantry/approvals/plain-review-YYYY-MM-DD.md
+```
+
 Smart packet order:
 
 - `01_quick_reject.md`: rows already rejected or carrying strong bad-match signals. These can become rejection memory after review.
@@ -95,6 +103,12 @@ npx tsx scripts/plan-pantry-approval-apply.ts \
 - `rejected`: Candidate is a known bad match and should become rejection memory.
 
 For smart review packets, Luke only edits the top approval table. The details below the table are reference material.
+
+For plain review packets, Luke is mostly checking identity:
+
+> If I say the spoken phrase, should Pantheon understand it as the robot match?
+
+Macros come second. If the identity is wrong, the macros are automatically useless.
 
 ## What Luke Should See
 
