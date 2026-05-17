@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "name": "Amazon Grocery Generic Aliases 1",
+  "doctrine": {
+    "macro_equivalence_threshold": "Use a generic alias when the food is the same practical food, the prep state matches, and calories are within about 10% or 10 kcal per 100g with no structural macro difference.",
+    "do_not_collapse": [
+      "raw vs cooked",
+      "dry vs cooked",
+      "fried or breaded vs raw",
+      "light vs full-fat",
+      "whole egg vs yolk or white",
+      "meat leanness percentages",
+      "pickled vs raw when sodium/prep matters",
+      "branded prepared foods"
+    ]
+  },
+  "aliases": [
+    {
+      "alias": "hass avocado raw",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Hass avocado is nutritionally close enough for generic avocado logging; peel is not eaten."
+    },
+    {
+      "alias": "medium hass avocado",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic edible avocado."
+    },
+    {
+      "alias": "large hass avocados",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic edible avocado."
+    },
+    {
+      "alias": "hass avocados loose",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic edible avocado."
+    },
+    {
+      "alias": "avocados bag",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic edible avocado."
+    },
+    {
+      "alias": "tomato on the vine raw",
+      "target_name": "Tomatoes, raw",
+      "confidence": "high",
+      "reason": "Raw tomato variants are close enough for generic tomato logging."
+    },
+    {
+      "alias": "tomato on the vine",
+      "target_name": "Tomatoes, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic raw tomato."
+    },
+    {
+      "alias": "vine on tomato",
+      "target_name": "Tomatoes, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic raw tomato."
+    },
+    {
+      "alias": "organic tomato on the vine",
+      "target_name": "Tomatoes, raw",
+      "confidence": "high",
+      "reason": "Organic/packaging label does not change practical macros."
+    },
+    {
+      "alias": "cherry tomatoes raw",
+      "target_name": "Tomatoes, raw",
+      "confidence": "high",
+      "reason": "Cherry/grape/vine tomatoes are close enough for generic raw tomato logging."
+    },
+    {
+      "alias": "cherry tomatoes",
+      "target_name": "Tomatoes, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic raw tomato."
+    },
+    {
+      "alias": "grape tomatoes raw",
+      "target_name": "Tomatoes, raw",
+      "confidence": "high",
+      "reason": "Cherry/grape/vine tomatoes are close enough for generic raw tomato logging."
+    },
+    {
+      "alias": "grape tomatoes",
+      "target_name": "Tomatoes, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic raw tomato."
+    },
+    {
+      "alias": "broccoli crowns raw",
+      "target_name": "Broccoli Florets",
+      "confidence": "high",
+      "reason": "Broccoli crowns route cleanly to the existing broccoli florets pantry item."
+    },
+    {
+      "alias": "broccoli crowns",
+      "target_name": "Broccoli Florets",
+      "confidence": "high",
+      "reason": "Purchase-history wording for the existing broccoli florets pantry item."
+    },
+    {
+      "alias": "red grapes raw",
+      "target_name": "Grapes, raw",
+      "confidence": "high",
+      "reason": "Red/green grape variants are close enough for generic grape logging."
+    },
+    {
+      "alias": "red grapes",
+      "target_name": "Grapes, raw",
+      "confidence": "high",
+      "reason": "Purchase-history wording for generic raw grapes."
+    },
+    {
+      "alias": "tricolor bell pepper raw",
+      "target_name": "Bell Peppers",
+      "confidence": "high",
+      "reason": "Bell pepper colors are close enough for generic bell pepper logging."
+    },
+    {
+      "alias": "tricolor bell peppers",
+      "target_name": "Bell Peppers",
+      "confidence": "high",
+      "reason": "Purchase-history wording for mixed bell peppers."
+    },
+    {
+      "alias": "green bell pepper raw",
+      "target_name": "Bell Peppers",
+      "confidence": "high",
+      "reason": "Bell pepper colors are close enough for generic bell pepper logging."
+    },
+    {
+      "alias": "whole wheat pita",
+      "target_name": "Bread, pita",
+      "confidence": "medium",
+      "reason": "Pita is inherently bread; generic pita macros are close enough for voice logging unless a specific brand is required."
+    },
+    {
+      "alias": "everything bagel",
+      "target_name": "Bagel",
+      "confidence": "medium",
+      "reason": "Everything seasoning changes sodium more than calories/macros; route to generic bagel for pantry speed."
+    },
+    {
+      "alias": "brown basmati rice cooked",
+      "target_name": "Rice, brown, cooked, no added fat",
+      "confidence": "medium",
+      "reason": "Brown basmati can route to cooked brown rice unless exact rice cultivar matters."
+    }
+  ]
+}

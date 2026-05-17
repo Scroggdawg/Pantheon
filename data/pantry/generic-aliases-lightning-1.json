@@ -1,0 +1,169 @@
+{
+  "version": 1,
+  "name": "Lightning Pantry Generic Aliases 1",
+  "doctrine": {
+    "macro_equivalence_threshold": "Use a generic alias when the food is the same practical food, the prep state matches, and calories are within about 10% or 10 kcal per 100g with no structural macro difference.",
+    "do_not_collapse": [
+      "raw vs cooked",
+      "dry vs cooked",
+      "fried or breaded vs raw",
+      "light vs full-fat",
+      "whole egg vs yolk or white",
+      "meat leanness percentages",
+      "pickled vs raw when sodium/prep matters",
+      "branded prepared foods"
+    ]
+  },
+  "aliases": [
+    {
+      "alias": "navel orange",
+      "target_name": "Oranges, raw, navels",
+      "confidence": "high",
+      "reason": "Voice-friendly singular wording for the existing navel orange product."
+    },
+    {
+      "alias": "navel oranges",
+      "target_name": "Oranges, raw, navels",
+      "confidence": "high",
+      "reason": "Voice-friendly plural wording for the existing navel orange product."
+    },
+    {
+      "alias": "mandarin oranges",
+      "target_name": "Tangerines, (mandarin oranges), raw",
+      "confidence": "high",
+      "reason": "Common spoken name for the existing mandarin/tangerine product."
+    },
+    {
+      "alias": "mandarins",
+      "target_name": "Tangerines, (mandarin oranges), raw",
+      "confidence": "high",
+      "reason": "Short spoken name for the existing mandarin/tangerine product."
+    },
+    {
+      "alias": "medjool date",
+      "target_name": "Dates, medjool",
+      "confidence": "high",
+      "reason": "Singular spoken wording for the existing medjool dates product."
+    },
+    {
+      "alias": "medjool dates",
+      "target_name": "Dates, medjool",
+      "confidence": "high",
+      "reason": "Common spoken wording for the existing medjool dates product."
+    },
+    {
+      "alias": "bok choy",
+      "target_name": "Cabbage, bok choy, raw",
+      "confidence": "high",
+      "reason": "Common food name for the existing raw bok choy product."
+    },
+    {
+      "alias": "brussel sprouts",
+      "target_name": "Brussels sprouts, raw",
+      "confidence": "high",
+      "reason": "Common singularized/misspelled spoken form for the existing Brussels sprouts product."
+    },
+    {
+      "alias": "brussels sprouts",
+      "target_name": "Brussels sprouts, raw",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing Brussels sprouts product."
+    },
+    {
+      "alias": "collard greens",
+      "target_name": "Collards, raw",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing raw collards product."
+    },
+    {
+      "alias": "mustard greens",
+      "target_name": "Mustard greens, raw",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing raw mustard greens product."
+    },
+    {
+      "alias": "fennel bulb",
+      "target_name": "Fennel, bulb, raw",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing raw fennel bulb product."
+    },
+    {
+      "alias": "butternut squash",
+      "target_name": "Squash, winter, butternut, raw",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing raw butternut squash product."
+    },
+    {
+      "alias": "acorn squash",
+      "target_name": "Squash, winter, acorn, raw",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing raw acorn squash product."
+    },
+    {
+      "alias": "green beans raw",
+      "target_name": "Beans, snap, green, raw",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing raw green beans product."
+    },
+    {
+      "alias": "green beans",
+      "target_name": "Beans, snap, green, raw",
+      "confidence": "medium",
+      "reason": "Common produce shorthand; routes to raw green beans because the target product is raw."
+    },
+    {
+      "alias": "garbanzo beans cooked",
+      "target_name": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+      "confidence": "high",
+      "reason": "Common spoken synonym for the existing cooked chickpeas product."
+    },
+    {
+      "alias": "chickpeas cooked",
+      "target_name": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing cooked chickpeas product."
+    },
+    {
+      "alias": "kidney beans cooked",
+      "target_name": "Beans, kidney, red, mature seeds, cooked, boiled, without salt",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing cooked red kidney beans product."
+    },
+    {
+      "alias": "red kidney beans cooked",
+      "target_name": "Beans, kidney, red, mature seeds, cooked, boiled, without salt",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing cooked red kidney beans product."
+    },
+    {
+      "alias": "bulgur wheat cooked",
+      "target_name": "Bulgur, cooked",
+      "confidence": "high",
+      "reason": "Common spoken form for the existing cooked bulgur product."
+    },
+    {
+      "alias": "wild rice cooked",
+      "target_name": "Wild rice, cooked",
+      "confidence": "high",
+      "reason": "Prep-state-preserving spoken form for the existing cooked wild rice product."
+    },
+    {
+      "alias": "millet cooked",
+      "target_name": "Millet, cooked",
+      "confidence": "high",
+      "reason": "Prep-state-preserving spoken form for the existing cooked millet product."
+    },
+    {
+      "alias": "spelt cooked",
+      "target_name": "Spelt, cooked",
+      "confidence": "high",
+      "reason": "Prep-state-preserving spoken form for the existing cooked spelt product."
+    },
+    {
+      "alias": "hominy cooked",
+      "target_name": "Hominy, cooked",
+      "confidence": "high",
+      "reason": "Prep-state-preserving spoken form for the existing cooked hominy product."
+    }
+  ]
+}
