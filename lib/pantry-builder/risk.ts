@@ -26,6 +26,7 @@ const PREPARED_DISH_TERMS = [
   'with gravy',
   'with meat',
   'and meat',
+  'and corn',
   'sauce',
   'dip',
   'sandwich',
@@ -76,6 +77,7 @@ const STATE_MODIFIERS = [
   'flavored',
   'frozen',
   'german',
+  'green',
   'greens',
   'hopi',
   'includes',
@@ -104,6 +106,8 @@ const STATE_MODIFIERS = [
   'refrigerated',
   'relish',
   'restaurant',
+  'ripe',
+  'roasted',
   'salad',
   'sauce',
   'scampi',
@@ -133,6 +137,7 @@ const STATE_MODIFIERS = [
   'white',
   'without skin',
   'with salt',
+  'yellow',
 ]
 const DUPLICATE_TARGET_STOP_TOKENS = new Set([
   'and',

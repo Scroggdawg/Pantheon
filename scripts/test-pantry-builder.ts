@@ -319,6 +319,17 @@ function testRisk() {
   )
   assert.equal(cottageCheeseWithVegetables.decision, 'review_required')
   assert.ok(cottageCheeseWithVegetables.reasons.includes('prepared_dish_mismatch_risk'))
+  const limaBeansAndCorn = classifyPantryCandidate(
+    candidate({
+      target_query: 'lima beans cooked',
+      display_name: 'Lima beans and corn, cooked',
+      category: 'whole_foods',
+    }),
+    existing,
+    [],
+  )
+  assert.equal(limaBeansAndCorn.decision, 'review_required')
+  assert.ok(limaBeansAndCorn.reasons.includes('prepared_dish_mismatch_risk'))
   const compositeTarget = classifyPantryCandidate(
     candidate({
       target_query: 'coffee with half and half',
@@ -591,6 +602,26 @@ function testUsdaCandidateReviewReasons() {
       query: 'sourdough bread',
       display: 'Bread, french or vienna (includes sourdough)',
       reason: 'state_modifier_mismatch_includes',
+    },
+    {
+      query: 'plantains raw',
+      display: 'Plantains, ripe, raw',
+      reason: 'state_modifier_mismatch_ripe',
+    },
+    {
+      query: 'buckwheat cooked',
+      display: 'Buckwheat groats, roasted, cooked',
+      reason: 'state_modifier_mismatch_roasted',
+    },
+    {
+      query: 'plantains raw',
+      display: 'Plantains, green, raw',
+      reason: 'state_modifier_mismatch_green',
+    },
+    {
+      query: 'plantains raw',
+      display: 'Plantains, yellow, raw',
+      reason: 'state_modifier_mismatch_yellow',
     },
   ]
   for (const [index, row] of bbqModifierCases.entries()) {

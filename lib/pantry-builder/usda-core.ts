@@ -49,6 +49,7 @@ const STATE_MODIFIERS = [
   'flavored',
   'frozen',
   'german',
+  'green',
   'hopi',
   'includes',
   'imported',
@@ -75,6 +76,8 @@ const STATE_MODIFIERS = [
   'refrigerated',
   'relish',
   'restaurant',
+  'ripe',
+  'roasted',
   'salad',
   'sauce',
   'scampi',
@@ -100,6 +103,7 @@ const STATE_MODIFIERS = [
   'white',
   'without skin',
   'with salt',
+  'yellow',
 ]
 
 const TARGET_STOP_TOKENS = new Set([
