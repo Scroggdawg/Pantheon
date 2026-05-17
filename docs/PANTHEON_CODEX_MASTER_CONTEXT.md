@@ -363,10 +363,12 @@ For immediate Hive continuation:
 For Pantry Lightning:
 
 - `docs/PANTRY_LIGHTNING_EXECUTION_CONTRACT.md`
+- `docs/PANTRY_LIGHTNING_ROUND_BRICKS.md`
 - `docs/PANTRY_AUTONOMOUS_1K_PLAN.md`
 - `docs/PANTRY_REVIEW_LANE.md`
 - `docs/PANTRY_APPROVAL_LEDGER_FORMAT.md`
 - `docs/AUTONOMOUS_PANTRY_BUILDER.md`
+- `docs/PANTHEON_CODEX_REASONING_DIAL.md`
 
 For Lightning Parse / matcher:
 

@@ -387,6 +387,89 @@ Acceptance:
 - Cap only changes with evidence.
 - The contract doc is updated if the cap changes.
 
+## Brick PLR-13: Generic Anchor And Alias Unlock Round
+
+Classification: Yellow for product anchors and live alias writes. Green for dry-runs, docs, and tests.
+
+Goal: turn the blocked alias-generic work into one small lightning round before the next purchase-history source arrives.
+
+Context:
+
+- `PANTHEON_S28_HIVE_GENERIC_ALIAS_1.md` applied 31 parser aliases without adding products.
+- Ten Amazon-derived aliases remain blocked because the safe generic product anchor does not yet exist.
+- This brick groups the missing anchors and alias unlock into one round so Instacart intake can start from a cleaner parser surface.
+
+Candidate product anchors:
+
+- `Tomatoes, raw` or the closest USDA generic raw tomato row
+- generic `Bagel`
+- `Rice, brown, cooked` or the closest USDA cooked brown rice row
+
+Alias unlock after anchors exist:
+
+- tomato on the vine
+- organic tomato on the vine
+- cherry tomatoes
+- grape tomatoes
+- everything bagel
+- brown basmati rice cooked
+
+Tasks:
+
+- Dry-run a tiny USDA-only anchor pack under `--limit=25`.
+- Inspect markdown manually; apply only boring USDA auto-approved anchors under `--max-insert=25`.
+- Re-run `data/pantry/generic-aliases-amazon-1.json` with `scripts/apply-generic-pantry-aliases.ts`.
+- Apply only the newly unblocked aliases under `--max-alias=25`.
+- Run governance, pantry tests, matcher invariants, typecheck, and lint.
+- Record a handoff with inserted anchors, inserted aliases, and any still-blocked targets.
+
+Acceptance:
+
+- No branded, OFF, restaurant, alcohol, supplement, recipe, composite, or LLM-estimated products are written.
+- Product anchors are exact generic foods, not nearby canned/prepared variants.
+- Tomato aliases route only to raw tomato, never canned/crushed/sauce.
+- Bagel alias routes only to generic bagel, not restaurant/branded/sandwich rows.
+- Brown rice alias preserves cooked state.
+
+Stop conditions:
+
+- USDA search only returns prepared, restaurant, branded, or specific variant rows.
+- A target anchor is nutritionally or semantically too broad.
+- Any alias conflicts with an existing active alias.
+- Any live write would exceed the active cap.
+
+## Brick PLR-14: Instacart Intake And Reroute Round
+
+Classification: Green for CSV parsing, duplicate analysis, dry-runs, and docs. Yellow for USDA product anchors and live alias/rejection writes.
+
+Goal: convert Luke's Instacart order history into pantry value without flooding the database with duplicate branded groceries.
+
+Tasks:
+
+- Keep the raw Instacart export local and uncommitted.
+- Count total rows, unique item names, repeats, and likely duplicate families.
+- Split items into:
+  - already covered by existing pantry product/alias;
+  - safe generic alias candidate;
+  - missing generic USDA anchor candidate;
+  - branded/prepared/OFF/review-only;
+  - reject/ignore.
+- Prefer alias/rejection improvements before product additions.
+- Build a small USDA anchor pack only for repeated, personally relevant foods that lack a generic anchor.
+- Apply live aliases/rejections under cap only after dry-run review.
+
+Acceptance:
+
+- The first Instacart round produces a clear count of unique items, repeats, aliases applied, anchors added, and held review items.
+- Common spoken grocery terms improve parser routing.
+- Branded Instacart items do not become canonical product truth unless Luke explicitly approves a branded lane.
+
+Stop conditions:
+
+- The export contains sensitive data that cannot be safely summarized.
+- Brand-specific prepared foods dominate the batch.
+- Duplicate detection becomes ambiguous enough that a review packet is more valuable than live writes.
+
 ## Recommended Lightning Sequence
 
 1. PLR-1 Schema Gate And First Apply Unlock
@@ -401,6 +484,8 @@ Acceptance:
 10. PLR-10 Markdown Approval Ledger
 11. PLR-11 Approved Review Apply Path
 12. PLR-12 Cap Raise Decision
+13. PLR-13 Generic Anchor And Alias Unlock Round
+14. PLR-14 Instacart Intake And Reroute Round
 
 ## Why This Order
 
