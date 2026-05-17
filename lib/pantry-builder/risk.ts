@@ -36,8 +36,15 @@ const PREPARED_DISH_TERMS = [
   'breaded',
   'fried',
 ]
+const UNSPECIFIED_USDA_TERMS = [
+  'nfs',
+  'ns as to',
+  'not specified',
+]
 const STATE_MODIFIERS = [
+  'additives',
   'babyfood',
+  'blade',
   'bbq',
   'bake',
   'beef bacon',
@@ -49,6 +56,7 @@ const STATE_MODIFIERS = [
   'cheese',
   'chip',
   'chips',
+  'choice',
   'cooked',
   'corned',
   'croissant',
@@ -69,6 +77,7 @@ const STATE_MODIFIERS = [
   'german',
   'greens',
   'hopi',
+  'imported',
   'juice',
   'maitake',
   'mission',
@@ -76,6 +85,7 @@ const STATE_MODIFIERS = [
   'morel',
   'nugget',
   'nuggets',
+  'new zealand',
   'overripe',
   'oyster',
   'pastry',
@@ -86,6 +96,7 @@ const STATE_MODIFIERS = [
   'powdered',
   'portabella',
   'prepackaged',
+  'prime',
   'protein fortified',
   'refrigerated',
   'relish',
@@ -94,12 +105,14 @@ const STATE_MODIFIERS = [
   'sauce',
   'scampi',
   'sliced',
+  'select',
   'shiitake',
   'spinach',
   'squash',
   'strawberry',
   'strudel',
   'stew',
+  'stuffed',
   'stuffing',
   'sweetened',
   'syrup',
@@ -251,6 +264,11 @@ export function classifyPantryCandidate(
     decision = decision === 'rejected' ? decision : 'review_required'
     score += 15
   }
+  if (UNSPECIFIED_USDA_TERMS.some((term) => name.includes(term))) {
+    reasons.add('not_further_specified_review_required')
+    decision = decision === 'rejected' ? decision : 'review_required'
+    score += 20
+  }
   for (const term of STATE_MODIFIERS) {
     if (name.includes(term) && !targetQuery.includes(term)) {
       reasons.add(`state_modifier_mismatch_${term}`)
@@ -260,6 +278,27 @@ export function classifyPantryCandidate(
   }
   if (targetQuery.includes('cooked') && name.includes('raw')) {
     reasons.add('state_modifier_mismatch_raw_when_cooked_requested')
+    decision = decision === 'rejected' ? decision : 'review_required'
+    score += 20
+  }
+  if (targetQuery.includes('cooked') && !name.includes('cooked')) {
+    reasons.add('state_modifier_mismatch_cooked_state_missing')
+    decision = decision === 'rejected' ? decision : 'review_required'
+    score += 20
+  }
+  if (targetQuery.includes('raw') && !name.includes('raw')) {
+    reasons.add('state_modifier_mismatch_raw_state_missing')
+    decision = decision === 'rejected' ? decision : 'review_required'
+    score += 20
+  }
+  if (targetQuery.includes('lean') && !name.includes('lean')) {
+    reasons.add('state_modifier_mismatch_lean_state_missing')
+    decision = decision === 'rejected' ? decision : 'review_required'
+    score += 20
+  }
+  for (const value of targetQuery.match(/\b\d{2,3}\b/g) ?? []) {
+    if (name.includes(value)) continue
+    reasons.add(`state_modifier_mismatch_number_${value}_missing`)
     decision = decision === 'rejected' ? decision : 'review_required'
     score += 20
   }

@@ -1,0 +1,110 @@
+{
+  "version": 2,
+  "name": "Breakfast Dairy v2",
+  "target_count": 130,
+  "luke_food_profile": {
+    "core_cuisines": [],
+    "restaurants": [],
+    "protein_anchors": ["cottage cheese", "Greek yogurt", "eggs", "whey"],
+    "staple_categories": ["oats", "cereal", "granola", "milk", "applesauce", "cottage cheese bowls"]
+  },
+  "already_covered": [
+    "Chocolate Silk Soy Milk",
+    "Dried Goji Berries",
+    "Good Culture Low-Fat Cottage Cheese",
+    "Magic Spoon Cereal - Cocoa",
+    "Magic Spoon Cereal - Frosted",
+    "Magic Spoon Cereal - Strawberry",
+    "Mott's Applesauce",
+    "Yasso Greek Yogurt Bar - Mint Chocolate Chip",
+    "Yasso Greek Yogurt Bar - Sea Salt Caramel",
+    "Yogurt, Greek, low fat milk, plain",
+    "Yogurt, Greek, plain, nonfat",
+    "Zero-Fat Greek Yogurt"
+  ],
+  "allocation": {
+    "whole_foods": 20,
+    "proteins": 35,
+    "cuisine_staples": 0,
+    "sauces_condiments_oils": 10,
+    "breakfast_snacks": 50,
+    "beverages": 15,
+    "prepared_common": 0,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": [
+      "raspberries",
+      "blackberries",
+      "mango",
+      "pineapple",
+      "raisins",
+      "dates dried"
+    ],
+    "proteins": [
+      "cottage cheese low fat",
+      "cottage cheese nonfat",
+      "Greek yogurt nonfat",
+      "Greek yogurt low fat",
+      "whole egg",
+      "egg white",
+      "whey protein powder"
+    ],
+    "cuisine_staples": [],
+    "sauces_condiments_oils": [
+      "honey",
+      "maple syrup",
+      "peanut butter",
+      "almond butter",
+      "cinnamon"
+    ],
+    "breakfast_snacks": [
+      "rolled oats",
+      "steel cut oats",
+      "instant oatmeal",
+      "oat bran cereal",
+      "granola",
+      "corn flakes cereal",
+      "bran flakes cereal",
+      "rice cereal",
+      "applesauce unsweetened",
+      "pancake",
+      "waffle",
+      "English muffin"
+    ],
+    "beverages": [
+      "almond milk unsweetened",
+      "soy milk chocolate",
+      "whole milk",
+      "skim milk",
+      "half and half",
+      "coffee black",
+      "green tea"
+    ],
+    "prepared_common": [],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "egg": 50,
+    "scoop": 31,
+    "cup": 240,
+    "container": 150,
+    "packet": 43,
+    "pancake": 77,
+    "waffle": 35,
+    "muffin": 57,
+    "tbsp": 15,
+    "tsp": 5
+  },
+  "review_only_patterns": [
+    "magic spoon",
+    "kashi",
+    "cracklin",
+    "yasso",
+    "silk",
+    "brand",
+    "protein powder",
+    "protein shake",
+    "flavored"
+  ]
+}

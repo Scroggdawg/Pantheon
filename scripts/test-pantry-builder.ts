@@ -259,6 +259,13 @@ function testRisk() {
       .decision,
     'review_required',
   )
+  const unspecifiedChicken = classifyPantryCandidate(
+    candidate({ target_query: 'chicken thigh cooked', display_name: 'Chicken thigh, NS as to cooking method, skin eaten' }),
+    existing,
+    [],
+  )
+  assert.equal(unspecifiedChicken.decision, 'review_required')
+  assert.ok(unspecifiedChicken.reasons.includes('not_further_specified_review_required'))
   assert.equal(
     classifyPantryCandidate(candidate({ target_query: 'mint', display_name: 'Mint julep' }), existing, []).decision,
     'review_required',
@@ -428,6 +435,26 @@ function testUsdaCandidateReviewReasons() {
   assert.equal(guacamoleNfs?.decision, 'review_required')
   assert.ok(guacamoleNfs?.reasons.includes('not_further_specified_review_required'))
 
+  const chickenNs = candidateFromUsdaFood(
+    { query: 'chicken thigh cooked', category: 'proteins', reviewOnly: false },
+    {
+      fdcId: 30,
+      description: 'Chicken thigh, NS as to cooking method, skin eaten',
+      dataType: 'Survey (FNDDS)',
+      foodNutrients: [
+        { nutrientId: 1008, value: 229 },
+        { nutrientId: 1003, value: 22.6 },
+        { nutrientId: 1005, value: 0 },
+        { nutrientId: 1004, value: 15.5 },
+      ],
+    },
+    profile,
+    [],
+    'test',
+  )
+  assert.equal(chickenNs?.decision, 'review_required')
+  assert.ok(chickenNs?.reasons.includes('not_further_specified_review_required'))
+
   const tacoMeatFallback = candidateFromUsdaFood(
     { query: 'lean ground beef taco meat', category: 'proteins', reviewOnly: false },
     {
@@ -475,9 +502,54 @@ function testUsdaCandidateReviewReasons() {
       reason: 'state_modifier_mismatch_stuffing',
     },
     {
+      query: 'pork chop cooked',
+      display: 'Pork, chop, stuffed',
+      reason: 'state_modifier_mismatch_stuffed',
+    },
+    {
       query: 'smoked turkey breast',
       display: 'Turkey, breast, smoked, lemon pepper flavor, 97% fat-free',
       reason: 'state_modifier_mismatch_flavor',
+    },
+    {
+      query: 'ground chicken raw',
+      display: 'Chicken, ground, with additives, raw',
+      reason: 'state_modifier_mismatch_additives',
+    },
+    {
+      query: 'beef tenderloin raw',
+      display: 'Beef, New Zealand, imported, tenderloin, separable lean only, raw',
+      reason: 'state_modifier_mismatch_imported',
+    },
+    {
+      query: 'beef tenderloin cooked',
+      display: 'Beef, tenderloin, roast, separable lean and fat, trimmed to 1/8" fat, prime, cooked, roasted',
+      reason: 'state_modifier_mismatch_prime',
+    },
+    {
+      query: 'pork chop cooked',
+      display: 'Pork, fresh, blade, (chops), boneless, separable lean and fat, cooked, broiled',
+      reason: 'state_modifier_mismatch_blade',
+    },
+    {
+      query: 'beef tenderloin cooked',
+      display: 'Beef, steak, tenderloin',
+      reason: 'state_modifier_mismatch_cooked_state_missing',
+    },
+    {
+      query: 'ground chicken raw',
+      display: 'Chicken, ground',
+      reason: 'state_modifier_mismatch_raw_state_missing',
+    },
+    {
+      query: 'ground turkey 99 lean raw',
+      display: 'Turkey, Ground, raw',
+      reason: 'state_modifier_mismatch_lean_state_missing',
+    },
+    {
+      query: 'ground turkey 99 lean raw',
+      display: 'Turkey, Ground, lean, raw',
+      reason: 'state_modifier_mismatch_number_99_missing',
     },
   ]
   for (const [index, row] of bbqModifierCases.entries()) {

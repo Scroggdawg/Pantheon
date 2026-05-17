@@ -1,0 +1,122 @@
+{
+  "version": 2,
+  "name": "Cuisine Staples v2",
+  "target_count": 180,
+  "luke_food_profile": {
+    "core_cuisines": ["mexican", "thai", "italian", "vietnamese"],
+    "restaurants": ["Chipotle"],
+    "protein_anchors": ["chicken", "turkey"],
+    "staple_categories": ["Mexican staples", "Thai staples", "Italian staples", "Vietnamese staples"]
+  },
+  "already_covered": [
+    "Beans, black, mature seeds, cooked, boiled, with salt",
+    "Beans, pinto, mature seeds, cooked, boiled, with salt",
+    "Cheese, parmesan, grated",
+    "Italian sausage",
+    "Rice, white, cooked, glutinous",
+    "Tortilla chips, yellow, plain, salted"
+  ],
+  "allocation": {
+    "whole_foods": 20,
+    "proteins": 20,
+    "cuisine_staples": 100,
+    "sauces_condiments_oils": 30,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 10,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": [
+      "jalapeno",
+      "serrano pepper",
+      "poblano pepper",
+      "thai basil",
+      "bean sprouts",
+      "lemongrass",
+      "water chestnuts"
+    ],
+    "proteins": [
+      "chicken breast cooked",
+      "ground turkey cooked",
+      "shrimp cooked",
+      "tofu firm",
+      "Italian sausage cooked"
+    ],
+    "cuisine_staples": [
+      "corn tortilla",
+      "flour tortilla",
+      "tortilla chips",
+      "black beans cooked",
+      "pinto beans cooked",
+      "cilantro lime rice",
+      "Mexican rice",
+      "jasmine rice cooked",
+      "sticky rice cooked",
+      "rice noodles cooked",
+      "vermicelli rice noodles cooked",
+      "rice paper",
+      "pho noodles",
+      "banh mi roll",
+      "whole wheat pasta cooked",
+      "spaghetti cooked",
+      "penne pasta cooked",
+      "lasagna noodles cooked",
+      "mozzarella part skim",
+      "ricotta part skim",
+      "San Marzano tomatoes",
+      "tomato paste"
+    ],
+    "sauces_condiments_oils": [
+      "lime juice",
+      "fish sauce",
+      "soy sauce",
+      "rice vinegar",
+      "coconut milk canned",
+      "sriracha",
+      "hoisin sauce",
+      "marinara sauce",
+      "pesto sauce",
+      "olive oil"
+    ],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [
+      "larb chicken",
+      "pad thai",
+      "tom kha soup",
+      "tom yum soup",
+      "mango sticky rice",
+      "pho beef",
+      "banh mi chicken",
+      "turkey bolognese",
+      "turkey meatballs"
+    ],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "tortilla": 24,
+    "chip": 2,
+    "sheet": 8,
+    "cup": 240,
+    "tbsp": 15,
+    "tsp": 5,
+    "noodle": 2,
+    "roll": 85,
+    "meatball": 28
+  },
+  "review_only_patterns": [
+    "chipotle",
+    "pad thai",
+    "tom kha",
+    "tom yum",
+    "pho",
+    "banh mi",
+    "bolognese",
+    "meatball",
+    "soup",
+    "sauce",
+    "restaurant",
+    "brand"
+  ]
+}

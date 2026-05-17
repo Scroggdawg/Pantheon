@@ -1,0 +1,97 @@
+{
+  "version": 2,
+  "name": "Sauces Condiments v2",
+  "target_count": 125,
+  "luke_food_profile": {
+    "core_cuisines": ["mexican", "thai", "italian", "vietnamese", "bbq"],
+    "restaurants": [],
+    "protein_anchors": [],
+    "staple_categories": ["oils", "vinegars", "sauces", "sweeteners", "seasoning bases"]
+  },
+  "already_covered": [
+    "Manuka Honey",
+    "Oil, coconut",
+    "Peanut butter",
+    "Sugar, brown",
+    "Syrups, maple",
+    "Vinegar, balsamic",
+    "Vinegar, red wine"
+  ],
+  "allocation": {
+    "whole_foods": 0,
+    "proteins": 0,
+    "cuisine_staples": 20,
+    "sauces_condiments_oils": 100,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 0,
+    "coverage_buffer": 5
+  },
+  "categories": {
+    "whole_foods": [],
+    "proteins": [],
+    "cuisine_staples": [
+      "tomato paste",
+      "crushed tomatoes",
+      "tomato sauce",
+      "marinara sauce",
+      "coconut milk canned",
+      "tahini"
+    ],
+    "sauces_condiments_oils": [
+      "olive oil",
+      "extra virgin olive oil",
+      "avocado oil",
+      "sesame oil",
+      "canola oil",
+      "butter",
+      "ghee",
+      "apple cider vinegar",
+      "rice vinegar",
+      "white vinegar",
+      "soy sauce",
+      "fish sauce",
+      "hoisin sauce",
+      "sriracha",
+      "hot sauce",
+      "mustard",
+      "dijon mustard",
+      "ketchup",
+      "mayonnaise",
+      "ranch dressing",
+      "barbecue sauce",
+      "salsa verde",
+      "pico de gallo",
+      "guacamole",
+      "sour cream",
+      "lime juice",
+      "lemon juice",
+      "honey",
+      "brown sugar",
+      "white sugar",
+      "cornstarch"
+    ],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [],
+    "coverage_buffer": ["chocolate sauce", "peanut sauce", "thai curry paste"]
+  },
+  "count_unit_grams": {
+    "tbsp": 15,
+    "tsp": 5,
+    "cup": 240,
+    "can": 425,
+    "packet": 28
+  },
+  "review_only_patterns": [
+    "brand",
+    "restaurant",
+    "barbecue sauce",
+    "salsa",
+    "guacamole",
+    "sauce",
+    "dressing",
+    "paste",
+    "with"
+  ]
+}

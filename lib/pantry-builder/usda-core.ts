@@ -16,7 +16,9 @@ const NUTRIENT_FAT = 1004
 const NUTRIENT_FIBER = 1079
 
 const STATE_MODIFIERS = [
+  'additives',
   'babyfood',
+  'blade',
   'bbq',
   'bake',
   'beef bacon',
@@ -28,6 +30,7 @@ const STATE_MODIFIERS = [
   'cheese',
   'chip',
   'chips',
+  'choice',
   'cooked',
   'corned',
   'croissant',
@@ -47,6 +50,7 @@ const STATE_MODIFIERS = [
   'frozen',
   'german',
   'hopi',
+  'imported',
   'juice',
   'maitake',
   'mission',
@@ -54,6 +58,7 @@ const STATE_MODIFIERS = [
   'morel',
   'nugget',
   'nuggets',
+  'new zealand',
   'overripe',
   'oyster',
   'pastry',
@@ -64,6 +69,7 @@ const STATE_MODIFIERS = [
   'powdered',
   'portabella',
   'prepackaged',
+  'prime',
   'protein fortified',
   'refrigerated',
   'relish',
@@ -72,12 +78,14 @@ const STATE_MODIFIERS = [
   'sauce',
   'scampi',
   'sliced',
+  'select',
   'shiitake',
   'spinach',
   'squash',
   'strawberry',
   'strudel',
   'stew',
+  'stuffed',
   'stuffing',
   'sweetened',
   'syrup',
@@ -214,7 +222,14 @@ function stateModifierMismatch(query: string, description: string | undefined): 
   const q = normalizeFoodText(query)
   const desc = normalizeFoodText(description)
   const mismatches = STATE_MODIFIERS.filter((term) => desc.includes(term) && !q.includes(term))
+  const queryNumbers = q.match(/\b\d{2,3}\b/g) ?? []
   if (q.includes('cooked') && desc.includes('raw')) mismatches.push('raw_when_cooked_requested')
+  if (q.includes('cooked') && !desc.includes('cooked')) mismatches.push('cooked_state_missing')
+  if (q.includes('raw') && !desc.includes('raw')) mismatches.push('raw_state_missing')
+  if (q.includes('lean') && !desc.includes('lean')) mismatches.push('lean_state_missing')
+  for (const value of queryNumbers) {
+    if (!desc.includes(value)) mismatches.push(`number_${value}_missing`)
+  }
   return mismatches
 }
 
@@ -292,7 +307,7 @@ export function candidateFromUsdaFood(
   const brandReasons =
     food.brandName || food.brandOwner
       ? ['branded_usda_candidate_review_required']
-      : /\bNFS\b/.test(displayName)
+      : /\bNFS\b/.test(displayName) || /\bNS as to\b/i.test(displayName)
         ? ['not_further_specified_review_required']
       : /\b(?!NFS\b)[A-Z]{4,}\b/.test(displayName)
         ? ['brand_like_name_token_review_required']
