@@ -124,6 +124,7 @@ const STATE_MODIFIERS = [
   'thigh',
   'tofu',
   'topping',
+  'tots',
   'wing',
   'baby',
   'fat added',
