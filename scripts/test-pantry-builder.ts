@@ -280,6 +280,11 @@ function testRisk() {
       .decision,
     'review_required',
   )
+  assert.equal(
+    classifyPantryCandidate(candidate({ target_query: 'mayonnaise', display_name: 'Mayonnaise, light' }), existing, [])
+      .decision,
+    'review_required',
+  )
   const brandedCandidate = candidate()
   brandedCandidate.proposed_product.brand = 'Example Brand'
   assert.equal(classifyPantryCandidate(brandedCandidate, existing, []).decision, 'review_required')

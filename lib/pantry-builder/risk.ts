@@ -80,6 +80,7 @@ const STATE_MODIFIERS = [
   'hopi',
   'imported',
   'juice',
+  'light',
   'maitake',
   'mission',
   'mix',
