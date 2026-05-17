@@ -22,6 +22,7 @@ const REVIEW_CATEGORY_TERMS = [
 ]
 const PREPARED_DISH_TERMS = [
   'with sauce',
+  'with vegetables',
   'with gravy',
   'with meat',
   'and meat',

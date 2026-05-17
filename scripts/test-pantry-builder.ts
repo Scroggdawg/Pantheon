@@ -293,6 +293,17 @@ function testRisk() {
       .decision,
     'review_required',
   )
+  const cottageCheeseWithVegetables = classifyPantryCandidate(
+    candidate({
+      target_query: 'cottage cheese nonfat',
+      display_name: 'Cheese, cottage, with vegetables',
+      category: 'proteins',
+    }),
+    existing,
+    [],
+  )
+  assert.equal(cottageCheeseWithVegetables.decision, 'review_required')
+  assert.ok(cottageCheeseWithVegetables.reasons.includes('prepared_dish_mismatch_risk'))
   const compositeTarget = classifyPantryCandidate(
     candidate({
       target_query: 'coffee with half and half',
