@@ -50,6 +50,7 @@ const STATE_MODIFIERS = [
   'frozen',
   'german',
   'hopi',
+  'includes',
   'imported',
   'juice',
   'maitake',
@@ -97,6 +98,8 @@ const STATE_MODIFIERS = [
   'fat added',
   'whole wheat',
   'white',
+  'without skin',
+  'with salt',
 ]
 
 const TARGET_STOP_TOKENS = new Set([

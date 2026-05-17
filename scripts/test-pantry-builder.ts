@@ -577,6 +577,21 @@ function testUsdaCandidateReviewReasons() {
       display: 'Turkey, Ground, lean, raw',
       reason: 'state_modifier_mismatch_number_99_missing',
     },
+    {
+      query: 'russet potato raw',
+      display: 'Potatoes, russet, without skin, raw',
+      reason: 'state_modifier_mismatch_without skin',
+    },
+    {
+      query: 'lentils cooked',
+      display: 'Lentils, mature seeds, cooked, boiled, with salt',
+      reason: 'state_modifier_mismatch_with salt',
+    },
+    {
+      query: 'sourdough bread',
+      display: 'Bread, french or vienna (includes sourdough)',
+      reason: 'state_modifier_mismatch_includes',
+    },
   ]
   for (const [index, row] of bbqModifierCases.entries()) {
     const result = candidateFromUsdaFood(

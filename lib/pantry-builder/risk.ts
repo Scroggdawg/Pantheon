@@ -78,6 +78,7 @@ const STATE_MODIFIERS = [
   'german',
   'greens',
   'hopi',
+  'includes',
   'imported',
   'juice',
   'light',
@@ -130,6 +131,8 @@ const STATE_MODIFIERS = [
   'fat added',
   'whole wheat',
   'white',
+  'without skin',
+  'with salt',
 ]
 const DUPLICATE_TARGET_STOP_TOKENS = new Set([
   'and',
