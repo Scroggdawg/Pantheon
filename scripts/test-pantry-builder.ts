@@ -205,6 +205,11 @@ function testRisk() {
     'review_required',
   )
   assert.equal(
+    classifyPantryCandidate(candidate({ target_query: 'poblano pepper', display_name: 'Peppers, poblano, seeded, raw' }), existing, [])
+      .decision,
+    'review_required',
+  )
+  assert.equal(
     classifyPantryCandidate(candidate({ target_query: 'salmon cooked', display_name: 'Salmon nuggets, cooked' }), existing, [])
       .decision,
     'review_required',

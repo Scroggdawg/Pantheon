@@ -108,6 +108,7 @@ const STATE_MODIFIERS = [
   'scampi',
   'sliced',
   'select',
+  'seeded',
   'shiitake',
   'spinach',
   'squash',
