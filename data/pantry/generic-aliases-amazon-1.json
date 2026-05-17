@@ -47,49 +47,49 @@
     },
     {
       "alias": "tomato on the vine raw",
-      "target_name": "Tomatoes, raw",
+      "target_name": "Tomatoes, grape, raw",
       "confidence": "high",
       "reason": "Raw tomato variants are close enough for generic tomato logging."
     },
     {
       "alias": "tomato on the vine",
-      "target_name": "Tomatoes, raw",
+      "target_name": "Tomatoes, grape, raw",
       "confidence": "high",
       "reason": "Purchase-history wording for generic raw tomato."
     },
     {
       "alias": "vine on tomato",
-      "target_name": "Tomatoes, raw",
+      "target_name": "Tomatoes, grape, raw",
       "confidence": "high",
       "reason": "Purchase-history wording for generic raw tomato."
     },
     {
       "alias": "organic tomato on the vine",
-      "target_name": "Tomatoes, raw",
+      "target_name": "Tomatoes, grape, raw",
       "confidence": "high",
       "reason": "Organic/packaging label does not change practical macros."
     },
     {
       "alias": "cherry tomatoes raw",
-      "target_name": "Tomatoes, raw",
+      "target_name": "Tomatoes, grape, raw",
       "confidence": "high",
       "reason": "Cherry/grape/vine tomatoes are close enough for generic raw tomato logging."
     },
     {
       "alias": "cherry tomatoes",
-      "target_name": "Tomatoes, raw",
+      "target_name": "Tomatoes, grape, raw",
       "confidence": "high",
       "reason": "Purchase-history wording for generic raw tomato."
     },
     {
       "alias": "grape tomatoes raw",
-      "target_name": "Tomatoes, raw",
+      "target_name": "Tomatoes, grape, raw",
       "confidence": "high",
       "reason": "Cherry/grape/vine tomatoes are close enough for generic raw tomato logging."
     },
     {
       "alias": "grape tomatoes",
-      "target_name": "Tomatoes, raw",
+      "target_name": "Tomatoes, grape, raw",
       "confidence": "high",
       "reason": "Purchase-history wording for generic raw tomato."
     },

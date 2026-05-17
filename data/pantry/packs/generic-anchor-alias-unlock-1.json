@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "name": "Generic Anchor Alias Unlock 1",
+  "target_count": 1,
+  "luke_food_profile": {
+    "core_cuisines": ["breakfast", "italian", "mexican", "pantry staples"],
+    "restaurants": [],
+    "protein_anchors": [],
+    "staple_categories": ["generic product anchors", "alias unlock", "actual grocery history"]
+  },
+  "already_covered": [
+    "Apple, raw",
+    "Avocado, raw",
+    "Bananas",
+    "Basil, raw",
+    "Beans, snap, green, raw",
+    "Bell Peppers",
+    "Broccoli Florets",
+    "Bulgur, cooked",
+    "Carrots, raw",
+    "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+    "Cilantro, raw",
+    "Corn tortilla",
+    "Eggs, Grade A, Large, egg whole",
+    "Grapes, raw",
+    "Mango, raw",
+    "Onions, red, raw",
+    "Plum, raw",
+    "Spinach, raw",
+    "Strawberries"
+  ],
+  "allocation": {
+    "whole_foods": 1,
+    "proteins": 0,
+    "cuisine_staples": 0,
+    "sauces_condiments_oils": 0,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 0,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": [
+      "tomatoes raw"
+    ],
+    "proteins": [],
+    "cuisine_staples": [],
+    "sauces_condiments_oils": [],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "tomato": 123,
+    "cherry tomato": 17,
+    "grape tomato": 8,
+    "bagel": 95,
+    "cup": 195,
+    "tbsp": 12,
+    "tsp": 4,
+    "oz": 28.35
+  },
+  "review_only_patterns": [
+    "branded",
+    "brand",
+    "restaurant",
+    "fast food",
+    "mcdonald",
+    "dunkin",
+    "starbucks",
+    "sandwich",
+    "with cream cheese",
+    "with butter",
+    "sauce",
+    "canned",
+    "crushed",
+    "diced",
+    "paste",
+    "soup",
+    "fried",
+    "rice noodles"
+  ]
+}
