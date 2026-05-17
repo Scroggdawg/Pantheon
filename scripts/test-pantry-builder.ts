@@ -330,6 +330,17 @@ function testRisk() {
   )
   assert.equal(limaBeansAndCorn.decision, 'review_required')
   assert.ok(limaBeansAndCorn.reasons.includes('prepared_dish_mismatch_risk'))
+  const granolaBar = classifyPantryCandidate(
+    candidate({
+      target_query: 'granola oats honey coconut',
+      display_name: 'Breakfast bars, oats, sugar, raisins, coconut (include granola bar)',
+      category: 'breakfast_snacks',
+    }),
+    existing,
+    [],
+  )
+  assert.equal(granolaBar.decision, 'review_required')
+  assert.ok(granolaBar.reasons.includes('prepared_dish_mismatch_risk'))
   const compositeTarget = classifyPantryCandidate(
     candidate({
       target_query: 'coffee with half and half',
@@ -622,6 +633,26 @@ function testUsdaCandidateReviewReasons() {
       query: 'plantains raw',
       display: 'Plantains, yellow, raw',
       reason: 'state_modifier_mismatch_yellow',
+    },
+    {
+      query: 'chicken thigh raw',
+      display: 'Chicken, broilers or fryers, thigh, meat and skin, raw',
+      reason: 'state_modifier_mismatch_meat and skin',
+    },
+    {
+      query: 'large eggs',
+      display: 'Eggs, Grade A, Large, egg yolk',
+      reason: 'state_modifier_mismatch_yolk',
+    },
+    {
+      query: 'cream cheese',
+      display: 'Cream cheese, full fat, block',
+      reason: 'state_modifier_mismatch_block',
+    },
+    {
+      query: 'chocolate almond milk',
+      display: 'Candies, milk chocolate, with almonds',
+      reason: 'state_modifier_mismatch_candies',
     },
   ]
   for (const [index, row] of bbqModifierCases.entries()) {
