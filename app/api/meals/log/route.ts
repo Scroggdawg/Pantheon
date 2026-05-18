@@ -39,6 +39,14 @@ function bad(status: number, error: string, extra: Record<string, unknown> = {})
   return Response.json({ error, ...extra }, { status })
 }
 
+function roundIntegerMetric(value: number): number {
+  return Math.round(Number.isFinite(value) ? value : 0)
+}
+
+function roundMacroMetric(value: number): number {
+  return Math.round((Number.isFinite(value) ? value : 0) * 100) / 100
+}
+
 function extractSavedMealRefUuid(librarySourceRef: string | null): string | null {
   return librarySourceRef?.startsWith('lib:saved_meal:')
     ? librarySourceRef.slice('lib:saved_meal:'.length)
@@ -112,10 +120,10 @@ export async function POST(request: Request) {
       meal_label: body.meal_label,
       day_type: body.day_type,
       foods_json: body.foods,
-      total_calories: body.total_calories,
-      total_protein_g: body.total_protein_g,
-      total_carbs_g: body.total_carbs_g,
-      total_fat_g: body.total_fat_g,
+      total_calories: roundIntegerMetric(body.total_calories),
+      total_protein_g: roundMacroMetric(body.total_protein_g),
+      total_carbs_g: roundMacroMetric(body.total_carbs_g),
+      total_fat_g: roundMacroMetric(body.total_fat_g),
       log_method: body.log_method,
       raw_input_text: body.raw_input_text,
       claude_parse_json: body.claude_parse_json,

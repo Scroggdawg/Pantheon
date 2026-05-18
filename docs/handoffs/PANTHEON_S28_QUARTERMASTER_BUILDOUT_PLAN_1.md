@@ -493,17 +493,47 @@ It does not need to automatically fix everything.
 
 These are useful but not blockers for the first read-only lightning round:
 
-1. Should Quartermaster treat a saved log with manual edits as "user correction" even when we cannot see the exact edit gesture?
-2. Is it okay for Quartermaster reports to quote recent raw food transcripts in local markdown under `scripts/output/` and summarized handoffs?
-3. Do you want a "joke/non-food" lane explicitly named that way, or a more clinical label like `non_food_or_intent_mismatch`?
-4. For the first write-enabled version, should alias/rejection applies require explicit approval every time, or can we auto-apply high-confidence fixes after one read-only report cycle?
+1. Do you want Quartermaster to read every food log attempt it can see, including everything transcribed and parsed?
+2. If the app parsed one thing and you saved something different, should Quartermaster treat that as a likely correction from you?
+3. Should reports plainly call out jokes/non-food inputs when that seems to be what happened?
+4. Later, when Quartermaster finds an obvious fix, should it still ask before changing data, or can it apply the safest fixes on its own?
+
+## Luke Answers Locked On 2026-05-18
+
+Luke's answers:
+
+- Yes, gather every available input. Read everything that was transcribed and parsed. It is one user, so every piece of data is worth gathering first and judging later.
+- Yes, inferred parse-vs-save differences count as attempted user corrections, even when the exact edit gesture is not visible.
+- Yes, call non-food/joke cases plainly in reports.
+- Phrase future questions in user language, not coder language.
+
+Important live example from Luke:
+
+Transcript:
+
+```text
+1 protein shake, no dextrose, and 278 grams of sweet potatoes
+```
+
+Observed app result:
+
+- save failed with `food_log_entries insert failed: invalid input syntax for type integer: "207.4"`;
+- sweet potatoes displayed as `1 serving` instead of preserving `278 grams`;
+- the row text was truncated, making it hard for Luke to verify what Pantheon understood;
+- the sweet potato macros/calories looked suspiciously low for 278g;
+- this should count as a high-priority Quartermaster finding because it combines save failure, unit-display loss, possible unit-conversion error, and poor user-verifiability.
+
+User-facing rule:
+
+- If Luke says `five strawberries`, show `5 strawberries`.
+- If Luke says `160 grams` or `278 grams of sweet potatoes`, show grams, not `1 serving`.
+- The display should preserve the user's measurement whenever possible because that is how Luke knows Pantheon heard him correctly.
 
 ## Default Answers If Luke Is Busy
 
 Assume:
 
-- Yes, infer edits from parse-vs-save differences, but mark them inferred.
-- Yes, local reports may include transcripts because they stay on Hive unless committed.
+- Gather all available logs and transcripts.
+- Infer edits from parse-vs-save differences, but mark them inferred.
 - Use `non_food_or_intent_mismatch` in data and plain English in markdown.
 - Keep all Quartermaster writes manual until the first report proves its judgment.
-
