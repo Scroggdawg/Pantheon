@@ -185,11 +185,50 @@ function isGenericChipDessertOvermatch(queryToken: string, candidateTokens: Set<
   return hasAnyToken(candidateTokens, DESSERT_CHIP_TOKENS)
 }
 
+type DextroseIntent = 'none' | 'half' | 'full' | null
+
+function dextroseIntent(value: string): DextroseIntent {
+  const normalized = normalize(value)
+  if (!/\bdextrose\b/.test(normalized)) return null
+  if (/\b(no|without)\s+dextrose\b/.test(normalized)) return 'none'
+  if (/\bwith\s+no\s+dextrose\b/.test(normalized)) return 'none'
+  if (/\bhalf(?:\s+a)?(?:\s+serving)?\s+(?:of\s+)?(?:nutricost\s+)?dextrose\b/.test(normalized)) {
+    return 'half'
+  }
+  if (/\bhalf\s+dextrose\b/.test(normalized)) return 'half'
+  if (/\b(full|one|1)\s+(?:serving\s+(?:of\s+)?)?(?:nutricost\s+)?dextrose\b/.test(normalized)) {
+    return 'full'
+  }
+  if (/\bwith\s+(?:nutricost\s+)?dextrose\b/.test(normalized)) return 'full'
+  return null
+}
+
+function hasProteinShakeText(value: string): boolean {
+  const normalized = normalize(value)
+  return /\bprotein\s+shake\b/.test(normalized)
+}
+
+function isDextroseShakeIntentMismatch(query: string, name: string, aliases: string[]): boolean {
+  const queryIntent = dextroseIntent(query)
+  if (!queryIntent || !hasProteinShakeText(query)) return false
+
+  const candidateTexts = [name, ...aliases]
+  if (!candidateTexts.some(hasProteinShakeText)) return false
+
+  const candidateIntents = new Set(
+    candidateTexts.map(dextroseIntent).filter((intent): intent is Exclude<DextroseIntent, null> => Boolean(intent)),
+  )
+  if (candidateIntents.size === 0) return false
+  return !candidateIntents.has(queryIntent)
+}
+
 export function guardedLibraryNameSimilarity(
   query: string,
   name: string,
   aliases: string[] = [],
 ): number {
+  if (isDextroseShakeIntentMismatch(query, name, aliases)) return 0
+
   const score = libraryNameSimilarity(query, name, aliases)
   if (score < GENERIC_OVERMATCH_SCORE_CAP) return score
 
@@ -300,6 +339,11 @@ interface HourlyGoToRow {
   unit: string | null
 }
 
+interface IdentityAliasRow {
+  target_source_ref: string
+  alias: string
+}
+
 // Single-food saved_meals (created by Sub-fix C.1 heart-INSERTs) carry
 // per-saved_meal unit_alternatives inside foods_json[0]. Multi-food
 // saved_meals (recipes from select-mode) don't have a unique unit
@@ -313,7 +357,11 @@ function unitAlternativesFromSavedMeal(
   return foods[0]?.unit_alternatives
 }
 
-function savedMealToCandidate(row: SavedMealRow, score: number): LibrarySearchResult {
+function savedMealToCandidate(
+  row: SavedMealRow,
+  score: number,
+  learnedAliases: string[] = [],
+): LibrarySearchResult {
   const ys = row.yield_servings && row.yield_servings > 0 ? row.yield_servings : 1
   const totalBatch: LibraryTotal = {
     kcal: row.total_calories ?? 0,
@@ -344,7 +392,7 @@ function savedMealToCandidate(row: SavedMealRow, score: number): LibrarySearchRe
     is_favorite: row.is_favorite === true,
     source_ref: libraryId,
     name: row.name ?? '',
-    aliases: row.tags ?? [],
+    aliases: [...new Set([...(row.tags ?? []), ...learnedAliases])],
     components,
     total: perServing,
     yield_servings: ys,
@@ -361,7 +409,11 @@ function savedMealToCandidate(row: SavedMealRow, score: number): LibrarySearchRe
   }
 }
 
-function productToCandidate(row: ProductRow, score: number): LibrarySearchResult {
+function productToCandidate(
+  row: ProductRow,
+  score: number,
+  learnedAliases: string[] = [],
+): LibrarySearchResult {
   const total: LibraryTotal = {
     kcal: row.calories_per_serving,
     protein_g: row.protein_g_per_serving,
@@ -382,7 +434,7 @@ function productToCandidate(row: ProductRow, score: number): LibrarySearchResult
     is_favorite: false,
     source_ref: libraryId,
     name: displayName,
-    aliases: [],
+    aliases: learnedAliases,
     components: [
       {
         name: displayName,
@@ -414,7 +466,11 @@ function productToCandidate(row: ProductRow, score: number): LibrarySearchResult
 // per-row macros from the latest log instance per (user_id, dedup_name,
 // dedup_source_ref) group (migration 017). LibraryComponent + total
 // derive from the view's projected fields directly.
-function hourlyGoToCandidate(row: HourlyGoToRow, score: number): LibrarySearchResult {
+function hourlyGoToCandidate(
+  row: HourlyGoToRow,
+  score: number,
+  learnedAliases: string[] = [],
+): LibrarySearchResult {
   const total: LibraryTotal = {
     kcal: Number(row.calories ?? 0),
     protein_g: Number(row.protein_g ?? 0),
@@ -428,7 +484,7 @@ function hourlyGoToCandidate(row: HourlyGoToRow, score: number): LibrarySearchRe
     is_favorite: false,
     source_ref: row.source_ref,
     name: row.name,
-    aliases: [],
+    aliases: learnedAliases,
     components: [
       {
         name: row.name,
@@ -503,6 +559,32 @@ function dedupKeyFor(r: LibrarySearchResult): string {
     return stripped.length > 0 ? stripped : r.source_ref
   }
   return `name:${r.name.toLowerCase().trim()}`
+}
+
+function canonicalSourceRef(ref: string | null | undefined): string | null {
+  if (!ref) return null
+  const stripped = ref.replace(/^(lib:hourly_go_to:[^|]+\|)+/, '')
+  return stripped.length > 0 ? stripped : ref
+}
+
+function isMissingGovernanceTable(error: { code?: string; message?: string }): boolean {
+  return (
+    error.code === '42P01' ||
+    error.code === 'PGRST205' ||
+    /food_identity_aliases|does not exist|could not find/i.test(error.message ?? '')
+  )
+}
+
+function buildAliasesByRef(rows: IdentityAliasRow[]): Map<string, string[]> {
+  const aliasesByRef = new Map<string, string[]>()
+  for (const row of rows) {
+    const ref = canonicalSourceRef(row.target_source_ref)
+    if (!ref) continue
+    const existing = aliasesByRef.get(ref) ?? []
+    existing.push(row.alias)
+    aliasesByRef.set(ref, [...new Set(existing)])
+  }
+  return aliasesByRef
 }
 
 export function dedupeAndSortLibraryResults(matches: LibrarySearchResult[]): LibrarySearchResult[] {
@@ -660,7 +742,7 @@ export async function searchUserLibrary(
   // are bounded by O(unique foods per user) at one target_hour. Limiting
   // would clip low-weight rows that still pass min_score and break dedup
   // parity. Revisit if a user crosses ~5k unique food entries.
-  const [mealsRes, productsRes, hourlyRes] = await Promise.all([
+  const [mealsRes, productsRes, hourlyRes, aliasesRes] = await Promise.all([
     ctx.supabase
       .from('saved_meals')
       .select(
@@ -679,6 +761,10 @@ export async function searchUserLibrary(
       )
       .eq('user_id', ctx.userId)
       .eq('target_hour', currentHour),
+    ctx.supabase
+      .from('food_identity_aliases')
+      .select('target_source_ref, alias')
+      .eq('active', true),
   ])
 
   if (mealsRes.error) {
@@ -690,10 +776,16 @@ export async function searchUserLibrary(
   if (hourlyRes.error) {
     console.error('[search_user_library] hourly_go_tos query failed:', hourlyRes.error.message)
   }
+  if (aliasesRes.error && !isMissingGovernanceTable(aliasesRes.error)) {
+    console.warn('[search_user_library] aliases query failed:', aliasesRes.error.message)
+  }
 
   const meals = (mealsRes.data ?? []) as SavedMealRow[]
   const products = (productsRes.data ?? []) as ProductRow[]
   const hourlies = (hourlyRes.data ?? []) as HourlyGoToRow[]
+  const aliasesByRef = aliasesRes.error
+    ? new Map<string, string[]>()
+    : buildAliasesByRef((aliasesRes.data ?? []) as IdentityAliasRow[])
 
   // Op FASTRAK Brick Gamma A.2 — cross-reference map for unit_alternatives.
   // When a hourly_go_to candidate's source_ref points back at a product
@@ -727,24 +819,28 @@ export async function searchUserLibrary(
 
   const matches: LibrarySearchResult[] = []
   for (const m of meals) {
-    const aliases = m.tags ?? []
+    const sourceRef = `lib:saved_meal:${m.id}`
+    const aliases = [...new Set([...(m.tags ?? []), ...(aliasesByRef.get(sourceRef) ?? [])])]
     const score = guardedLibraryNameSimilarity(searchQuery, m.name ?? '', aliases)
     if (score < minScore) continue
-    matches.push(savedMealToCandidate(m, score))
+    matches.push(savedMealToCandidate(m, score, aliasesByRef.get(sourceRef) ?? []))
   }
   for (const p of products) {
     const displayName =
       p.brand && !p.name.toLowerCase().startsWith(p.brand.toLowerCase())
         ? `${p.brand} ${p.name}`
         : p.name
-    const score = guardedLibraryNameSimilarity(searchQuery, displayName, [])
+    const sourceRef = `lib:product:${p.id}`
+    const aliases = aliasesByRef.get(sourceRef) ?? []
+    const score = guardedLibraryNameSimilarity(searchQuery, displayName, aliases)
     if (score < minScore) continue
-    matches.push(productToCandidate(p, score))
+    matches.push(productToCandidate(p, score, aliases))
   }
   for (const h of hourlies) {
-    const score = guardedLibraryNameSimilarity(searchQuery, h.name, [])
+    const aliases = aliasesByRef.get(canonicalSourceRef(h.source_ref) ?? '') ?? []
+    const score = guardedLibraryNameSimilarity(searchQuery, h.name, aliases)
     if (score < minScore) continue
-    const candidate = hourlyGoToCandidate(h, score)
+    const candidate = hourlyGoToCandidate(h, score, aliases)
     // Backfill unit_alternatives from the product/saved_meal the hourly
     // entry's source_ref points at (when present).
     candidate.unit_alternatives = altsForRef(candidate.source_ref)
