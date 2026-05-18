@@ -169,9 +169,12 @@ function macroCalories(candidate: PantryCandidate): number {
 
 function macroSane(candidate: PantryCandidate): boolean {
   const p = candidate.proposed_product
-  if (!Number.isFinite(p.calories_per_serving) || p.calories_per_serving <= 0) return false
+  if (!Number.isFinite(p.calories_per_serving) || p.calories_per_serving < 0) return false
   if (p.calories_per_serving > 2000) return false
   if (p.protein_g_per_serving < 0 || p.carbs_g_per_serving < 0 || p.fat_g_per_serving < 0) return false
+  if (p.calories_per_serving === 0) {
+    return p.protein_g_per_serving === 0 && p.carbs_g_per_serving === 0 && p.fat_g_per_serving === 0
+  }
   const macroKcal = macroCalories(candidate)
   if (macroKcal <= 0) return true
   if (p.calories_per_serving <= 50) {

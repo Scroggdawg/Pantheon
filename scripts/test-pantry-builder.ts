@@ -374,6 +374,27 @@ function testRisk() {
   )
   assert.equal(cucumberWithPeel.decision, 'auto_approved')
   assert.equal(cucumberWithPeel.reasons.includes('composite_target_review_required'), false)
+  const tableSaltCandidate = candidate({
+    target_query: 'salt table',
+    display_name: 'Salt, table',
+    category: 'cuisine_staples',
+  })
+  const tableSalt = classifyPantryCandidate(
+    {
+      ...tableSaltCandidate,
+      proposed_product: {
+        ...tableSaltCandidate.proposed_product,
+        calories_per_serving: 0,
+        protein_g_per_serving: 0,
+        carbs_g_per_serving: 0,
+        fat_g_per_serving: 0,
+      },
+    },
+    existing,
+    [],
+  )
+  assert.equal(tableSalt.decision, 'auto_approved')
+  assert.equal(tableSalt.reasons.includes('macro_sanity_failed'), false)
 }
 
 function testIdentityLearning() {

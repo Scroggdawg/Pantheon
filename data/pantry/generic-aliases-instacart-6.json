@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "name": "Instacart Generic Aliases 6",
+  "doctrine": {
+    "source": "Local Instacart item export; raw CSV remains uncommitted.",
+    "purpose": "Unsalted butter alias unlock after accepting the USDA Butter, without salt anchor.",
+    "hold_notes": [
+      "Dry rice package names remain held rather than aliased to cooked rice.",
+      "Country Crock dairy-free butter remains held because it is not dairy butter.",
+      "Vanilla extract, mint, lemon grass, and salt remain held for later refinement."
+    ]
+  },
+  "aliases": [
+    {
+      "alias": "kerrygold grass fed unsalted butter sticks",
+      "target_name": "Butter, without salt",
+      "confidence": "high",
+      "reason": "Brand and stick packaging do not change plain unsalted dairy butter identity."
+    },
+    {
+      "alias": "h e b unsalted butter",
+      "target_name": "Butter, without salt",
+      "confidence": "high",
+      "reason": "Store-brand plain unsalted dairy butter routes to the USDA unsalted butter anchor."
+    }
+  ]
+}

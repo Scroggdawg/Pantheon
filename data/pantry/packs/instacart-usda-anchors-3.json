@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "name": "Instacart USDA Anchors 3",
+  "target_count": 5,
+  "luke_food_profile": {
+    "core_cuisines": ["mexican", "thai", "italian", "breakfast", "baking"],
+    "restaurants": [],
+    "protein_anchors": [],
+    "staple_categories": ["actual Instacart history", "anchor repair", "herbs", "baking staples", "grain staples"]
+  },
+  "already_covered": [
+    "Apple, raw",
+    "Avocado, raw",
+    "Bananas",
+    "Basil, raw",
+    "Bell Peppers",
+    "Blueberries",
+    "Broccoli Florets",
+    "Buttermilk, low fat",
+    "Carrots, baby, raw",
+    "Cilantro, raw",
+    "Cream, half and half",
+    "Cucumber, with peel, raw",
+    "Eggs - Large",
+    "Flour, wheat, all-purpose, enriched, bleached",
+    "Ginger root, raw",
+    "Lemon, raw",
+    "Lime, raw",
+    "Onions, green, raw",
+    "Pear, raw",
+    "Peppers, serrano, raw",
+    "Shallots, raw",
+    "Squash, winter, spaghetti, raw",
+    "Strawberries",
+    "Sugars, granulated",
+    "Sweet potatoes, orange flesh, without skin, raw",
+    "Tomatoes, grape, raw"
+  ],
+  "allocation": {
+    "whole_foods": 1,
+    "proteins": 0,
+    "cuisine_staples": 2,
+    "sauces_condiments_oils": 1,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 0,
+    "coverage_buffer": 1
+  },
+  "categories": {
+    "whole_foods": [
+      "lemon grass raw"
+    ],
+    "proteins": [],
+    "cuisine_staples": [
+      "rice white long-grain regular enriched cooked",
+      "salt table"
+    ],
+    "sauces_condiments_oils": [
+      "butter without salt"
+    ],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [],
+    "coverage_buffer": [
+      "vanilla extract"
+    ]
+  },
+  "count_unit_grams": {
+    "stalk": 20,
+    "cup": 158,
+    "tbsp": 14,
+    "tsp": 5,
+    "stick": 113,
+    "pat": 5,
+    "oz": 28.35
+  },
+  "review_only_patterns": [
+    "brand",
+    "branded",
+    "restaurant",
+    "fast food",
+    "prepared",
+    "sandwich",
+    "pizza",
+    "salad",
+    "sushi",
+    "poke",
+    "bowl",
+    "sausage",
+    "smoothie",
+    "electrolyte",
+    "protein",
+    "with sauce",
+    "sweetened",
+    "flavored",
+    "chocolate",
+    "frozen",
+    "fried",
+    "cocktail",
+    "julep",
+    "soup",
+    "pretzel",
+    "rice mix"
+  ]
+}
