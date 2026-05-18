@@ -1,7 +1,7 @@
 # Pantheon S28 Quartermaster Event Telemetry 1
 
 Date: 2026-05-18
-Status: Web event stream implemented; native event hooks prepared locally; database migration still needs to be applied.
+Status: Web event stream implemented; database migration applied; native event hooks prepared locally.
 
 ## Summary
 
@@ -50,23 +50,21 @@ Supported event types:
 
 ## Migration Status
 
-Migration file exists, but the Supabase CLI is not installed on Hive and `.env.local` does not contain a direct Postgres connection string.
+Applied on 2026-05-18 after installing and logging into Supabase CLI on Hive.
 
-So the live database table is not applied yet from this session.
-
-Current behavior before migration:
-
-- `npm run quartermaster` still works.
-- Quartermaster reports `event_table_available: no`.
-- Native event sends will fail silently until the table exists, without blocking the user.
-
-Apply before relying on events:
+Commands/results:
 
 ```bash
+supabase link --project-ref qlkjgguxjddalbswoxpm
+supabase migration list
 supabase db push
 ```
 
-or apply the SQL in `supabase/migrations/022_food_log_events.sql` through the Supabase SQL editor.
+Remote status now shows local/remote migration `022` applied.
+
+Direct verification via service-role query returned `food_log_events count: 0`, which is expected before native sends events.
+
+Quartermaster now sees the event table and reports `event_table_available: yes`.
 
 ## Native Local Patch
 
@@ -96,7 +94,7 @@ The local patch emits best-effort events to `/api/food-log-events` for:
 
 The event calls use `apiFetch`, so they carry the same native shared-secret header as existing parse/save routes.
 
-Do not publish OTA/EAS from this handoff alone. First coordinate with the existing native dirty worktree.
+Do not publish OTA/EAS from this handoff alone. First coordinate with the existing native dirty worktree and run simulator smoke.
 
 ## Verification
 
@@ -122,7 +120,7 @@ Unable to resolve path to module '@/constants/buildInfo'
 
 ## Next Steps
 
-1. Apply migration `022_food_log_events.sql`.
-2. Coordinate/commit the native event hook patch with the existing native branch owner.
-3. Run a simulator food-log smoke after the event table exists.
-4. Re-run Quartermaster and confirm `event_rows_read` increases after a parse/save/fail cycle.
+1. Coordinate/commit the native event hook patch with the existing native branch owner.
+2. Run a simulator food-log smoke now that the event table exists.
+3. Re-run Quartermaster and confirm `event_rows_read` increases after a parse/save/fail cycle.
+4. Use the first real event-backed report to prioritize failed-save/edit/unit-preservation work.
