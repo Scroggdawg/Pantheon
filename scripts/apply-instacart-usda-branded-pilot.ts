@@ -6,7 +6,6 @@ import { createClient } from '@supabase/supabase-js'
 import { bustResponseCacheForUser } from '../lib/claude/parse-meal-response-cache'
 import { normalizeFoodText } from '../lib/pantry-builder/normalize'
 import { getCanonicalUserId } from '../lib/pantheon-user'
-import type { OffProduct } from '../lib/off/types'
 import type { UnitAlternative } from '../types/database'
 
 interface Args {
@@ -20,12 +19,19 @@ interface Args {
 interface InstacartItem {
   itemName: string
   brand: string
-  sizeVolume: string
   category: string
 }
 
+interface UsdaFood {
+  fdcId?: number
+  description?: string
+  brandName?: string
+  brandOwner?: string
+  gtinUpc?: string
+}
+
 interface CandidateScore {
-  candidate: OffProduct
+  candidate: UsdaFood
   score: number
   warnings: string[]
   servingUnit: string
@@ -38,21 +44,18 @@ interface CandidateScore {
 
 interface PilotResult {
   item: InstacartItem
-  searchQuery: string
   candidates: CandidateScore[]
 }
 
 interface PilotArtifact {
   runId: string
-  args?: {
-    lane?: string
-  }
+  args?: { lane?: string }
   results: PilotResult[]
 }
 
 interface ExistingProduct {
   id: string
-  name: string
+  fdc_id: number | null
   barcode: string | null
   provenance_external_id: string | null
 }
@@ -109,107 +112,86 @@ function supabaseFromEnv() {
 
 function readArtifact(path: string, runId: string): PilotArtifact {
   const artifact = JSON.parse(readFileSync(resolve(path), 'utf8')) as PilotArtifact
-  if (artifact.runId !== runId) {
-    throw new Error(`run id mismatch: artifact=${artifact.runId} arg=${runId}`)
-  }
+  if (artifact.runId !== runId) throw new Error(`run id mismatch: artifact=${artifact.runId} arg=${runId}`)
   return artifact
 }
 
 function readyResults(artifact: PilotArtifact): Array<PilotResult & { best: CandidateScore }> {
   return artifact.results
     .map((result) => ({ ...result, best: result.candidates[0] }))
-    .filter((result): result is PilotResult & { best: CandidateScore } => {
-      return Boolean(
-        result.best &&
-        result.best.score >= 9 &&
-        result.best.warnings.length === 0 &&
-        result.best.servingGrams &&
-        result.best.kcal !== null &&
-        result.best.protein !== null &&
-        result.best.carbs !== null &&
-        result.best.fat !== null &&
-        result.best.candidate.code,
-      )
-    })
+    .filter((result): result is PilotResult & { best: CandidateScore } => Boolean(
+      result.best &&
+      result.best.score >= 9 &&
+      result.best.warnings.length === 0 &&
+      result.best.candidate.fdcId &&
+      result.best.candidate.gtinUpc &&
+      result.best.servingGrams &&
+      result.best.kcal !== null &&
+      result.best.protein !== null &&
+      result.best.carbs !== null &&
+      result.best.fat !== null,
+    ))
+}
+
+function categoryForLane(lane: string | undefined) {
+  if (lane === 'packaged-beverages') return 'branded_packaged_beverage'
+  if (lane === 'condiments-sauces') return 'branded_condiment_sauce'
+  return 'branded_product'
 }
 
 function brandFor(result: PilotResult & { best: CandidateScore }) {
-  if (result.item.brand) return result.item.brand
-  const offBrand = result.best.candidate.brands?.split(',')[0]?.trim()
-  return offBrand || null
+  return result.item.brand || result.best.candidate.brandName || result.best.candidate.brandOwner || null
 }
 
-function productNameFor(result: PilotResult & { best: CandidateScore }) {
-  if (result.item.itemName) return result.item.itemName
-  const offName = result.best.candidate.product_name?.trim()
-  return offName || result.item.itemName.trim()
-}
-
-function confidenceFor(candidate: CandidateScore): UnitAlternative['confidence'] {
-  const grade = candidate.candidate.nutriscore_grade
-  return grade && grade !== 'unknown' ? 'high' : 'medium'
-}
-
-function laneForRun(artifact: PilotArtifact) {
-  return artifact.args?.lane ?? 'frozen-desserts'
-}
-
-function categoryForLane(lane: string) {
-  if (lane === 'packaged-beverages') return 'branded_packaged_beverage'
-  if (lane === 'condiments-sauces') return 'branded_condiment_sauce'
-  return 'branded_frozen_dessert'
-}
-
-function productInsertPayload(result: PilotResult & { best: CandidateScore }, runId: string, lane: string) {
-  const candidate = result.best
-  const barcode = candidate.candidate.code
-  const unit = candidate.servingUnit || 'serving'
-  const grams = candidate.servingGrams!
+function productInsertPayload(result: PilotResult & { best: CandidateScore }, runId: string, lane: string | undefined) {
+  const c = result.best
+  const fdcId = c.candidate.fdcId!
+  const upc = c.candidate.gtinUpc!
+  const unit = c.servingUnit || 'serving'
+  const grams = c.servingGrams!
   const now = new Date().toISOString()
   const unitAlternatives: UnitAlternative[] = [
-    { unit, grams, source: 'off', confidence: confidenceFor(candidate) },
+    { unit, grams, source: 'usda', confidence: 'medium' },
     { unit: 'g', grams: 1, source: 'standard', confidence: 'high' },
   ]
   return {
-    name: productNameFor(result),
+    name: result.item.itemName,
     brand: brandFor(result),
     unit,
     serving_size_g: grams,
-    calories_per_serving: candidate.kcal!,
-    protein_g_per_serving: candidate.protein!,
-    fat_g_per_serving: candidate.fat!,
-    carbs_g_per_serving: candidate.carbs!,
+    calories_per_serving: c.kcal!,
+    protein_g_per_serving: c.protein!,
+    fat_g_per_serving: c.fat!,
+    carbs_g_per_serving: c.carbs!,
     fiber_g_per_serving: null,
     fulfillment_source: 'manual',
-    barcode,
-    product_url: `https://world.openfoodfacts.org/product/${barcode}`,
-    notes: `Instacart branded pilot exact product. Source item: ${result.item.itemName}.`,
+    barcode: upc,
+    product_url: `https://fdc.nal.usda.gov/fdc-app.html#/food-details/${fdcId}/nutrients`,
+    notes: `Instacart USDA Branded pilot exact product. USDA description: ${c.candidate.description ?? 'unknown'}.`,
     tracks_inventory: false,
     servings_per_unit: null,
     unit_alternatives: unitAlternatives,
     unit_alternatives_updated_at: now,
-    fdc_id: null,
-    provenance_source_kind: 'off',
-    provenance_dataset: 'open_food_facts',
-    provenance_external_id: barcode,
-    provenance_release: `off-${now.slice(0, 10)}`,
+    fdc_id: fdcId,
+    provenance_source_kind: 'usda',
+    provenance_dataset: 'Branded',
+    provenance_external_id: String(fdcId),
+    provenance_release: `fdc-api-${now.slice(0, 10)}`,
     provenance_import_run_id: runId,
-    import_confidence: 'high',
+    import_confidence: 'medium',
     canonical_category: categoryForLane(lane),
   }
 }
 
-function aliasesFor(result: PilotResult & { best: CandidateScore }): string[] {
+function aliasesFor(result: PilotResult & { best: CandidateScore }) {
   const brand = brandFor(result)
-  const withBrand = (name: string) => {
-    if (!brand) return name
-    return normalizeFoodText(name).startsWith(normalizeFoodText(brand)) ? name : `${brand} ${name}`
-  }
+  const description = result.best.candidate.description ?? ''
   const aliases = [
     result.item.itemName,
-    result.best.candidate.product_name ?? '',
-    withBrand(productNameFor(result)),
-    result.best.candidate.product_name ? withBrand(result.best.candidate.product_name) : '',
+    description,
+    brand && !normalizeFoodText(result.item.itemName).startsWith(normalizeFoodText(brand))
+      ? `${brand} ${result.item.itemName}`
+      : '',
   ]
   return [...new Set(aliases.map((alias) => alias.trim()).filter(Boolean))]
 }
@@ -218,38 +200,46 @@ async function main() {
   loadEnvLocal()
   const args = parseArgs(process.argv)
   const artifact = readArtifact(args.runFile!, args.runId!)
-  const lane = laneForRun(artifact)
+  const lane = artifact.args?.lane
   const ready = readyResults(artifact)
   if (ready.length === 0) throw new Error('No ready candidates in pilot artifact')
-  if (ready.length > args.maxInsert) {
-    throw new Error(`refusing apply: ${ready.length} ready candidates exceeds --max-insert=${args.maxInsert}`)
-  }
+  if (ready.length > args.maxInsert) throw new Error(`refusing apply: ${ready.length} ready candidates exceeds --max-insert=${args.maxInsert}`)
 
   const supabase = supabaseFromEnv()
-  const barcodes = ready.map((result) => result.best.candidate.code)
+  const fdcIds = ready.map((result) => result.best.candidate.fdcId!)
+  const upcs = ready.map((result) => result.best.candidate.gtinUpc!)
   const { data: existingData, error: existingError } = await supabase
     .from('products')
-    .select('id,name,barcode,provenance_external_id')
-    .or(`barcode.in.(${barcodes.join(',')}),provenance_external_id.in.(${barcodes.join(',')})`)
+    .select('id,fdc_id,barcode,provenance_external_id')
+    .or(`fdc_id.in.(${fdcIds.join(',')}),barcode.in.(${upcs.join(',')}),provenance_external_id.in.(${fdcIds.join(',')})`)
   if (existingError) throw existingError
   const existing = (existingData ?? []) as ExistingProduct[]
-  const existingKeys = new Set(existing.flatMap((product) => [product.barcode, product.provenance_external_id]).filter(Boolean))
-  const insertable = ready.filter((result) => !existingKeys.has(result.best.candidate.code))
+  const existingKeys = new Set(existing.flatMap((product) => [
+    product.fdc_id ? String(product.fdc_id) : null,
+    product.barcode,
+    product.provenance_external_id,
+  ]).filter(Boolean))
+  const insertable = ready.filter((result) => {
+    const fdcId = String(result.best.candidate.fdcId)
+    const upc = result.best.candidate.gtinUpc
+    return !existingKeys.has(fdcId) && !existingKeys.has(upc ?? null)
+  })
 
-  console.log('Instacart branded pilot apply')
+  console.log('Instacart USDA branded pilot apply')
   console.log(`run_id: ${args.runId}`)
-  console.log(`ready_candidates: ${ready.length}`)
   console.log(`lane: ${lane}`)
+  console.log(`ready_candidates: ${ready.length}`)
   console.log(`existing_matches: ${existing.length}`)
   console.log(`insertable: ${insertable.length}`)
   console.log(`max_insert: ${args.maxInsert}`)
   for (const result of ready) {
     const row = productInsertPayload(result, args.runId!, lane)
     console.log(JSON.stringify({
-      action: existingKeys.has(result.best.candidate.code) ? 'skip_existing' : 'insert',
+      action: insertable.includes(result) ? 'insert' : 'skip_existing',
       instacart_item: result.item.itemName,
       name: row.name,
       brand: row.brand,
+      fdc_id: row.fdc_id,
       barcode: row.barcode,
       unit: row.unit,
       serving_size_g: row.serving_size_g,
@@ -266,30 +256,20 @@ async function main() {
     return
   }
   if (!args.allowBrandedWrites) throw new Error('Live branded writes require --allow-branded-writes')
-  if (insertable.length > args.maxInsert) {
-    throw new Error(`refusing apply: ${insertable.length} insertable candidates exceeds --max-insert=${args.maxInsert}`)
-  }
+  if (insertable.length > args.maxInsert) throw new Error(`refusing apply: ${insertable.length} insertable candidates exceeds --max-insert=${args.maxInsert}`)
 
   const userId = await getCanonicalUserId(supabase)
   const { error: runError } = await supabase.from('pantry_import_runs').upsert({
     id: args.runId,
     mode: 'apply',
-    source_kind: 'off',
-    source_release: `off-${new Date().toISOString().slice(0, 10)}`,
+    source_kind: 'usda',
+    source_release: `fdc-api-${new Date().toISOString().slice(0, 10)}`,
     profile_version: 1,
     target_count: ready.length,
     status: 'started',
-    candidate_counts: {
-      total: ready.length,
-      insertable: insertable.length,
-      existing: existing.length,
-      lane,
-    },
-    profile: {
-      name: `Instacart branded pilot: ${lane}`,
-      source: 'local Instacart export and Open Food Facts',
-    },
-    notes: 'Capped first branded exact-product pilot from source-gated OFF report.',
+    candidate_counts: { total: ready.length, insertable: insertable.length, existing: existing.length, lane },
+    profile: { name: `Instacart USDA Branded pilot: ${lane}`, source: 'local Instacart export and USDA Branded' },
+    notes: 'Capped USDA Branded exact-product pilot from source-gated report.',
   }, { onConflict: 'id' })
   if (runError) throw runError
 
@@ -316,7 +296,7 @@ async function main() {
         normalized_alias: normalizedAlias,
         alias_type: 'exact_product',
         confidence: 'high',
-        source: 'instacart_branded_pilot',
+        source: 'instacart_usda_branded_pilot',
         import_run_id: args.runId,
         active: true,
       })
@@ -324,19 +304,13 @@ async function main() {
       if (!aliasError) aliasInserted += 1
     }
   }
+
   const { error: finishError } = await supabase.from('pantry_import_runs').update({
     status: 'completed',
-    candidate_counts: {
-      total: ready.length,
-      inserted,
-      aliases_inserted: aliasInserted,
-      existing: existing.length,
-      lane,
-    },
+    candidate_counts: { total: ready.length, inserted, aliases_inserted: aliasInserted, existing: existing.length, lane },
     finished_at: new Date().toISOString(),
   }).eq('id', args.runId)
   if (finishError) throw finishError
-
   if (inserted > 0 || aliasInserted > 0) await bustResponseCacheForUser(supabase, userId)
   console.log(`Inserted products: ${inserted}`)
   console.log(`Inserted aliases: ${aliasInserted}`)
