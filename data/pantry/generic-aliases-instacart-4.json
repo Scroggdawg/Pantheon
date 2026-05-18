@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "name": "Instacart Generic Aliases 4",
+  "doctrine": {
+    "source": "Local Instacart item export; raw CSV remains uncommitted.",
+    "purpose": "Alias unlocks from Instacart USDA Anchors 2 plus conservative onion-family grocery forms.",
+    "hold_notes": [
+      "Cucumber, mint, lemongrass, butter, rice, salt, cheeses, and branded prepared items remain held.",
+      "Serrano aliases are only added after the USDA raw serrano anchor was inserted."
+    ]
+  },
+  "aliases": [
+    {
+      "alias": "green serrano pepper",
+      "target_name": "Peppers, serrano, raw",
+      "confidence": "high",
+      "reason": "Grocery wording for raw serrano pepper; target preserves raw serrano identity."
+    },
+    {
+      "alias": "trufresh serrano peppers",
+      "target_name": "Peppers, serrano, raw",
+      "confidence": "high",
+      "reason": "Brand label does not change raw serrano pepper identity."
+    },
+    {
+      "alias": "lazy acres organic sweet onions",
+      "target_name": "White Onion",
+      "confidence": "medium",
+      "reason": "Sweet onion grocery wording routes to the existing plain raw onion anchor for practical logging."
+    },
+    {
+      "alias": "yellow jumbo onions",
+      "target_name": "White Onion",
+      "confidence": "medium",
+      "reason": "Yellow onion size wording routes to the existing plain raw onion anchor for practical logging."
+    },
+    {
+      "alias": "white jumbo onions",
+      "target_name": "White Onion",
+      "confidence": "high",
+      "reason": "Size wording does not change white onion identity."
+    }
+  ]
+}
