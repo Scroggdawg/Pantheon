@@ -2,11 +2,12 @@
 // Shape E redesign).
 //
 // Inserts a food_log_entries row. If library_source_ref starts with
-// "lib:saved_meal:", increment times_logged + bump last_logged_at on
-// that saved_meals row (the only branch that mutates saved_meals from
-// this route — Alpha.6 removed the auto-promote create path; the heart-
-// icon save handler at /api/saved_meals/heart is the sole path that
-// creates saved_meals or flips is_favorite).
+// "lib:saved_meal:" and still points at a live saved_meals row, increment
+// times_logged + bump last_logged_at on that saved_meals row (the only
+// branch that mutates saved_meals from this route — Alpha.6 removed the
+// auto-promote create path; the heart-icon save handler at
+// /api/saved_meals/heart is the sole path that creates saved_meals or flips
+// is_favorite).
 //
 // "Transactional" guarantee: if the saved_meals update step fails, roll
 // back the food_log_entries insert. Supabase JS doesn't expose a real
@@ -38,6 +39,12 @@ function bad(status: number, error: string, extra: Record<string, unknown> = {})
   return Response.json({ error, ...extra }, { status })
 }
 
+function extractSavedMealRefUuid(librarySourceRef: string | null): string | null {
+  return librarySourceRef?.startsWith('lib:saved_meal:')
+    ? librarySourceRef.slice('lib:saved_meal:'.length)
+    : null
+}
+
 export async function POST(request: Request) {
   let body: MealsLogBody
   try {
@@ -65,10 +72,37 @@ export async function POST(request: Request) {
   // "lib:saved_meal:" classification matters post-Alpha.6: product-ref
   // and no-library-ref paths no longer create saved_meals from this
   // route, so their classifier flags were trimmed in Sub-fix B.
-  const isSavedMealRef = body.library_source_ref?.startsWith('lib:saved_meal:') ?? false
-  const savedMealRefUuid: string | null = isSavedMealRef
-    ? body.library_source_ref!.slice('lib:saved_meal:'.length)
-    : null
+  const savedMealRefUuid = extractSavedMealRefUuid(body.library_source_ref)
+  let savedMealId: string | null = null
+  let savedMealAction: SavedMealAction = 'none'
+  let savedMealTimesLogged: number | null = null
+
+  if (savedMealRefUuid) {
+    const { data: existing, error: getErr } = await supabase
+      .from('saved_meals')
+      .select('times_logged')
+      .eq('id', savedMealRefUuid)
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (getErr) {
+      console.error(
+        '[meals/log] saved_meals lookup failed before food_log insert:',
+        getErr.message,
+      )
+      return bad(500, `saved_meals lookup failed: ${getErr.message}`)
+    }
+
+    if (existing) {
+      savedMealId = savedMealRefUuid
+      savedMealTimesLogged = existing.times_logged ?? 0
+    } else {
+      console.warn('[meals/log] stale saved_meal ref ignored:', {
+        saved_meal_id: savedMealRefUuid,
+        user_id: userId,
+      })
+    }
+  }
 
   // ---- 1. Insert the food_log_entries row ----
   const { data: logRow, error: logErr } = await supabase
@@ -85,7 +119,7 @@ export async function POST(request: Request) {
       log_method: body.log_method,
       raw_input_text: body.raw_input_text,
       claude_parse_json: body.claude_parse_json,
-      saved_meal_id: savedMealRefUuid,
+      saved_meal_id: savedMealId,
     })
     .select('id')
     .single()
@@ -100,33 +134,17 @@ export async function POST(request: Request) {
   // which feeds hourly_go_tos weighting (migration 016). Novel meals and
   // product-ref-only meals fall through with savedMealAction='none' — the
   // user explicitly hearts via /api/saved_meals/heart to promote.
-  let savedMealId: string | null = null
-  let savedMealAction: SavedMealAction = 'none'
-
   try {
-    if (isSavedMealRef) {
-      const uuid = savedMealRefUuid!
-      const { data: existing, error: getErr } = await supabase
-        .from('saved_meals')
-        .select('times_logged')
-        .eq('id', uuid)
-        .eq('user_id', userId)
-        .single()
-      if (getErr || !existing) {
-        throw new Error(
-          `saved_meals lookup for ${uuid} failed: ${getErr?.message ?? 'not found'}`,
-        )
-      }
+    if (savedMealId) {
       const { error: updErr } = await supabase
         .from('saved_meals')
         .update({
-          times_logged: (existing.times_logged ?? 0) + 1,
+          times_logged: (savedMealTimesLogged ?? 0) + 1,
           last_logged_at: new Date().toISOString(),
         })
-        .eq('id', uuid)
+        .eq('id', savedMealId)
         .eq('user_id', userId)
       if (updErr) throw new Error(`saved_meals update failed: ${updErr.message}`)
-      savedMealId = uuid
       savedMealAction = 'incremented'
     }
   } catch (e) {
@@ -148,5 +166,6 @@ export async function POST(request: Request) {
     food_log_entry_id: logRow.id,
     saved_meal_id: savedMealId,
     saved_meal_action: savedMealAction,
+    stale_saved_meal_ref_ignored: savedMealRefUuid !== null && savedMealId === null,
   })
 }
