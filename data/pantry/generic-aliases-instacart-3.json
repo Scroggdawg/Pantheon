@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "name": "Instacart Generic Aliases 3",
+  "doctrine": {
+    "source": "Local Instacart item export; raw CSV remains uncommitted.",
+    "purpose": "Exact grocery vocabulary coverage after the first Instacart round.",
+    "hold_notes": [
+      "Cucumber, serrano, mint, lemongrass, butter, rice, and most cheeses are intentionally held for anchor or doctrine decisions.",
+      "This batch is limited to produce, eggs, half-and-half, buttermilk, flour, and sugar where target identity is stable."
+    ]
+  },
+  "aliases": [
+    {
+      "alias": "north shore living potted basil",
+      "target_name": "Basil, raw",
+      "confidence": "high",
+      "reason": "Potted is a purchase format; raw basil identity is unchanged."
+    },
+    {
+      "alias": "united exports jumbo blueberries",
+      "target_name": "Blueberries",
+      "confidence": "high",
+      "reason": "Brand and size descriptor do not change blueberry identity."
+    },
+    {
+      "alias": "shallots",
+      "target_name": "Shallots, raw",
+      "confidence": "high",
+      "reason": "Plural grocery wording routes to the existing raw shallot anchor."
+    },
+    {
+      "alias": "vital farms pasture raised organic large grade a eggs",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Brand, color, and housing claims do not change large egg macro identity."
+    },
+    {
+      "alias": "chelan fresh bosc pears",
+      "target_name": "Pear, raw",
+      "confidence": "high",
+      "reason": "Bosc pears route to the existing raw pear anchor for practical logging."
+    },
+    {
+      "alias": "lemons",
+      "target_name": "Lemon, raw",
+      "confidence": "high",
+      "reason": "Plural spoken/grocery form routes to raw lemon."
+    },
+    {
+      "alias": "null large bosc pears",
+      "target_name": "Pear, raw",
+      "confidence": "high",
+      "reason": "Instacart NULL prefix is export noise; Bosc pears route to raw pear."
+    },
+    {
+      "alias": "happy egg heritage breed blue and brown free range large grade a eggs",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Brand, breed, shell color, and housing claims route to large eggs."
+    },
+    {
+      "alias": "happy egg heritage breed blue and brown free range eggs",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Brand, breed, shell color, and housing claims route to large eggs."
+    },
+    {
+      "alias": "h e b grade aa cage free large brown eggs",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Store brand, grade, shell color, and housing claims route to large eggs."
+    },
+    {
+      "alias": "sprouts organic half and half",
+      "target_name": "Cream, half and half",
+      "confidence": "high",
+      "reason": "Store and organic labels do not change plain half-and-half identity."
+    },
+    {
+      "alias": "national sales cilantro and chinese parsley bunch",
+      "target_name": "Cilantro, raw",
+      "confidence": "high",
+      "reason": "Chinese parsley is cilantro; bunch is purchase format."
+    },
+    {
+      "alias": "signature farms avocados hass",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Brand and Hass variety route to edible raw avocado."
+    },
+    {
+      "alias": "naturipe blueberries",
+      "target_name": "Blueberries",
+      "confidence": "high",
+      "reason": "Brand label does not change blueberry identity."
+    },
+    {
+      "alias": "open nature eggs brown large",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Brand and shell color route to large eggs."
+    },
+    {
+      "alias": "dole carrots mini cut",
+      "target_name": "Carrots, baby, raw",
+      "confidence": "high",
+      "reason": "Mini-cut carrots route to the existing raw baby carrot anchor."
+    },
+    {
+      "alias": "small organic hass avocados",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Size and organic labels do not change edible raw avocado identity."
+    },
+    {
+      "alias": "organic cilantro",
+      "target_name": "Cilantro, raw",
+      "confidence": "high",
+      "reason": "Organic label does not change raw cilantro identity."
+    },
+    {
+      "alias": "hass avocados bag",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Bag is packaging; Hass avocado routes to edible raw avocado."
+    },
+    {
+      "alias": "yellow onion",
+      "target_name": "White Onion",
+      "confidence": "medium",
+      "reason": "Yellow and white raw onions are close practical equivalents for pantry logging."
+    },
+    {
+      "alias": "red bell pepper",
+      "target_name": "Bell Peppers",
+      "confidence": "high",
+      "reason": "Singular color-specific grocery wording routes to the generic bell pepper anchor."
+    },
+    {
+      "alias": "bobs red mill white all purpose baking flour unbleached",
+      "target_name": "Flour, wheat, all-purpose, enriched, bleached",
+      "confidence": "medium",
+      "reason": "Exact Instacart apostrophe-normalized wording for all-purpose flour; bleaching is a minor pantry-level difference."
+    },
+    {
+      "alias": "c and h premium pure cane granulated sugar",
+      "target_name": "Sugars, granulated",
+      "confidence": "high",
+      "reason": "Exact Instacart ampersand-normalized wording for granulated sugar."
+    },
+    {
+      "alias": "h e b 1 low fat buttermilk",
+      "target_name": "Buttermilk, low fat",
+      "confidence": "high",
+      "reason": "Store brand 1% low-fat buttermilk routes to existing low-fat buttermilk."
+    },
+    {
+      "alias": "h e b quality sugar",
+      "target_name": "Sugars, granulated",
+      "confidence": "high",
+      "reason": "Store-brand plain sugar routes to granulated sugar."
+    }
+  ]
+}
