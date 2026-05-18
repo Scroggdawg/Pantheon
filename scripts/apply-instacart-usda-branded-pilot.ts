@@ -136,6 +136,7 @@ function readyResults(artifact: PilotArtifact): Array<PilotResult & { best: Cand
 function categoryForLane(lane: string | undefined) {
   if (lane === 'packaged-beverages') return 'branded_packaged_beverage'
   if (lane === 'condiments-sauces') return 'branded_condiment_sauce'
+  if (lane === 'snacks-bread') return 'branded_snack_bread'
   return 'branded_product'
 }
 

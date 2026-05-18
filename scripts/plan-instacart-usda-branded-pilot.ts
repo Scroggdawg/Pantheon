@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import { normalizeFoodText } from '../lib/pantry-builder/normalize'
 
 const USDA_SEARCH_URL = 'https://api.nal.usda.gov/fdc/v1/foods/search'
+const USDA_DETAIL_URL = 'https://api.nal.usda.gov/fdc/v1/food'
 const USER_AGENT = 'Pantheon/1.0 (luke@scrog.dev)'
 const NUTRIENT_KCAL = 1008
 const NUTRIENT_PROTEIN = 1003
@@ -25,8 +26,38 @@ const MATCH_STOP_TOKENS = new Set([
   'drink',
   'drinks',
 ])
+const REQUIRED_IF_PRESENT_TOKENS = new Set([
+  'apple',
+  'orange',
+  'pulp',
+  'hazelnut',
+  'peanut',
+  'banana',
+  'blackberry',
+  'pineapple',
+  'mango',
+  'sorbet',
+  'creatine',
+  'bcaas',
+  'sour',
+  'grape',
+  'avocado',
+  'greens',
+  'maca',
+  'mocha',
+  'bluephoria',
+])
+const EXTRA_VARIANT_TOKENS = new Set([
+  'fajita',
+  'honey',
+  'chipotle',
+  'baked',
+  'scoops',
+  'scoop',
+  'restaurant',
+])
 
-type Lane = 'packaged-beverages' | 'condiments-sauces'
+type Lane = 'packaged-beverages' | 'condiments-sauces' | 'snacks-bread'
 
 interface Args {
   csv: string
@@ -53,6 +84,13 @@ interface AliasRow {
 interface UsdaNutrient {
   nutrientId?: number
   value?: number
+  amount?: number
+  nutrient?: {
+    id?: number
+  }
+  foodNutrientDerivation?: {
+    code?: string
+  }
 }
 
 interface UsdaFood {
@@ -78,6 +116,7 @@ interface CandidateScore {
   warnings: string[]
   servingGrams: number | null
   servingUnit: string
+  macroMode: string | null
   kcal: number | null
   protein: number | null
   carbs: number | null
@@ -101,6 +140,7 @@ function parseArgs(argv: string[]): Args {
     if (arg.startsWith('--csv=')) args.csv = arg.slice('--csv='.length)
     else if (arg === '--lane=packaged-beverages') args.lane = 'packaged-beverages'
     else if (arg === '--lane=condiments-sauces') args.lane = 'condiments-sauces'
+    else if (arg === '--lane=snacks-bread') args.lane = 'snacks-bread'
     else if (arg.startsWith('--limit=')) args.limit = Number(arg.slice('--limit='.length))
     else if (arg.startsWith('--candidates=')) args.candidates = Number(arg.slice('--candidates='.length))
     else throw new Error(`Unknown arg: ${arg}`)
@@ -223,12 +263,28 @@ function isCondimentSauce(item: InstacartItem): boolean {
 
 function isLaneItem(item: InstacartItem, lane: Lane): boolean {
   if (lane === 'packaged-beverages') return isPackagedBeverage(item)
-  return isCondimentSauce(item)
+  if (lane === 'condiments-sauces') return isCondimentSauce(item)
+  return isSnackBread(item)
+}
+
+function isSnackBread(item: InstacartItem): boolean {
+  const category = item.category.toLowerCase()
+  if (!['snacks', 'bakery & bread', 'breakfast'].includes(category)) return false
+  if (!item.brand.trim()) return false
+  const normalized = normalizeFoodText(`${item.brand} ${item.itemName}`)
+  if (/\b(protein energy bites|rxbar)\b/.test(normalized)) return false
+  return /\b(chips|tortilla|scoops|cantina|cereal|bagel|bread|cracker|fritos|tostitos|magic spoon|kashi|cracklin)\b/.test(normalized)
 }
 
 function nutrient(food: UsdaFood, id: number): number | null {
-  const row = food.foodNutrients?.find((entry) => entry.nutrientId === id)
-  return typeof row?.value === 'number' && Number.isFinite(row.value) ? row.value : null
+  const row = food.foodNutrients?.find((entry) => (entry.nutrientId ?? entry.nutrient?.id) === id)
+  const value = row?.value ?? row?.amount
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function nutrientDerivation(food: UsdaFood, id: number): string | null {
+  const row = food.foodNutrients?.find((entry) => (entry.nutrientId ?? entry.nutrient?.id) === id)
+  return row?.foodNutrientDerivation?.code ?? null
 }
 
 function servingGrams(food: UsdaFood): number | null {
@@ -250,11 +306,96 @@ function servingUnit(food: UsdaFood, item: InstacartItem): string {
   return 'serving'
 }
 
-function perServing(food: UsdaFood, id: number): number | null {
-  const per100 = nutrient(food, id)
+function round2(value: number) {
+  return Math.round(value * 100) / 100
+}
+
+function macroCalories(protein: number, carbs: number, fat: number) {
+  return protein * 4 + carbs * 4 + fat * 9
+}
+
+function resolveServingMacros(food: UsdaFood): {
+  mode: string | null
+  kcal: number | null
+  protein: number | null
+  carbs: number | null
+  fat: number | null
+  warnings: string[]
+} {
   const grams = servingGrams(food)
-  if (per100 === null || grams === null) return null
-  return Math.round((per100 * grams) / 100 * 100) / 100
+  const energy = nutrient(food, NUTRIENT_KCAL)
+  const protein = nutrient(food, NUTRIENT_PROTEIN)
+  const carbs = nutrient(food, NUTRIENT_CARBS)
+  const fat = nutrient(food, NUTRIENT_FAT)
+  if (grams === null || energy === null || protein === null || carbs === null || fat === null) {
+    return { mode: null, kcal: null, protein: null, carbs: null, fat: null, warnings: ['incomplete_macros'] }
+  }
+
+  const scale = grams / 100
+  const scaled = {
+    mode: 'scaled_all',
+    kcal: round2(energy * scale),
+    protein: round2(protein * scale),
+    carbs: round2(carbs * scale),
+    fat: round2(fat * scale),
+  }
+  const mixed = {
+    mode: 'scaled_energy_unscaled_macros',
+    kcal: scaled.kcal,
+    protein: round2(protein),
+    carbs: round2(carbs),
+    fat: round2(fat),
+  }
+  const unscaled = {
+    mode: 'unscaled_all',
+    kcal: round2(energy),
+    protein: round2(protein),
+    carbs: round2(carbs),
+    fat: round2(fat),
+  }
+  const modes = [scaled, mixed, unscaled].map((mode) => ({
+    ...mode,
+    gap: Math.abs(macroCalories(mode.protein, mode.carbs, mode.fat) - mode.kcal),
+  }))
+  const scaledMode = modes.find((mode) => mode.mode === 'scaled_all')!
+  const unscaledMode = modes.find((mode) => mode.mode === 'unscaled_all')!
+  const mixedMode = modes.find((mode) => mode.mode === 'scaled_energy_unscaled_macros')!
+  const scaledTolerance = Math.max(20, scaledMode.kcal * 0.25)
+  const derivations = [
+    nutrientDerivation(food, NUTRIENT_KCAL),
+    nutrientDerivation(food, NUTRIENT_PROTEIN),
+    nutrientDerivation(food, NUTRIENT_CARBS),
+    nutrientDerivation(food, NUTRIENT_FAT),
+  ]
+  const hasServingDerivedNutrients = derivations.some((code) => code === 'LCCS' || code === 'LCCD')
+  const unscaledTolerance = Math.max(20, unscaledMode.kcal * 0.25)
+  const best = !hasServingDerivedNutrients && unscaledMode.gap <= unscaledTolerance
+    && !(grams <= 100 && unscaledMode.kcal > 300 && scaledMode.gap <= scaledTolerance)
+    ? unscaledMode
+    : !hasServingDerivedNutrients && mixedMode.gap <= Math.max(20, mixedMode.kcal * 0.25)
+      ? mixedMode
+      : scaledMode.gap <= scaledTolerance
+    ? scaledMode
+    : modes.sort((a, b) => a.gap - b.gap)[0]
+  const tolerance = Math.max(20, best.kcal * 0.25)
+  if (best.gap > tolerance) {
+    return {
+      mode: best.mode,
+      kcal: best.kcal,
+      protein: best.protein,
+      carbs: best.carbs,
+      fat: best.fat,
+      warnings: [`macro_energy_gap_${Math.round(best.gap)}`],
+    }
+  }
+  return {
+    mode: best.mode,
+    kcal: best.kcal,
+    protein: best.protein,
+    carbs: best.carbs,
+    fat: best.fat,
+    warnings: best.mode === 'scaled_all' ? [] : [`macro_mode_${best.mode}`],
+  }
 }
 
 function scoreCandidate(item: InstacartItem, candidate: UsdaFood, index: number): CandidateScore {
@@ -282,6 +423,11 @@ function scoreCandidate(item: InstacartItem, candidate: UsdaFood, index: number)
     warnings.push(`missing_core_tokens:${missingCore.join('+')}`)
     score -= 4
   }
+  const missingRequired = tokens.filter((token) => REQUIRED_IF_PRESENT_TOKENS.has(token) && !descTokens.has(token))
+  if (missingRequired.length > 0) {
+    warnings.push(`missing_required_tokens:${missingRequired.join('+')}`)
+    score -= 6
+  }
   if (itemNorm.includes('zero sugar') && !descNorm.includes('zero sugar')) {
     warnings.push('zero_sugar_missing')
     score -= 6
@@ -290,6 +436,12 @@ function scoreCandidate(item: InstacartItem, candidate: UsdaFood, index: number)
     warnings.push('reduced_sodium_missing')
     score -= 4
   }
+  const targetTokenSet = new Set(tokens)
+  const extraVariants = [...descTokens].filter((token) => EXTRA_VARIANT_TOKENS.has(token) && !targetTokenSet.has(token))
+  if (extraVariants.length > 0) {
+    warnings.push(`extra_variant_tokens:${extraVariants.join('+')}`)
+    score -= 5
+  }
 
   const grams = servingGrams(candidate)
   if (grams) score += 1
@@ -297,10 +449,12 @@ function scoreCandidate(item: InstacartItem, candidate: UsdaFood, index: number)
   if (candidate.gtinUpc) score += 1
   else warnings.push('missing_upc')
 
-  const kcal = perServing(candidate, NUTRIENT_KCAL)
-  const protein = perServing(candidate, NUTRIENT_PROTEIN)
-  const carbs = perServing(candidate, NUTRIENT_CARBS)
-  const fat = perServing(candidate, NUTRIENT_FAT)
+  const resolved = resolveServingMacros(candidate)
+  const kcal = resolved.kcal
+  const protein = resolved.protein
+  const carbs = resolved.carbs
+  const fat = resolved.fat
+  warnings.push(...resolved.warnings.filter((warning) => warning !== 'incomplete_macros' && !warning.startsWith('macro_mode_')))
   const complete = kcal !== null && protein !== null && carbs !== null && fat !== null
   const zeroDrink = complete && item.category.toLowerCase() === 'beverages' && kcal === 0 && protein === 0 && carbs === 0 && fat === 0
   if ((complete && kcal > 0) || zeroDrink) score += 3
@@ -313,6 +467,7 @@ function scoreCandidate(item: InstacartItem, candidate: UsdaFood, index: number)
     warnings,
     servingGrams: grams,
     servingUnit: servingUnit(candidate, item),
+    macroMode: resolved.mode,
     kcal,
     protein,
     carbs,
@@ -336,6 +491,17 @@ async function usdaSearchBranded(query: string, limit: number): Promise<UsdaFood
   if (!res.ok) return []
   const json = (await res.json()) as UsdaSearchResponse
   return json.foods ?? []
+}
+
+async function usdaDetail(fdcId: number): Promise<UsdaFood | null> {
+  const apiKey = process.env.USDA_FDC_API_KEY
+  if (!apiKey) throw new Error('USDA_FDC_API_KEY missing from env')
+  const res = await fetch(`${USDA_DETAIL_URL}/${fdcId}?api_key=${encodeURIComponent(apiKey)}`, {
+    headers: { 'User-Agent': USER_AGENT },
+    signal: AbortSignal.timeout(10000),
+  })
+  if (!res.ok) return null
+  return (await res.json()) as UsdaFood
 }
 
 function renderMarkdown(results: PilotResult[], args: Args) {
@@ -374,7 +540,7 @@ function renderMarkdown(results: PilotResult[], args: Args) {
         c.brandName ?? c.brandOwner ?? '',
         c.fdcId ?? '',
         c.gtinUpc ?? '',
-        `${candidate.servingUnit}${candidate.servingGrams ? `; ${candidate.servingGrams}g` : ''}`,
+        `${candidate.servingUnit}${candidate.servingGrams ? `; ${candidate.servingGrams}g` : ''}${candidate.macroMode ? `; ${candidate.macroMode}` : ''}`,
         candidate.kcal ?? '',
         candidate.protein ?? '',
         candidate.carbs ?? '',
@@ -412,7 +578,13 @@ async function main() {
   const results: PilotResult[] = []
   for (const item of pilotItems) {
     const query = searchQuery(item)
-    const candidates = await usdaSearchBranded(query, args.candidates)
+    const searchCandidates = await usdaSearchBranded(query, args.candidates)
+    const candidates = await Promise.all(
+      searchCandidates.map(async (candidate) => {
+        if (!candidate.fdcId) return candidate
+        return (await usdaDetail(candidate.fdcId)) ?? candidate
+      }),
+    )
     results.push({
       item,
       searchQuery: query,
