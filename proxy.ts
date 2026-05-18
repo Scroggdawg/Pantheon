@@ -10,6 +10,10 @@ const NATIVE_ROUTES = [
   // S26 Step 3: native meal-log writer (post-Op-FASTRAK-Alpha.6 ships
   // increment-only — auto-promote create path moved to /api/saved_meals/heart).
   '/api/meals/log',
+  // Quartermaster v1 — native food-log UX breadcrumbs: failed saves,
+  // abandoned parses, edits, and other events that do not always become
+  // food_log_entries rows.
+  '/api/food-log-events',
   // Op FASTRAK Alpha.6 — heart-icon save/un-save handler. POST hearts a
   // food_log_entries row (creates saved_meal or flips is_favorite=true);
   // DELETE un-hearts (flips is_favorite=false).

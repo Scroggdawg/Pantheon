@@ -33,7 +33,8 @@ npm run quartermaster -- --markdown-only
 npm run quartermaster -- --json-only
 ```
 
-By default the audit reads all visible `food_log_entries` rows and writes local reports to `scripts/output/`:
+By default the audit reads all visible `food_log_entries` rows plus any
+available `food_log_events` rows, then writes local reports to `scripts/output/`:
 
 - `quartermaster-<run-id>.json`
 - `quartermaster-<run-id>.md`
@@ -44,7 +45,23 @@ The script does not write production data.
 
 Quartermaster v0 can see saved food-log entries.
 
-It cannot yet fully see:
+Quartermaster v1 adds an optional `food_log_events` stream for native app
+events that do not always become saved logs:
+
+- parse requested;
+- parse returned;
+- parse failed;
+- parse abandoned;
+- food item edited;
+- food item deleted;
+- food item added;
+- disambiguation selected;
+- save requested;
+- save succeeded;
+- save failed.
+
+Until migration `022_food_log_events.sql` is applied and native is running the
+event-emitting bundle, Quartermaster cannot fully see:
 
 - parse attempts that failed before save;
 - parse attempts Luke abandoned;
@@ -52,7 +69,7 @@ It cannot yet fully see:
 - whether Luke could visually read/trust a displayed row;
 - native UI error events unless they were also saved into the log payload.
 
-Those need future app telemetry.
+If the event table is missing, the audit still runs and records that gap.
 
 ## First Lanes
 

@@ -1,0 +1,128 @@
+# Pantheon S28 Quartermaster Event Telemetry 1
+
+Date: 2026-05-18
+Status: Web event stream implemented; native event hooks prepared locally; database migration still needs to be applied.
+
+## Summary
+
+Quartermaster v0 could audit saved food logs, but could not see failures that happened before a save row existed.
+
+This pass adds the web-side event stream needed for Quartermaster v1:
+
+- schema migration for `food_log_events`;
+- native-authenticated web endpoint at `/api/food-log-events`;
+- Quartermaster reader support for event rows;
+- docs describing the new visibility layer.
+
+The native log-food screen has also been locally wired to emit best-effort events around parse, edit, and save moments. Those native edits are intentionally not committed from the web repo because the native worktree already contains unrelated in-progress changes on `codex/log-food-plate-workflow`.
+
+## Web Files
+
+Added:
+
+- `supabase/migrations/022_food_log_events.sql`
+- `app/api/food-log-events/route.ts`
+- `docs/handoffs/PANTHEON_S28_QUARTERMASTER_EVENT_TELEMETRY_1.md`
+
+Updated:
+
+- `proxy.ts`
+- `scripts/quartermaster-audit.ts`
+- `docs/QUARTERMASTER.md`
+
+## Event Types
+
+Supported event types:
+
+- `parse_requested`
+- `parse_returned`
+- `parse_failed`
+- `parse_abandoned`
+- `food_item_edited`
+- `food_item_deleted`
+- `food_item_added`
+- `disambiguation_selected`
+- `save_requested`
+- `save_succeeded`
+- `save_failed`
+- `quick_add_after_parse`
+- `retry_after_parse`
+
+## Migration Status
+
+Migration file exists, but the Supabase CLI is not installed on Hive and `.env.local` does not contain a direct Postgres connection string.
+
+So the live database table is not applied yet from this session.
+
+Current behavior before migration:
+
+- `npm run quartermaster` still works.
+- Quartermaster reports `event_table_available: no`.
+- Native event sends will fail silently until the table exists, without blocking the user.
+
+Apply before relying on events:
+
+```bash
+supabase db push
+```
+
+or apply the SQL in `supabase/migrations/022_food_log_events.sql` through the Supabase SQL editor.
+
+## Native Local Patch
+
+Native repo:
+
+```text
+/Users/scroggdawg/Code/pantheon-native
+```
+
+Touched local file:
+
+- `app/log-food.tsx`
+
+The local patch emits best-effort events to `/api/food-log-events` for:
+
+- parse requested;
+- parse returned;
+- parse failed;
+- food item added;
+- food item edited;
+- food item deleted;
+- disambiguation selected;
+- save requested;
+- save succeeded;
+- save failed;
+- parse abandoned via clear/cancel.
+
+The event calls use `apiFetch`, so they carry the same native shared-secret header as existing parse/save routes.
+
+Do not publish OTA/EAS from this handoff alone. First coordinate with the existing native dirty worktree.
+
+## Verification
+
+Passed in web repo:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run quartermaster -- --limit=5`
+
+Passed in native repo for touched surface:
+
+- `npx tsc --noEmit`
+- `npx eslint app/log-food.tsx`
+
+Full native `npm run lint` remains blocked by an existing generated-file resolver issue:
+
+```text
+components/ui/VersionFooter.tsx
+Unable to resolve path to module '@/constants/buildInfo'
+```
+
+`constants/buildInfo.ts` can be generated with `node scripts/write-build-info.js`, but Expo lint still reports the resolver issue. This appears unrelated to the Quartermaster event hook patch.
+
+## Next Steps
+
+1. Apply migration `022_food_log_events.sql`.
+2. Coordinate/commit the native event hook patch with the existing native branch owner.
+3. Run a simulator food-log smoke after the event table exists.
+4. Re-run Quartermaster and confirm `event_rows_read` increases after a parse/save/fail cycle.
