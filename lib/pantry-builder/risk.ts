@@ -254,7 +254,7 @@ export function classifyPantryCandidate(
     decision = decision === 'rejected' ? decision : 'review_required'
     score += 20
   }
-  if (/\bwith\b/.test(targetQuery)) {
+  if (/\bwith\b/.test(targetQuery) && !/\bwith peel\b/.test(targetQuery)) {
     reasons.add('composite_target_review_required')
     decision = decision === 'rejected' ? decision : 'review_required'
     score += 25
