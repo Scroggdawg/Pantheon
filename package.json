@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "backup": "npx tsx scripts/backup.ts",
-    "replay": "npx tsx scripts/replay-parse.ts"
+    "replay": "npx tsx scripts/replay-parse.ts",
+    "quartermaster": "npx tsx scripts/quartermaster-audit.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.85.0",
