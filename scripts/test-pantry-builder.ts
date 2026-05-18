@@ -363,6 +363,17 @@ function testRisk() {
   )
   assert.equal(compositeTarget.decision, 'review_required')
   assert.ok(compositeTarget.reasons.includes('composite_target_review_required'))
+  const cucumberWithPeel = classifyPantryCandidate(
+    candidate({
+      target_query: 'cucumber with peel raw',
+      display_name: 'Cucumber, with peel, raw',
+      category: 'whole_foods',
+    }),
+    existing,
+    [],
+  )
+  assert.equal(cucumberWithPeel.decision, 'auto_approved')
+  assert.equal(cucumberWithPeel.reasons.includes('composite_target_review_required'), false)
 }
 
 function testIdentityLearning() {

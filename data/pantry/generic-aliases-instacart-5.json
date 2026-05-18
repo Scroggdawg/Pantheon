@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "Instacart Generic Aliases 5",
+  "doctrine": {
+    "source": "Local Instacart item export; raw CSV remains uncommitted.",
+    "purpose": "Cucumber alias unlock after accepting the USDA with-peel raw cucumber anchor.",
+    "hold_notes": [
+      "Mint, lemongrass, rice, salt, butter, cheeses, and branded prepared items remain held.",
+      "Cucumber aliases point to the with-peel raw USDA anchor because that is the practical edible form for ordinary grocery cucumbers unless Luke specifies peeled."
+    ]
+  },
+  "aliases": [
+    {
+      "alias": "lazy acres cucumbers organic",
+      "target_name": "Cucumber, with peel, raw",
+      "confidence": "high",
+      "reason": "Store and organic labels do not change raw cucumber identity; default edible portion is with peel."
+    },
+    {
+      "alias": "organic cucumbers",
+      "target_name": "Cucumber, with peel, raw",
+      "confidence": "high",
+      "reason": "Organic label does not change raw cucumber identity; default edible portion is with peel."
+    }
+  ]
+}
