@@ -12,7 +12,7 @@ interface Args {
   csv: string
   limit: number
   candidates: number
-  lane: 'frozen-desserts'
+  lane: 'frozen-desserts' | 'packaged-beverages' | 'condiments-sauces'
 }
 
 interface InstacartItem {
@@ -61,6 +61,8 @@ function parseArgs(argv: string[]): Args {
     else if (arg.startsWith('--limit=')) args.limit = Number(arg.slice('--limit='.length))
     else if (arg.startsWith('--candidates=')) args.candidates = Number(arg.slice('--candidates='.length))
     else if (arg === '--lane=frozen-desserts') args.lane = 'frozen-desserts'
+    else if (arg === '--lane=packaged-beverages') args.lane = 'packaged-beverages'
+    else if (arg === '--lane=condiments-sauces') args.lane = 'condiments-sauces'
     else throw new Error(`Unknown arg: ${arg}`)
   }
   if (!Number.isInteger(args.limit) || args.limit < 1) throw new Error('--limit must be a positive integer')
@@ -160,6 +162,29 @@ function isFrozenDessertPilotItem(item: InstacartItem): boolean {
   return /\b(yasso|ben jerrys|van leeuwen|goodpop|aldens|ice cream|frozen dairy dessert|fudge|sandwich|bar|bars|pop|pops)\b/.test(normalized)
 }
 
+function isPackagedBeveragePilotItem(item: InstacartItem): boolean {
+  if (item.category.toLowerCase() !== 'beverages') return false
+  if (!item.brand.trim()) return false
+  const normalized = normalizeFoodText(`${item.brand} ${item.itemName}`)
+  if (/\b(whole bean|ground coffee|tea bags|herbal tea|throat coat|peppermint caffeine free)\b/.test(normalized)) return false
+  return /\b(yerba|mate|rebbl|protein|coconut water|soda|diet coke|dr pepper|pressed|smoothie|fitaid|juice|almond milk|sparkling cider|sprite|lacroix|water|energy|recovery)\b/.test(normalized)
+}
+
+function isPilotItem(item: InstacartItem, lane: Args['lane']): boolean {
+  if (lane === 'frozen-desserts') return isFrozenDessertPilotItem(item)
+  if (lane === 'packaged-beverages') return isPackagedBeveragePilotItem(item)
+  if (lane === 'condiments-sauces') return isCondimentsSaucesPilotItem(item)
+  return false
+}
+
+function isCondimentsSaucesPilotItem(item: InstacartItem): boolean {
+  const category = item.category.toLowerCase()
+  const normalized = normalizeFoodText(`${item.brand} ${item.itemName}`)
+  if (!['condiments & sauces', 'canned goods'].includes(category)) return false
+  if (/\b(soup|sushi ginger)\b/.test(normalized)) return false
+  return /\b(sauce|dressing|vinegar|soy sauce|fish sauce|worcestershire|tomato paste|pasta sauce|barbecue|bbq|catalina|kikkoman|marukan|thai kitchen|sweet baby rays|lea perrins|kraft|botticelli)\b/.test(normalized)
+}
+
 function itemNameWithoutBrand(item: InstacartItem): string {
   const brand = item.brand.trim()
   const name = item.itemName.trim()
@@ -178,6 +203,9 @@ function searchQueries(item: InstacartItem): string[] {
     .replace(/\bFrozen\b/gi, '')
     .replace(/\bGreek Yogurt\b/gi, 'Yogurt')
     .replace(/\bDairy-Free\b/gi, '')
+    .replace(/\bOrganic\b/gi, '')
+    .replace(/\bGluten Free\b/gi, '')
+    .replace(/\bLess Sodium\b/gi, 'Reduced Sodium')
     .replace(/\s+/g, ' ')
     .trim()
   return [...new Set([base, simplified].filter(Boolean))]
@@ -215,7 +243,10 @@ function scoreCandidate(item: InstacartItem, candidate: OffProduct, index: numbe
   const protein = macroFromOff(candidate, 'proteins')
   const carbs = macroFromOff(candidate, 'carbohydrates')
   const fat = macroFromOff(candidate, 'fat')
-  if (kcal !== null && kcal > 0 && protein !== null && carbs !== null && fat !== null) score += 3
+  const hasCompleteMacros = kcal !== null && protein !== null && carbs !== null && fat !== null
+  const hasPositiveEnergy = hasCompleteMacros && kcal > 0
+  const isZeroCalorieDrink = hasCompleteMacros && kcal === 0 && protein === 0 && carbs === 0 && fat === 0 && item.category.toLowerCase() === 'beverages'
+  if (hasPositiveEnergy || isZeroCalorieDrink) score += 3
   else warnings.push('incomplete_macros')
 
   if ((candidate.serving_quantity ?? 0) > 0) score += 1
@@ -320,7 +351,7 @@ async function main() {
     const normalized = normalizeFoodText(item.itemName)
     return !productNames.has(normalized) && !aliasNames.has(normalized)
   })
-  const pilotItems = uncovered.filter(isFrozenDessertPilotItem).slice(0, args.limit)
+  const pilotItems = uncovered.filter((item) => isPilotItem(item, args.lane)).slice(0, args.limit)
 
   const results: PilotResult[] = []
   for (const item of pilotItems) {
