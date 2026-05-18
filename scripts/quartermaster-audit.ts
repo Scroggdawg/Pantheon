@@ -30,6 +30,10 @@ type FindingType =
   | 'unit_missing_or_weak'
   | 'user_measurement_not_preserved'
   | 'joke_or_non_food'
+  | 'save_failed_event'
+  | 'parse_failed_event'
+  | 'parse_abandoned_event'
+  | 'edit_event'
   | 'telemetry_gap'
 
 type ActionLane =
@@ -104,6 +108,19 @@ interface FoodLogRow {
     error?: string
   } | null
   saved_meal_id?: string | null
+  created_at: string
+}
+
+interface FoodLogEventRow {
+  id: string
+  user_id: string
+  food_log_entry_id: string | null
+  session_id: string | null
+  event_type: string
+  raw_input_text: string | null
+  payload: Record<string, unknown> | null
+  client_platform: string | null
+  app_version: string | null
   created_at: string
 }
 
@@ -229,6 +246,40 @@ async function fetchAllFoodLogs(
   }
 
   return limit === null ? rows : rows.slice(0, limit)
+}
+
+async function fetchAllFoodLogEvents(
+  supabase: SupabaseClient,
+  sinceIso: string | null,
+  limit: number | null,
+): Promise<{ rows: FoodLogEventRow[]; available: boolean; error: string | null }> {
+  const rows: FoodLogEventRow[] = []
+  const pageSize = 1000
+
+  for (let from = 0; ; from += pageSize) {
+    const to = from + pageSize - 1
+    let query = supabase
+      .from('food_log_events')
+      .select('id,user_id,food_log_entry_id,session_id,event_type,raw_input_text,payload,client_platform,app_version,created_at')
+      .order('created_at', { ascending: true })
+      .range(from, to)
+
+    if (sinceIso) query = query.gte('created_at', sinceIso)
+    if (limit !== null) query = query.range(from, Math.min(to, limit - 1))
+
+    const { data, error } = await query
+    if (error) {
+      if (/food_log_events|schema cache|does not exist/i.test(error.message)) {
+        return { rows: [], available: false, error: error.message }
+      }
+      throw new Error(`food_log_events query failed: ${error.message}`)
+    }
+
+    rows.push(...((data ?? []) as FoodLogEventRow[]))
+    if (!data || data.length < pageSize || (limit !== null && rows.length >= limit)) break
+  }
+
+  return { rows: limit === null ? rows : rows.slice(0, limit), available: true, error: null }
 }
 
 async function fetchLiveRefs(supabase: SupabaseClient) {
@@ -553,6 +604,66 @@ function inspectTranscript(row: FoodLogRow, findings: Finding[]) {
   }
 }
 
+function inspectEvents(events: FoodLogEventRow[], findings: Finding[]) {
+  for (const event of events) {
+    const row: FoodLogRow = {
+      id: event.food_log_entry_id ?? event.id,
+      user_id: event.user_id,
+      logged_at: event.created_at,
+      meal_label: null,
+      log_method: null,
+      raw_input_text: event.raw_input_text,
+      foods_json: null,
+      total_calories: null,
+      total_protein_g: null,
+      total_carbs_g: null,
+      total_fat_g: null,
+      claude_parse_json: null,
+      saved_meal_id: null,
+      created_at: event.created_at,
+    }
+
+    if (event.event_type === 'save_failed') {
+      pushFinding(findings, row, {
+        type: 'save_failed_event',
+        severity: 'high',
+        action_lane: 'native_ui_or_telemetry',
+        summary: 'Native reported a failed save.',
+        evidence: { event },
+      })
+    } else if (event.event_type === 'parse_failed') {
+      pushFinding(findings, row, {
+        type: 'parse_failed_event',
+        severity: 'high',
+        action_lane: 'parser_bug',
+        summary: 'Native reported a failed parse.',
+        evidence: { event },
+      })
+    } else if (event.event_type === 'parse_abandoned') {
+      pushFinding(findings, row, {
+        type: 'parse_abandoned_event',
+        severity: 'medium',
+        action_lane: 'native_ui_or_telemetry',
+        summary: 'Native reported a parse or plate was abandoned.',
+        evidence: { event },
+      })
+    } else if (
+      event.event_type === 'food_item_edited' ||
+      event.event_type === 'food_item_deleted' ||
+      event.event_type === 'food_item_added' ||
+      event.event_type === 'disambiguation_selected'
+    ) {
+      pushFinding(findings, row, {
+        type: 'edit_event',
+        severity: 'medium',
+        action_lane: event.event_type === 'disambiguation_selected' ? 'alias_add' : 'product_unit_add',
+        summary: `Native reported ${event.event_type.replaceAll('_', ' ')}.`,
+        evidence: { event },
+      })
+    }
+  }
+}
+
 function increment(map: Record<string, number>, key: string) {
   map[key] = (map[key] ?? 0) + 1
 }
@@ -640,10 +751,12 @@ async function main() {
   const generatedAt = new Date().toISOString()
   const sinceIso = sinceToIso(args.since)
 
-  const [rows, refs] = await Promise.all([
+  const [rows, eventResult, refs] = await Promise.all([
     fetchAllFoodLogs(supabase, sinceIso, args.limit),
+    fetchAllFoodLogEvents(supabase, sinceIso, args.limit),
     fetchLiveRefs(supabase),
   ])
+  const events = eventResult.rows
 
   const findings: Finding[] = []
   const pathCounts: Record<string, number> = {}
@@ -670,6 +783,7 @@ async function main() {
     compareFoods(row, findings)
     inspectFoodSources(row, findings, refs.savedMealIds, refs.productIds)
   }
+  inspectEvents(events, findings)
 
   const dedupedFindings = dedupeFindings(findings)
   const findingCounts: Record<string, number> = {}
@@ -686,6 +800,8 @@ async function main() {
     summary: {
       rows_read: rows.length,
       rows_with_raw_input: rowsWithRawInput,
+      event_rows_read: events.length,
+      event_table_available: eventResult.available ? 'yes' : 'no',
       rows_with_parse_foods: rowsWithParseFoods,
       rows_with_saved_foods: rowsWithSavedFoods,
       parse_vs_save_comparable_rows: comparableRows,
@@ -700,9 +816,11 @@ async function main() {
     action_counts: actionCounts,
     findings: dedupedFindings,
     data_gaps: [
-      'The current food_log_entries table only sees saved logs. Parse attempts that failed before save or were abandoned are not fully visible yet.',
-      'The app does not currently store exact edit gestures, so parse-vs-save corrections are inferred from before/after payloads.',
-      'The app does not currently store a dedicated event when displayed units are unreadable or truncated; Quartermaster infers this from transcript units and saved units.',
+      eventResult.available
+        ? 'food_log_events is available. Failed saves, abandoned parses, and edit gestures depend on native clients sending events.'
+        : `food_log_events is not available yet: ${eventResult.error ?? 'unknown error'}`,
+      'Rows before Quartermaster v1 native telemetry still lack exact edit gestures, so parse-vs-save corrections remain inferred for historical logs.',
+      'The app does not currently store a dedicated event when displayed units are unreadable or truncated; Quartermaster infers this from transcript units and saved units unless Luke reports it directly.',
     ],
   }
 
@@ -716,6 +834,7 @@ async function main() {
   console.log('')
   console.log(`run_id: ${runId}`)
   console.log(`rows_read: ${rows.length}`)
+  console.log(`events_read: ${events.length}`)
   console.log(`findings: ${dedupedFindings.length}`)
   console.log(`json: ${args.json ? `${basePath}.json` : 'skipped'}`)
   console.log(`markdown: ${args.markdown ? `${basePath}.md` : 'skipped'}`)
