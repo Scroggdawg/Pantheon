@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "name": "Instacart Generic Aliases 1",
+  "doctrine": {
+    "source": "Local Instacart item export; raw CSV remains uncommitted.",
+    "macro_equivalence_threshold": "Use a generic alias when the food is the same practical food, the prep state matches, and calories are within about 10% or 10 kcal per 100g with no structural macro difference.",
+    "do_not_collapse": [
+      "raw vs cooked",
+      "dry vs cooked",
+      "fried or breaded vs raw",
+      "light vs full-fat",
+      "whole egg vs yolk or white",
+      "meat leanness percentages",
+      "pickled vs raw when sodium/prep matters",
+      "branded prepared foods"
+    ]
+  },
+  "aliases": [
+    {
+      "alias": "village farms sinfully sweet campari tomatoes",
+      "target_name": "Tomatoes, grape, raw",
+      "confidence": "high",
+      "reason": "Campari tomatoes are a raw fresh tomato variant; route to the existing generic raw tomato anchor."
+    },
+    {
+      "alias": "lazy acres organic cilantro",
+      "target_name": "Cilantro, raw",
+      "confidence": "high",
+      "reason": "Store and organic labels do not change raw cilantro identity."
+    },
+    {
+      "alias": "organic green onions scallions bunch",
+      "target_name": "Onions, green, raw",
+      "confidence": "high",
+      "reason": "Scallions and green onions are the same practical raw food."
+    },
+    {
+      "alias": "lazy acres organic spaghetti squash",
+      "target_name": "Squash, winter, spaghetti, raw",
+      "confidence": "high",
+      "reason": "Store and organic labels do not change raw spaghetti squash identity."
+    },
+    {
+      "alias": "lazy acres organic sweet potato",
+      "target_name": "Sweet potatoes, orange flesh, without skin, raw",
+      "confidence": "high",
+      "reason": "Grocery wording for raw sweet potato; existing anchor preserves raw state."
+    },
+    {
+      "alias": "lazy acres organic broccoli",
+      "target_name": "Broccoli Florets",
+      "confidence": "high",
+      "reason": "Grocery wording for raw broccoli; route to existing broccoli anchor."
+    },
+    {
+      "alias": "lazy acres organic hass avocados",
+      "target_name": "Avocado, raw",
+      "confidence": "high",
+      "reason": "Hass avocado variants route to generic edible raw avocado."
+    },
+    {
+      "alias": "organic banana",
+      "target_name": "Bananas",
+      "confidence": "high",
+      "reason": "Organic label does not change banana identity."
+    },
+    {
+      "alias": "homegrown organic farms organic blueberries",
+      "target_name": "Blueberries",
+      "confidence": "high",
+      "reason": "Brand and organic labels do not change blueberry identity."
+    },
+    {
+      "alias": "happy egg free range large brown grade a eggs",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Brand/housing/color labels route to large eggs; does not collapse to yolk or whites."
+    },
+    {
+      "alias": "knudsen small curd low fat cottage cheese",
+      "target_name": "Cheese, cottage, lowfat, 2% milkfat",
+      "confidence": "high",
+      "reason": "Low-fat cottage cheese routes to existing 2% cottage cheese anchor."
+    },
+    {
+      "alias": "daves killer bread 21 whole grains and seeds organic bread",
+      "target_name": "Dave's Killer Bread - 21 Whole Grains and Seeds",
+      "confidence": "high",
+      "reason": "Exact branded bread variant already exists as a pantry product."
+    },
+    {
+      "alias": "h e b bakery sea salt tortilla chips",
+      "target_name": "Tortilla chips, yellow, plain, salted",
+      "confidence": "medium",
+      "reason": "Plain salted tortilla chips route to generic tortilla chips; brand ignored for macro speed."
+    },
+    {
+      "alias": "harmless harvest organic coconut water",
+      "target_name": "Harmless Harvest Coconut Water",
+      "confidence": "high",
+      "reason": "Brand-specific coconut water anchor already exists."
+    },
+    {
+      "alias": "silk almond milk dark chocolate dairy free",
+      "target_name": "Beverages, almond milk, chocolate, ready-to-drink",
+      "confidence": "medium",
+      "reason": "Chocolate almond milk routes to the existing generic USDA chocolate almond milk anchor."
+    },
+    {
+      "alias": "gotham greens basil",
+      "target_name": "Basil, raw",
+      "confidence": "high",
+      "reason": "Brand label does not change raw basil identity."
+    },
+    {
+      "alias": "jennie o ground turkey 93 lean 7 fat",
+      "target_name": "Turkey, ground, 93% lean/ 7% fat, raw",
+      "confidence": "high",
+      "reason": "Leanness is preserved exactly at 93/7."
+    },
+    {
+      "alias": "cilantro bunch",
+      "target_name": "Cilantro, raw",
+      "confidence": "high",
+      "reason": "Bunch is a purchase unit, not a different food."
+    },
+    {
+      "alias": "fresh bunch of bananas 5 7 bananas",
+      "target_name": "Bananas",
+      "confidence": "high",
+      "reason": "Purchase quantity wording routes to bananas."
+    },
+    {
+      "alias": "kroger grade aa large white cage free eggs",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Brand/housing/color labels route to large eggs; does not collapse to yolk or whites."
+    },
+    {
+      "alias": "lime bag",
+      "target_name": "Lime, raw",
+      "confidence": "high",
+      "reason": "Bag is packaging; raw lime identity remains."
+    },
+    {
+      "alias": "sun pacific lemons",
+      "target_name": "Lemon, raw",
+      "confidence": "high",
+      "reason": "Brand label does not change raw lemon identity."
+    },
+    {
+      "alias": "motts original applesauce",
+      "target_name": "Mott's Applesauce",
+      "confidence": "high",
+      "reason": "Brand-specific applesauce anchor already exists."
+    },
+    {
+      "alias": "shallot",
+      "target_name": "Shallots, raw",
+      "confidence": "high",
+      "reason": "Singular spoken form routes to existing raw shallots."
+    },
+    {
+      "alias": "green onions scallions",
+      "target_name": "Onions, green, raw",
+      "confidence": "high",
+      "reason": "Scallions and green onions are the same practical raw food."
+    }
+  ]
+}

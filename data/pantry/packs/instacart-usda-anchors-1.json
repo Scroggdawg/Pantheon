@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "name": "Instacart USDA Anchors 1",
+  "target_count": 10,
+  "luke_food_profile": {
+    "core_cuisines": ["mexican", "thai", "italian", "breakfast", "baking"],
+    "restaurants": [],
+    "protein_anchors": [],
+    "staple_categories": ["actual Instacart history", "produce", "herbs", "baking staples", "dairy basics"]
+  },
+  "already_covered": [
+    "Apple, raw",
+    "Avocado, raw",
+    "Bananas",
+    "Basil, raw",
+    "Bell Peppers",
+    "Blueberries",
+    "Broccoli Florets",
+    "Cilantro, raw",
+    "Eggs - Large",
+    "Ginger root, raw",
+    "Lemon, raw",
+    "Lime, raw",
+    "Onions, green, raw",
+    "Shallots, raw",
+    "Squash, winter, spaghetti, raw",
+    "Strawberries",
+    "Sweet potatoes, orange flesh, without skin, raw",
+    "Tomatoes, grape, raw"
+  ],
+  "allocation": {
+    "whole_foods": 4,
+    "proteins": 0,
+    "cuisine_staples": 3,
+    "sauces_condiments_oils": 1,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 0,
+    "coverage_buffer": 2
+  },
+  "categories": {
+    "whole_foods": [
+      "cucumber raw",
+      "serrano peppers raw",
+      "lemongrass raw",
+      "mint raw"
+    ],
+    "proteins": [],
+    "cuisine_staples": [
+      "all purpose flour",
+      "granulated sugar",
+      "iodized salt"
+    ],
+    "sauces_condiments_oils": [
+      "unsalted butter"
+    ],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [],
+    "coverage_buffer": [
+      "low fat buttermilk",
+      "plain nonfat greek yogurt"
+    ]
+  },
+  "count_unit_grams": {
+    "cucumber": 200,
+    "serrano": 6,
+    "pepper": 6,
+    "stalk": 20,
+    "bunch": 40,
+    "leaf": 0.2,
+    "cup": 240,
+    "tbsp": 15,
+    "tsp": 5,
+    "stick": 113,
+    "oz": 28.35
+  },
+  "review_only_patterns": [
+    "brand",
+    "branded",
+    "restaurant",
+    "fast food",
+    "prepared",
+    "sandwich",
+    "pizza",
+    "salad",
+    "sushi",
+    "poke",
+    "bowl",
+    "sausage",
+    "smoothie",
+    "electrolyte",
+    "protein",
+    "with sauce",
+    "sweetened",
+    "flavored",
+    "vanilla",
+    "chocolate",
+    "frozen",
+    "fried"
+  ]
+}

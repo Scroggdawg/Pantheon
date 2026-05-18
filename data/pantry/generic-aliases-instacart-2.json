@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "name": "Instacart Generic Aliases 2",
+  "doctrine": {
+    "source": "Local Instacart item export; raw CSV remains uncommitted.",
+    "macro_equivalence_threshold": "Use a generic alias when the food is the same practical food, the prep state matches, and calories are within about 10% or 10 kcal per 100g with no structural macro difference.",
+    "do_not_collapse": [
+      "raw vs cooked",
+      "dry vs cooked",
+      "fried or breaded vs raw",
+      "light vs full-fat",
+      "whole egg vs yolk or white",
+      "meat leanness percentages",
+      "pickled vs raw when sodium/prep matters",
+      "branded prepared foods"
+    ]
+  },
+  "aliases": [
+    {
+      "alias": "driscolls strawberries",
+      "target_name": "Strawberries",
+      "confidence": "high",
+      "reason": "Brand label does not change strawberry identity."
+    },
+    {
+      "alias": "lazy acres organic limes",
+      "target_name": "Lime, raw",
+      "confidence": "high",
+      "reason": "Store and organic labels do not change raw lime identity."
+    },
+    {
+      "alias": "red bell peppers",
+      "target_name": "Bell Peppers",
+      "confidence": "high",
+      "reason": "Bell pepper colors are close enough for generic bell pepper logging."
+    },
+    {
+      "alias": "lazy acres organic red bell peppers",
+      "target_name": "Bell Peppers",
+      "confidence": "high",
+      "reason": "Store and organic labels do not change bell pepper identity."
+    },
+    {
+      "alias": "josies organics organic baby arugula",
+      "target_name": "Arugula, raw",
+      "confidence": "high",
+      "reason": "Brand, organic, and baby-leaf labels route to raw arugula."
+    },
+    {
+      "alias": "knudsen low fat cottage cheese small curd 2 milkfat",
+      "target_name": "Cheese, cottage, lowfat, 2% milkfat",
+      "confidence": "high",
+      "reason": "Fat level is preserved at 2% cottage cheese."
+    },
+    {
+      "alias": "knudsen half and half ultra pasteurized quart",
+      "target_name": "Cream, half and half",
+      "confidence": "high",
+      "reason": "Brand and package size do not change half-and-half identity."
+    },
+    {
+      "alias": "organic valley half and half",
+      "target_name": "Cream, half and half",
+      "confidence": "high",
+      "reason": "Brand label does not change half-and-half identity."
+    },
+    {
+      "alias": "horizon organic half and half",
+      "target_name": "Cream, half and half",
+      "confidence": "high",
+      "reason": "Brand label does not change half-and-half identity."
+    },
+    {
+      "alias": "red on the vine tomato",
+      "target_name": "Tomatoes, grape, raw",
+      "confidence": "high",
+      "reason": "Fresh raw tomato variant routes to the generic raw tomato anchor."
+    },
+    {
+      "alias": "large red onions",
+      "target_name": "Onions, red, raw",
+      "confidence": "high",
+      "reason": "Size label does not change raw red onion identity."
+    },
+    {
+      "alias": "organic ginger root",
+      "target_name": "Ginger root, raw",
+      "confidence": "high",
+      "reason": "Organic label does not change raw ginger identity."
+    },
+    {
+      "alias": "organic green cabbage",
+      "target_name": "Cabbage, green, raw",
+      "confidence": "high",
+      "reason": "Organic label does not change raw green cabbage identity."
+    },
+    {
+      "alias": "straus family creamery organic greek plain nonfat",
+      "target_name": "Yogurt, Greek, plain, nonfat",
+      "confidence": "high",
+      "reason": "Nonfat plain Greek yogurt identity is preserved."
+    },
+    {
+      "alias": "siggis icelandic skyr nonfat yogurt plain",
+      "target_name": "Plain Skyr",
+      "confidence": "high",
+      "reason": "Brand-specific plain skyr anchor already exists."
+    },
+    {
+      "alias": "ocean mist farms broccoli crown",
+      "target_name": "Broccoli Florets",
+      "confidence": "high",
+      "reason": "Broccoli crown routes to existing broccoli anchor."
+    },
+    {
+      "alias": "happy egg organic free range large brown grade a eggs",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Brand/housing/color labels route to large eggs."
+    },
+    {
+      "alias": "nellies free range eggs",
+      "target_name": "Eggs - Large",
+      "confidence": "high",
+      "reason": "Brand and housing labels route to large eggs."
+    },
+    {
+      "alias": "bob s red mill white all purpose baking flour unbleached",
+      "target_name": "Flour, wheat, all-purpose, enriched, bleached",
+      "confidence": "medium",
+      "reason": "All-purpose flour variants are close enough for calorie/macro logging; bleached/unbleached is not a structural macro difference."
+    },
+    {
+      "alias": "c h premium pure cane granulated sugar",
+      "target_name": "Sugars, granulated",
+      "confidence": "high",
+      "reason": "Brand label does not change granulated sugar identity."
+    },
+    {
+      "alias": "knudsen cultured 2 reduced fat buttermilk",
+      "target_name": "Buttermilk, low fat",
+      "confidence": "high",
+      "reason": "Reduced-fat buttermilk routes to low-fat buttermilk anchor."
+    },
+    {
+      "alias": "fruitist jumbo blueberries",
+      "target_name": "Blueberries",
+      "confidence": "high",
+      "reason": "Brand and size labels do not change blueberry identity."
+    },
+    {
+      "alias": "lazy acres onions shallots organic",
+      "target_name": "Shallots, raw",
+      "confidence": "high",
+      "reason": "Store and organic labels do not change raw shallot identity."
+    },
+    {
+      "alias": "organic raspberries package",
+      "target_name": "Raspberries, raw",
+      "confidence": "high",
+      "reason": "Organic and package labels do not change raspberry identity."
+    },
+    {
+      "alias": "driscolls organic blueberries",
+      "target_name": "Blueberries",
+      "confidence": "high",
+      "reason": "Brand and organic labels do not change blueberry identity."
+    }
+  ]
+}

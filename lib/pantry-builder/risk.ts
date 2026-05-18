@@ -96,6 +96,7 @@ const STATE_MODIFIERS = [
   'nugget',
   'nuggets',
   'new zealand',
+  'no butter',
   'overripe',
   'oyster',
   'pastry',

@@ -295,6 +295,17 @@ function testRisk() {
       .decision,
     'review_required',
   )
+  const noButterPretzel = classifyPantryCandidate(
+    candidate({
+      target_query: 'unsalted butter',
+      display_name: 'Pretzels, soft, ready-to-eat, unsalted, no butter',
+      category: 'sauces_condiments_oils',
+    }),
+    existing,
+    [],
+  )
+  assert.equal(noButterPretzel.decision, 'review_required')
+  assert.ok(noButterPretzel.reasons.includes('state_modifier_mismatch_no butter'))
   const brandedCandidate = candidate()
   brandedCandidate.proposed_product.brand = 'Example Brand'
   assert.equal(classifyPantryCandidate(brandedCandidate, existing, []).decision, 'review_required')
