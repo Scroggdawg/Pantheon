@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "name": "Instacart USDA Anchors 2",
+  "target_count": 8,
+  "luke_food_profile": {
+    "core_cuisines": ["mexican", "thai", "italian", "breakfast", "baking"],
+    "restaurants": [],
+    "protein_anchors": [],
+    "staple_categories": ["actual Instacart history", "held anchors", "produce", "herbs", "baking staples", "grain staples"]
+  },
+  "already_covered": [
+    "Apple, raw",
+    "Avocado, raw",
+    "Bananas",
+    "Basil, raw",
+    "Bell Peppers",
+    "Blueberries",
+    "Broccoli Florets",
+    "Buttermilk, low fat",
+    "Carrots, baby, raw",
+    "Cilantro, raw",
+    "Cream, half and half",
+    "Eggs - Large",
+    "Flour, wheat, all-purpose, enriched, bleached",
+    "Ginger root, raw",
+    "Lemon, raw",
+    "Lime, raw",
+    "Onions, green, raw",
+    "Pear, raw",
+    "Shallots, raw",
+    "Squash, winter, spaghetti, raw",
+    "Strawberries",
+    "Sugars, granulated",
+    "Sweet potatoes, orange flesh, without skin, raw",
+    "Tomatoes, grape, raw"
+  ],
+  "allocation": {
+    "whole_foods": 4,
+    "proteins": 0,
+    "cuisine_staples": 3,
+    "sauces_condiments_oils": 1,
+    "breakfast_snacks": 0,
+    "beverages": 0,
+    "prepared_common": 0,
+    "coverage_buffer": 0
+  },
+  "categories": {
+    "whole_foods": [
+      "cucumber with peel raw",
+      "serrano peppers raw",
+      "mint raw",
+      "lemongrass raw"
+    ],
+    "proteins": [],
+    "cuisine_staples": [
+      "rice white cooked",
+      "rice jasmine cooked",
+      "iodized salt"
+    ],
+    "sauces_condiments_oils": [
+      "butter unsalted"
+    ],
+    "breakfast_snacks": [],
+    "beverages": [],
+    "prepared_common": [],
+    "coverage_buffer": []
+  },
+  "count_unit_grams": {
+    "cucumber": 200,
+    "serrano": 6,
+    "pepper": 6,
+    "stalk": 20,
+    "bunch": 40,
+    "leaf": 0.2,
+    "cup": 158,
+    "tbsp": 14,
+    "tsp": 6,
+    "stick": 113,
+    "oz": 28.35
+  },
+  "review_only_patterns": [
+    "brand",
+    "branded",
+    "restaurant",
+    "fast food",
+    "prepared",
+    "sandwich",
+    "pizza",
+    "salad",
+    "sushi",
+    "poke",
+    "bowl",
+    "sausage",
+    "smoothie",
+    "electrolyte",
+    "protein",
+    "with sauce",
+    "sweetened",
+    "flavored",
+    "vanilla",
+    "chocolate",
+    "frozen",
+    "fried",
+    "cocktail",
+    "julep",
+    "soup",
+    "pretzel",
+    "rice mix"
+  ]
+}
