@@ -194,6 +194,12 @@ interface WorkPacket {
   title: string
   recommended_action: string
   why_it_matters: string
+  root_cause_hypothesis: string
+  likely_surfaces: string[]
+  acceptance_criteria: string[]
+  regression_tests: string[]
+  do_not_do: string
+  expected_metric: string
   evidence_count: number
   finding_types: FindingType[]
   example_transcripts: string[]
@@ -1027,6 +1033,14 @@ function renderMarkdown(report: AuditReport) {
     lines.push(`- finding_types: ${packet.finding_types.join(', ')}`)
     lines.push(`- recommended_action: ${packet.recommended_action}`)
     lines.push(`- why_it_matters: ${packet.why_it_matters}`)
+    lines.push(`- root_cause_hypothesis: ${packet.root_cause_hypothesis}`)
+    lines.push(`- likely_surfaces: ${packet.likely_surfaces.join(', ')}`)
+    lines.push(`- acceptance_criteria:`)
+    for (const criterion of packet.acceptance_criteria) lines.push(`  - ${criterion}`)
+    lines.push(`- regression_tests:`)
+    for (const test of packet.regression_tests) lines.push(`  - ${test}`)
+    lines.push(`- do_not_do: ${packet.do_not_do}`)
+    lines.push(`- expected_metric: ${packet.expected_metric}`)
     for (const transcript of packet.example_transcripts) lines.push(`- example: ${transcript}`)
     lines.push('')
   }
@@ -1335,6 +1349,92 @@ function whyItMatters(type: FindingType): string {
   return 'This is real user-behavior evidence, not theoretical parser hygiene.'
 }
 
+function rootCauseHypothesis(type: FindingType, lane: ActionLane): string {
+  if (type === 'duplicate_food_row') return 'A parse segment or candidate merge path is allowing one intended item to survive as multiple saved plate rows.'
+  if (type === 'user_measurement_not_preserved') return 'The parse may know the spoken quantity, but display/save normalization is replacing it with a generic unit surface.'
+  if (type === 'source_ref_stale') return 'Historical library evidence is being reused as a live parent identity without verifying the referenced saved meal still exists.'
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'The fast pantry/library path lacks enough identity, alias, unit, or segmentation knowledge for this phrase.'
+  if (type === 'parse_saved_delta_calories') return 'Parsed and saved nutrition diverged; this may be a user correction, a bad match, or a unit conversion issue.'
+  if (type === 'parse_saved_delta_food_count') return 'The parse and saved plate disagree about how many foods belong on the plate.'
+  if (type === 'parse_saved_name_changed') return 'The selected/saved identity differs from the parsed identity, which may indicate correction or alias mismatch.'
+  if (type === 'parse_saved_unit_changed' || type === 'parse_saved_quantity_changed') return 'The portion representation changed between parse and save, likely through unit normalization or edit flow.'
+  if (type === 'save_failed_event') return 'The native save payload or backend insert path rejected a value that should degrade gracefully.'
+  if (type === 'parse_failed_event') return 'The parser failed before producing a usable plate.'
+  if (type === 'parse_abandoned_event') return 'The user left the flow before save; the result may have been confusing, wrong, too slow, or interrupted.'
+  if (type === 'edit_event') return 'The user took a corrective action that Quartermaster should preserve as intent evidence.'
+  if (type === 'unit_missing_or_weak') return 'The product exists but lacks natural logging units or unit alternatives.'
+  if (type === 'llm_estimated_saved' || type === 'database_estimated_saved') return 'An estimated item reached the saved plate where a reviewed pantry/product identity would be stronger.'
+  if (type === 'low_confidence_saved') return 'A low-confidence match was accepted or saved without enough certainty.'
+  if (type === 'source_ref_chained') return 'A derived/history source ref is being emitted as though it were a durable canonical identity.'
+  if (type === 'joke_or_non_food') return 'The utterance likely was not intended as a nutrition log.'
+  if (lane === 'pantry_product_add') return 'The pantry lacks a reviewed product or ingredient identity for this real user phrase.'
+  return 'The evidence points to a real user-facing mismatch, but the root cause still needs review.'
+}
+
+function likelySurfaces(type: FindingType, lane: ActionLane): string[] {
+  if (type === 'duplicate_food_row') return ['parser segmentation', 'candidate merge/dedupe', 'plate normalization', 'parser regression tests']
+  if (type === 'user_measurement_not_preserved') return ['native plate display', 'parser unit output', 'unit alternatives', 'save payload']
+  if (type === 'source_ref_stale') return ['library search', 'hourly/recent history', 'saved meal refs', 'backend save guard']
+  if (type === 'source_ref_chained') return ['library search', 'history evidence', 'source_ref emission', 'parser response shaping']
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') return ['pantry aliases', 'library shortcut', 'segmented resolver', 'parser guards']
+  if (type === 'parse_saved_delta_calories' || type === 'parse_saved_delta_food_count' || type === 'parse_saved_name_changed') return ['parse output', 'candidate selection', 'native edits', 'saved foods_json']
+  if (type === 'parse_saved_unit_changed' || type === 'parse_saved_quantity_changed' || type === 'unit_missing_or_weak') return ['product units', 'unit alternatives', 'native edit flow', 'portion conversion']
+  if (type === 'save_failed_event') return ['native save payload', '/api/meals/log', 'food_log_entries insert', 'backend validation']
+  if (type === 'parse_failed_event') return ['parse route', 'transcription payload', 'fallback parser', 'error telemetry']
+  if (type === 'parse_abandoned_event' || type === 'edit_event') return ['native telemetry', 'edit/delete actions', 'session join', 'Quartermaster event grouping']
+  if (lane === 'pantry_product_add') return ['products table', 'pantry aliases', 'unit alternatives', 'Pantry Forge']
+  return [ownerForLane(lane)]
+}
+
+function acceptanceCriteria(type: FindingType): string[] {
+  if (type === 'duplicate_food_row') return ['The original phrase produces one row for the intended single food.', 'Total calories/macros no longer include duplicated rows.', 'A regression test fails if the duplicate returns.']
+  if (type === 'user_measurement_not_preserved') return ['The visible plate preserves the spoken unit and quantity.', 'The saved row keeps enough unit metadata for Quartermaster to verify it.', 'The user can visually confirm what they said.']
+  if (type === 'source_ref_stale') return ['No live parse/candidate/save payload emits the stale source_ref.', 'Historical evidence can still rank results without acting as a live parent.', 'Saving succeeds even if stale refs appear in old logs.']
+  if (type === 'source_ref_chained') return ['Derived history refs are stripped, downgraded, or mapped before reaching saved plate output.', 'Canonical product/saved meal refs remain intact.', 'Quartermaster no longer reports the chained ref for the replay phrase.']
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') return ['The replay phrase resolves without slow fallback where practical.', 'Parse latency improves on the replay phrase.', 'The chosen identity remains nutritionally correct.']
+  if (type === 'parse_saved_delta_calories' || type === 'parse_saved_delta_food_count' || type === 'parse_saved_name_changed') return ['The delta is classified as user correction, parser bug, or acceptable ambiguity.', 'Only confirmed bugs become code/data changes.', 'A replay or review artifact documents the decision.']
+  if (type === 'parse_saved_unit_changed' || type === 'parse_saved_quantity_changed') return ['The intended portion survives parse, display, and save.', 'Unit conversion math is checked against the product facts.', 'Quartermaster no longer flags the same replay phrase.']
+  if (type === 'save_failed_event') return ['The exact failing payload saves or degrades gracefully.', 'Backend returns a useful warning instead of blocking the log when possible.', 'A regression test covers the failure class.']
+  if (type === 'parse_failed_event') return ['The phrase returns a usable plate or a clear non-food/error classification.', 'The parser records enough telemetry to diagnose any future failure.']
+  if (type === 'unit_missing_or_weak') return ['The food has natural units Luke uses.', 'Unit alternatives include conversions needed for the phrase.', 'The pantry item remains reviewed and non-estimated where possible.']
+  return ['The replay evidence no longer produces this finding.', 'The fix is covered by the smallest relevant regression check.']
+}
+
+function regressionTests(type: FindingType, examples: string[]): string[] {
+  const replay = examples.slice(0, 3).map((example) => `Replay: ${example}`)
+  if (type === 'duplicate_food_row') return [...replay, 'Assert duplicate row count is zero for same name/unit/macros.']
+  if (type === 'user_measurement_not_preserved') return [...replay, 'Assert spoken unit appears in displayed/saved food evidence.']
+  if (type === 'source_ref_stale' || type === 'source_ref_chained') return [...replay, 'Assert emitted source_ref is live canonical ref or null, not stale/history-derived.']
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') return [...replay, 'Assert parser path is deterministic fast path when product coverage exists.']
+  if (type === 'save_failed_event') return [...replay, 'Post the original save payload to /api/meals/log and assert success or graceful degradation.']
+  if (type === 'unit_missing_or_weak') return [...replay, 'Assert unit alternatives contain Luke-spoken unit.']
+  return replay.length > 0 ? replay : ['Add a regression around the strongest example transcript.']
+}
+
+function doNotDo(type: FindingType, lane: ActionLane): string {
+  if (type === 'duplicate_food_row') return 'Do not hide the problem by changing calories or merging totals after the fact.'
+  if (type === 'user_measurement_not_preserved') return 'Do not replace a concrete spoken unit with "serving" unless the app explicitly explains the conversion.'
+  if (type === 'source_ref_stale') return 'Do not recreate deleted saved meals just to satisfy old historical refs.'
+  if (type === 'source_ref_chained') return 'Do not treat hourly/recent-history refs as durable canonical IDs.'
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Do not accept repeated daily foods staying on the expensive fallback path.'
+  if (type === 'parse_saved_delta_calories' || type === 'parse_saved_delta_food_count' || type === 'parse_saved_name_changed') return 'Do not create aliases or product writes until the delta is understood.'
+  if (type === 'save_failed_event') return 'Do not make the user lose a log because strict backend metadata failed.'
+  if (lane === 'pantry_product_add') return 'Do not add unreviewed branded/composite rows as generic pantry truth.'
+  return 'Do not turn one ambiguous symptom into broad doctrine without replay evidence.'
+}
+
+function expectedMetric(type: FindingType, lane: ActionLane): string {
+  if (type === 'duplicate_food_row') return 'duplicate_food_row count decreases; accepted unchanged rate increases for replay phrases'
+  if (type === 'user_measurement_not_preserved') return 'user_measurement_not_preserved count decreases; unit preservation rate increases'
+  if (type === 'source_ref_stale') return 'source_ref_stale count decreases; save failures from stale refs remain zero'
+  if (type === 'source_ref_chained') return 'source_ref_chained count decreases'
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'average parse latency and LLM fallback rate decrease for repeated phrases'
+  if (type === 'save_failed_event') return 'save_failed_events decrease; save success rate increases'
+  if (type === 'unit_missing_or_weak') return 'unit_missing_or_weak count decreases for repeated foods'
+  if (lane === 'pantry_product_add') return 'coverage failures and estimated saved items decrease'
+  return 'repeat findings for the same transcript decrease in the next cycle'
+}
+
 function packetClusterKey(finding: Finding): string {
   const measurement = recordFromUnknown(finding.evidence.measurement)
   const sourceRef = typeof finding.evidence.source_ref === 'string' ? finding.evidence.source_ref : null
@@ -1365,6 +1465,9 @@ function buildWorkPackets(findings: Finding[]): WorkPacket[] {
     const severity = highestSeverity(sorted)
     const score = Math.min(100, lead.score + Math.min(25, (sorted.length - 1) * 5))
     const confidence: Confidence = sorted.length >= 2 || severity === 'high' ? 'high' : lead.action_lane === 'manual_review' ? 'low' : 'medium'
+    const exampleTranscripts = [
+      ...new Set(sorted.map((finding) => finding.raw_input_text).filter((value): value is string => Boolean(value))),
+    ].slice(0, 3)
     packets.push({
       id: randomUUID(),
       priority: packetPriority(score),
@@ -1375,11 +1478,15 @@ function buildWorkPackets(findings: Finding[]): WorkPacket[] {
       title: packetTitle(lead.action_lane, lead.type, lead.raw_input_text),
       recommended_action: recommendedAction(lead.type, lead.action_lane),
       why_it_matters: whyItMatters(lead.type),
+      root_cause_hypothesis: rootCauseHypothesis(lead.type, lead.action_lane),
+      likely_surfaces: likelySurfaces(lead.type, lead.action_lane),
+      acceptance_criteria: acceptanceCriteria(lead.type),
+      regression_tests: regressionTests(lead.type, exampleTranscripts),
+      do_not_do: doNotDo(lead.type, lead.action_lane),
+      expected_metric: expectedMetric(lead.type, lead.action_lane),
       evidence_count: sorted.length,
       finding_types: [...new Set(sorted.map((finding) => finding.type))],
-      example_transcripts: [
-        ...new Set(sorted.map((finding) => finding.raw_input_text).filter((value): value is string => Boolean(value))),
-      ].slice(0, 3),
+      example_transcripts: exampleTranscripts,
       finding_ids: sorted.map((finding) => finding.id),
     })
   }
