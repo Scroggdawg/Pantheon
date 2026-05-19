@@ -36,7 +36,12 @@ import type {
   ParsedMealResponse,
 } from '@/types/database'
 
-import { searchUserLibrary } from './tools/search-user-library'
+import { confidenceLabel } from './tools/constants'
+import {
+  searchUserLibrary,
+  type LibrarySearchResult,
+  type LibraryTotal,
+} from './tools/search-user-library'
 
 // Threshold tuning per V15: starting values, refine based on real
 // usage telemetry. Score gate alone is insufficient — gap gate
@@ -75,6 +80,155 @@ export interface LibraryShortcutResult {
   top_score?: number
   second_score?: number
   gap?: number
+  lookup_count?: number
+}
+
+type DextroseIntent = 'none' | 'half' | 'full' | null
+
+function normalizeShortcutText(value: string): string {
+  return (value || '')
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function dextroseIntent(value: string): DextroseIntent {
+  const normalized = normalizeShortcutText(value)
+  if (!/\bdextrose\b/.test(normalized)) return null
+  if (/\b(no|without)\s+dextrose\b/.test(normalized)) return 'none'
+  if (/\bwith\s+no\s+dextrose\b/.test(normalized)) return 'none'
+  if (/\bhalf(?:\s+a)?(?:\s+serving)?\s+(?:of\s+)?(?:nutricost\s+)?dextrose\b/.test(normalized)) {
+    return 'half'
+  }
+  if (/\bhalf\s+dextrose\b/.test(normalized)) return 'half'
+  if (/\b(full|one|1)\s+(?:serving\s+(?:of\s+)?)?(?:nutricost\s+)?dextrose\b/.test(normalized)) {
+    return 'full'
+  }
+  if (/\bwith\s+(?:nutricost\s+)?dextrose\b/.test(normalized)) return 'full'
+  return null
+}
+
+function hasProteinShakeText(value: string): boolean {
+  return /\bprotein\s+shake\b/.test(normalizeShortcutText(value))
+}
+
+function hasDoubleProteinIntent(value: string): boolean {
+  const normalized = normalizeShortcutText(value)
+  return (
+    /\bdouble\s+protein\b/.test(normalized) ||
+    /\b(?:two|2)\s+scoops?\b/.test(normalized) ||
+    /\b(?:two|2)\s+scoop\s+protein\s+shake\b/.test(normalized)
+  )
+}
+
+function isIsopureShakeIngredientShortcutTranscript(value: string): boolean {
+  const normalized = normalizeShortcutText(value)
+  return hasProteinShakeText(value) && /\bisopure\b/.test(normalized)
+}
+
+function foodFromLibraryTotal(args: {
+  name: string
+  qty: number
+  unit: string
+  total: LibraryTotal
+  sourceRef: string | null | undefined
+  score: number
+}): FoodItem {
+  return {
+    name: args.name,
+    qty: args.qty,
+    unit: args.unit,
+    calories: args.total.kcal,
+    protein_g: args.total.protein_g,
+    carbs_g: args.total.carbs_g,
+    fat_g: args.total.fat_g,
+    source: 'library',
+    source_ref: normalizeFoodSourceRef(args.sourceRef),
+    match_confidence: {
+      score: args.score,
+      label: confidenceLabel(args.score),
+      warnings: [],
+    },
+    notes: null,
+  }
+}
+
+export async function tryProteinShakeIngredientShortcut(
+  supabase: SupabaseClient,
+  userId: string,
+  transcript: string,
+): Promise<LibraryShortcutResult | null> {
+  if (!isIsopureShakeIngredientShortcutTranscript(transcript)) return null
+
+  const proteinScoops = hasDoubleProteinIntent(transcript) ? 2 : 1
+  const intent = dextroseIntent(transcript)
+  const dextroseServings = intent === 'full' ? 1 : intent === 'half' ? 0.5 : 0
+
+  const proteinRes = await searchUserLibrary(
+    { query: 'isopure chocolate protein', limit: 3 },
+    { userId, supabase },
+  )
+  const protein = proteinRes.results.find((r) =>
+    normalizeShortcutText(r.name).includes('isopure low carb protein powder'),
+  )
+  if (!protein) return null
+
+  const foods: FoodItem[] = [
+    foodFromLibraryTotal({
+      name: protein.name,
+      qty: proteinScoops,
+      unit: 'scoop',
+      total: scaleTotal(protein.total, proteinScoops),
+      sourceRef: protein.source_ref ?? protein.library_id,
+      score: protein.match_confidence.score,
+    }),
+  ]
+
+  let lookupCount = 1
+  if (dextroseServings > 0) {
+    lookupCount += 1
+    const dextroseRes = await searchUserLibrary(
+      { query: 'nutricost dextrose', limit: 5 },
+      { userId, supabase },
+    )
+    const dextrose = dextroseRes.results.find((r) => {
+      const name = normalizeShortcutText(r.name)
+      return name.includes('dextrose') && !name.includes('protein shake')
+    })
+    if (!dextrose) return null
+
+    foods.push(
+      foodFromLibraryTotal({
+        name: dextrose.name,
+        qty: dextroseServings,
+        unit: 'serving',
+        total: scaleTotal(dextrose.total, dextroseServings),
+        sourceRef: dextrose.source_ref ?? dextrose.library_id,
+        score: dextrose.match_confidence.score,
+      }),
+    )
+  }
+
+  const totalCal = foods.reduce((acc, f) => acc + f.calories, 0)
+  const totalProt = foods.reduce((acc, f) => acc + f.protein_g, 0)
+  const totalCarbs = foods.reduce((acc, f) => acc + f.carbs_g, 0)
+  const totalFat = foods.reduce((acc, f) => acc + f.fat_g, 0)
+
+  return {
+    response: {
+      foods,
+      total_calories: Math.round(totalCal),
+      total_protein_g: Math.round(totalProt * 100) / 100,
+      total_carbs_g: Math.round(totalCarbs * 100) / 100,
+      total_fat_g: Math.round(totalFat * 100) / 100,
+      clarification_needed: null,
+      disambiguation: null,
+    },
+    hit: true,
+    lookup_count: lookupCount,
+  }
 }
 
 export async function tryLibraryShortcut(
@@ -486,6 +640,39 @@ const FILLER_TOKENS = new Set([
   'sticks',
 ])
 
+const WEIGHT_OR_VOLUME_UNITS = new Set([
+  'g',
+  'gram',
+  'grams',
+  'kg',
+  'lb',
+  'lbs',
+  'pound',
+  'pounds',
+  'oz',
+  'ounce',
+  'ounces',
+  'ml',
+  'l',
+  'cup',
+  'cups',
+  'tbsp',
+  'tablespoon',
+  'tablespoons',
+  'tsp',
+  'teaspoon',
+  'teaspoons',
+])
+
+const COUNT_UNIT_NORMALIZATION: Record<string, string> = {
+  pieces: 'piece',
+  servings: 'serving',
+  slices: 'slice',
+  scoops: 'scoop',
+  strips: 'strip',
+  sticks: 'stick',
+}
+
 const ACCOMPANIMENT_HOST_TOKENS = new Set([
   'chip',
   'chips',
@@ -540,6 +727,95 @@ function stripFillerTokens(segment: string): string {
     })
     .join(' ')
     .trim()
+}
+
+function parseWrittenLeadingNumber(token: string): number | null {
+  const digit = WRITTEN_NUMBER_TO_DIGIT[token.toLowerCase()]
+  return digit ? Number(digit) : null
+}
+
+function parseLeadingQuantity(segment: string): { qty: number; unit: string } | null {
+  const trimmed = segment.trim()
+  const mixedFraction = /^(\d+)\s+(\d+)\/(\d+)\b\s*(.*)$/i.exec(trimmed)
+  if (mixedFraction) {
+    const whole = Number(mixedFraction[1])
+    const num = Number(mixedFraction[2])
+    const den = Number(mixedFraction[3])
+    if (den > 0) {
+      return normalizeSegmentQuantityUnit(whole + num / den, mixedFraction[4])
+    }
+  }
+
+  const fraction = /^(\d+)\/(\d+)\b\s*(.*)$/i.exec(trimmed)
+  if (fraction) {
+    const num = Number(fraction[1])
+    const den = Number(fraction[2])
+    if (den > 0) return normalizeSegmentQuantityUnit(num / den, fraction[3])
+  }
+
+  const numeric = /^(\d+(?:\.\d+)?)\b\s*(.*)$/i.exec(trimmed)
+  if (numeric) {
+    return normalizeSegmentQuantityUnit(Number(numeric[1]), numeric[2])
+  }
+
+  const word = /^([a-z]+)\b\s*(.*)$/i.exec(trimmed)
+  if (word) {
+    const qty = parseWrittenLeadingNumber(word[1])
+    if (qty !== null) return normalizeSegmentQuantityUnit(qty, word[2])
+  }
+
+  return null
+}
+
+function normalizeSegmentQuantityUnit(
+  qty: number,
+  rawUnit: string,
+): { qty: number; unit: string } | null {
+  if (!Number.isFinite(qty) || qty <= 0 || qty === 1) return null
+
+  const cleaned = rawUnit
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\bof\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!cleaned) return { qty, unit: 'serving' }
+
+  const [firstToken] = cleaned.split(' ')
+  if (WEIGHT_OR_VOLUME_UNITS.has(firstToken)) return null
+
+  const normalizedFirst = COUNT_UNIT_NORMALIZATION[firstToken] ?? firstToken
+  if (firstToken !== normalizedFirst) return { qty, unit: normalizedFirst }
+
+  // Fractional count phrases like "1/4 medium avocado" are not weight
+  // units; preserve the visible unit phrase so the Plate reads naturally.
+  return { qty, unit: cleaned }
+}
+
+function scaleTotal(total: LibraryTotal, qty: number): LibraryTotal {
+  return {
+    kcal: Math.round(total.kcal * qty),
+    protein_g: Math.round(total.protein_g * qty * 10) / 10,
+    carbs_g: Math.round(total.carbs_g * qty * 10) / 10,
+    fat_g: Math.round(total.fat_g * qty * 10) / 10,
+  }
+}
+
+function quantityAlreadyBakedIntoLibraryName(
+  candidate: LibrarySearchResult,
+  qty: number,
+): boolean {
+  if (candidate.source !== 'saved_meal') return false
+  if (!Number.isInteger(qty)) return false
+  const normalizedName = normalizeShortcutText(candidate.name)
+  const written = Object.entries(WRITTEN_NUMBER_TO_DIGIT).find(
+    ([, digit]) => Number(digit) === qty,
+  )?.[0]
+  return (
+    normalizedName.startsWith(`${qty} `) ||
+    (written ? normalizedName.startsWith(`${written} `) : false)
+  )
 }
 
 export function relaxedSegmentQuery(segment: string): string {
@@ -747,15 +1023,22 @@ export async function tryLibrarySegmentedShortcut(
       continue
     }
 
+    const parsedQuantity = parseLeadingQuantity(seg.original)
+    const quantity =
+      parsedQuantity && !quantityAlreadyBakedIntoLibraryName(top, parsedQuantity.qty)
+        ? parsedQuantity
+        : null
+    const total = quantity ? scaleTotal(top.total, quantity.qty) : top.total
+
     resolved.push({
       food: {
         name: top.name,
-        qty: 1,
-        unit: 'serving',
-        calories: top.total.kcal,
-        protein_g: top.total.protein_g,
-        carbs_g: top.total.carbs_g,
-        fat_g: top.total.fat_g,
+        qty: quantity?.qty ?? 1,
+        unit: quantity?.unit ?? 'serving',
+        calories: total.kcal,
+        protein_g: total.protein_g,
+        carbs_g: total.carbs_g,
+        fat_g: total.fat_g,
         source: 'library',
         source_ref: normalizeFoodSourceRef(top.source_ref ?? top.library_id),
         unit_alternatives: top.unit_alternatives,
