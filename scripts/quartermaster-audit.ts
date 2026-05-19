@@ -16,6 +16,8 @@ import { normalizeFoodText } from '../lib/pantry-builder/normalize'
 type Severity = 'low' | 'medium' | 'high'
 type Priority = 'P0' | 'P1' | 'P2' | 'P3'
 type Confidence = 'low' | 'medium' | 'high'
+type ThemeUrgency = 'fix_now' | 'fix_next' | 'watch' | 'defer'
+type ThemeMaturity = 'strong_pattern' | 'emerging_pattern' | 'single_incident' | 'too_broad'
 type ThemeKind =
   | 'protein_shake_composition'
   | 'quantity_display_trust'
@@ -208,6 +210,12 @@ interface LearningTheme {
   action_lanes: ActionLane[]
   owner: string
   summary: string
+  luke_summary: string
+  urgency: ThemeUrgency
+  maturity: ThemeMaturity
+  why_this_is_one_theme: string
+  subtheme_hints: string[]
+  next_checkpoint: string
   doctrine: string
   durable_fix: string
   avoid: string
@@ -993,6 +1001,12 @@ function renderMarkdown(report: AuditReport) {
     lines.push(`- evidence_count: ${theme.evidence_count}`)
     lines.push(`- finding_types: ${theme.finding_types.join(', ')}`)
     lines.push(`- summary: ${theme.summary}`)
+    lines.push(`- luke_summary: ${theme.luke_summary}`)
+    lines.push(`- urgency: ${theme.urgency}`)
+    lines.push(`- maturity: ${theme.maturity}`)
+    lines.push(`- why_this_is_one_theme: ${theme.why_this_is_one_theme}`)
+    lines.push(`- subtheme_hints: ${theme.subtheme_hints.join(', ')}`)
+    lines.push(`- next_checkpoint: ${theme.next_checkpoint}`)
     lines.push(`- doctrine: ${theme.doctrine}`)
     lines.push(`- durable_fix: ${theme.durable_fix}`)
     lines.push(`- avoid: ${theme.avoid}`)
@@ -1497,6 +1511,134 @@ function themeSummary(kind: ThemeKind): string {
   }
 }
 
+function themeLukeSummary(kind: ThemeKind): string {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Pantheon is still confused about what a protein shake means. It needs to treat the shake as ingredients, not guess between old shake names.'
+    case 'quantity_display_trust':
+      return 'When you say a real amount like grams or scoops, the app needs to show that same amount back to you.'
+    case 'stale_library_identity':
+      return 'Old deleted saved meals are still sneaking into live behavior.'
+    case 'duplicate_food_rows':
+      return 'The app can accidentally count one food twice.'
+    case 'slow_parse_missing_knowledge':
+      return 'Some normal foods you say still require the slow smart path because the fast pantry path does not know them well enough.'
+    case 'pantry_unit_surface':
+      return 'Some foods exist, but they are not useful enough because their units are too generic.'
+    case 'human_review_delta':
+      return 'The app changed between parse and save; we need to decide whether that was you correcting it or the system drifting.'
+    case 'save_path_reliability':
+      return 'Saving must never fail after you already did the work of logging.'
+    case 'telemetry_observability':
+      return 'Quartermaster needs a clearer trail of what you did in the app before it can judge confidently.'
+    case 'manual_review':
+      return 'This evidence is real, but Quartermaster should ask for review instead of guessing.'
+  }
+}
+
+function themeUrgency(kind: ThemeKind, findings: Finding[]): ThemeUrgency {
+  const hasHigh = findings.some((finding) => finding.severity === 'high')
+  const hasSaveFailure = findings.some((finding) => finding.type === 'save_failed_event' || finding.type === 'parse_failed_event')
+  if (hasSaveFailure) return 'fix_now'
+  switch (kind) {
+    case 'protein_shake_composition':
+    case 'quantity_display_trust':
+    case 'duplicate_food_rows':
+    case 'stale_library_identity':
+      return hasHigh ? 'fix_now' : 'fix_next'
+    case 'slow_parse_missing_knowledge':
+    case 'pantry_unit_surface':
+      return findings.length >= 10 ? 'fix_next' : 'watch'
+    case 'human_review_delta':
+    case 'telemetry_observability':
+      return findings.length >= 5 ? 'fix_next' : 'watch'
+    case 'save_path_reliability':
+      return 'fix_now'
+    case 'manual_review':
+      return 'watch'
+  }
+}
+
+function themeMaturity(kind: ThemeKind, findings: Finding[]): ThemeMaturity {
+  const distinctTypes = new Set(findings.map((finding) => finding.type)).size
+  if (kind === 'pantry_unit_surface' && findings.length > 75) return 'too_broad'
+  if (findings.length === 1) return 'single_incident'
+  if (findings.length >= 3 || distinctTypes >= 2) return 'strong_pattern'
+  return 'emerging_pattern'
+}
+
+function whyThisIsOneTheme(kind: ThemeKind, findings: Finding[]): string {
+  const types = [...new Set(findings.map((finding) => finding.type))]
+  switch (kind) {
+    case 'protein_shake_composition':
+      return `Multiple symptoms point to the same modeling issue: ${types.join(', ')} all involve shake identity, ingredients, or stale shake history.`
+    case 'quantity_display_trust':
+      return `The shared user-facing failure is that Luke spoke a concrete measurement but the saved/displayed plate did not preserve that measurement.`
+    case 'stale_library_identity':
+      return `These findings all involve source refs that point to deleted or unavailable library parents.`
+    case 'duplicate_food_rows':
+      return `The shared failure is duplicated saved rows for one intended food, which changes totals without an obvious crash.`
+    case 'slow_parse_missing_knowledge':
+      return `These parses all needed slow or fallback work where pantry, alias, or matcher knowledge should eventually make them fast.`
+    case 'pantry_unit_surface':
+      return `These findings all mean the food may exist, but its reviewed facts or natural unit surfaces are not strong enough yet.`
+    case 'human_review_delta':
+      return `These findings all compare one system result to another and need intent review before becoming permanent rules.`
+    case 'save_path_reliability':
+      return `These findings all block the final save path, which is the highest-trust part of logging.`
+    case 'telemetry_observability':
+      return `These events show user friction, but Quartermaster lacks enough joined context to grade the cause.`
+    case 'manual_review':
+      return `These findings are grouped because they are ambiguous and should remain review-first.`
+  }
+}
+
+function themeSubthemeHints(kind: ThemeKind): string[] {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return ['ingredient composition', 'saved shortcut cleanup', 'stale shake history', 'duplicate segment merge']
+    case 'quantity_display_trust':
+      return ['grams and ounces', 'count units', 'scoops and servings', 'native display labels']
+    case 'stale_library_identity':
+      return ['saved meal refs', 'history surfaces', 'candidate filtering']
+    case 'duplicate_food_rows':
+      return ['segmentation ownership', 'candidate merge', 'saved plate dedupe']
+    case 'slow_parse_missing_knowledge':
+      return ['missing pantry staples', 'missing aliases', 'missing unit conversions', 'restaurant/composite fallback']
+    case 'pantry_unit_surface':
+      return ['weak serving units', 'package/count units', 'gram conversions', 'reviewed product facts']
+    case 'human_review_delta':
+      return ['user correction', 'parser drift', 'macro mismatch', 'food count mismatch']
+    case 'save_path_reliability':
+      return ['type mismatch', 'stale foreign key', 'backend validation', 'native payload shape']
+    case 'telemetry_observability':
+      return ['event joins', 'edit intent', 'delete intent', 'save lifecycle']
+    case 'manual_review':
+      return ['needs Luke meaning', 'needs nutrition review', 'needs source review']
+  }
+}
+
+function themeNextCheckpoint(kind: ThemeKind, urgency: ThemeUrgency, maturity: ThemeMaturity): string {
+  if (maturity === 'too_broad') return 'split this theme into smaller subthemes before using it to drive repairs'
+  if (urgency === 'fix_now') {
+    switch (kind) {
+      case 'protein_shake_composition':
+        return 'write one composition repair packet with regression phrases'
+      case 'quantity_display_trust':
+        return 'verify exactly where spoken units are lost between parse, display, and save'
+      case 'duplicate_food_rows':
+        return 'reproduce one duplicate-row parse and add a regression guard'
+      case 'stale_library_identity':
+        return 'identify every live surface still emitting stale saved meal refs'
+      default:
+        return 'turn this theme into an execution-ready repair packet'
+    }
+  }
+  if (urgency === 'fix_next') return 'rank the examples and convert the strongest one into a repair packet'
+  if (urgency === 'watch') return 'keep collecting evidence until the root cause is clearer'
+  return 'do not spend implementation time here yet'
+}
+
 function themeDoctrine(kind: ThemeKind): string {
   switch (kind) {
     case 'protein_shake_composition':
@@ -1591,6 +1733,8 @@ function buildLearningThemes(findings: Finding[], packets: WorkPacket[]): Learni
     const actionLanes = [...new Set(sorted.map((finding) => finding.action_lane))]
     const findingIds = sorted.map((finding) => finding.id)
     const relatedPackets = packets.filter((packet) => packet.finding_ids.some((id) => findingIds.includes(id)))
+    const urgency = themeUrgency(kind, sorted)
+    const maturity = themeMaturity(kind, sorted)
     themes.push({
       id: randomUUID(),
       kind,
@@ -1601,6 +1745,12 @@ function buildLearningThemes(findings: Finding[], packets: WorkPacket[]): Learni
       action_lanes: actionLanes,
       owner: themeOwner(kind),
       summary: themeSummary(kind),
+      luke_summary: themeLukeSummary(kind),
+      urgency,
+      maturity,
+      why_this_is_one_theme: whyThisIsOneTheme(kind, sorted),
+      subtheme_hints: themeSubthemeHints(kind),
+      next_checkpoint: themeNextCheckpoint(kind, urgency, maturity),
       doctrine: themeDoctrine(kind),
       durable_fix: themeDurableFix(kind),
       avoid: themeAvoid(kind),
