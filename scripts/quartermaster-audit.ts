@@ -24,6 +24,7 @@ type FindingType =
   | 'database_estimated_saved'
   | 'source_ref_stale'
   | 'source_ref_chained'
+  | 'duplicate_food_row'
   | 'parse_saved_delta_calories'
   | 'parse_saved_delta_food_count'
   | 'parse_saved_name_changed'
@@ -494,6 +495,7 @@ function findingScore(type: FindingType, severity: Severity, lane: ActionLane): 
   let score = severityRank(severity) * 20
   if (type === 'save_failed_event') score += 35
   if (type === 'source_ref_stale' || type === 'user_measurement_not_preserved') score += 25
+  if (type === 'duplicate_food_row') score += 30
   if (type === 'parse_failed_event' || type === 'parse_abandoned_event') score += 20
   if (type === 'llm_estimated_saved' || type === 'parse_saved_delta_calories') score += 15
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') score += 10
@@ -517,9 +519,56 @@ function pushFinding(
   })
 }
 
+function inspectDuplicateFoodRows(row: FoodLogRow, findings: Finding[]) {
+  const foods = row.foods_json ?? []
+  if (foods.length < 2) return
+
+  const groups = new Map<string, FoodLike[]>()
+  for (const food of foods) {
+    const name = normalizeFoodText(food.name ?? '')
+    if (!name) continue
+    const unit = normalizeFoodText(food.unit ?? '')
+    const calories = numeric(food.calories)
+    const protein = numeric(food.protein_g)
+    const carbs = numeric(food.carbs_g)
+    const fat = numeric(food.fat_g)
+    const macroKey = [calories, protein, carbs, fat]
+      .map((value) => (value === null ? '?' : Math.round(value * 100) / 100))
+      .join('/')
+    const key = `${name}|${unit}|${macroKey}`
+    const list = groups.get(key) ?? []
+    list.push(food)
+    groups.set(key, list)
+  }
+
+  for (const duplicates of groups.values()) {
+    if (duplicates.length < 2) continue
+    const name = duplicates[0]?.name ?? '(unnamed food)'
+    const raw = normalizeFoodText(row.raw_input_text ?? '')
+    const normalizedName = normalizeFoodText(name)
+    const transcriptSaysOne =
+      raw.includes(`one ${normalizedName}`) ||
+      raw.includes(`1 ${normalizedName}`) ||
+      (normalizedName.includes('protein shake') && /\b(one|1)\s+protein shake\b/.test(raw))
+
+    pushFinding(findings, row, {
+      type: 'duplicate_food_row',
+      severity: transcriptSaysOne ? 'high' : 'medium',
+      action_lane: 'parser_bug',
+      summary: `Saved plate contains ${duplicates.length} duplicate rows for "${name}".`,
+      evidence: {
+        duplicate_count: duplicates.length,
+        transcript_says_one: transcriptSaysOne,
+        foods: duplicates.map(displayFood),
+      },
+    })
+  }
+}
+
 function compareFoods(row: FoodLogRow, findings: Finding[]) {
   const parsedFoods = row.claude_parse_json?.foods ?? []
   const savedFoods = row.foods_json ?? []
+  inspectDuplicateFoodRows(row, findings)
   if (parsedFoods.length === 0 || savedFoods.length === 0) return
 
   if (parsedFoods.length !== savedFoods.length) {
@@ -1030,6 +1079,7 @@ function outcomeFromFindings(row: FoodLogRow, relatedFindings: Finding[]): Outco
   const types = new Set(materialFindings.map((finding) => finding.type))
   if (probablyNonFood(row.raw_input_text)) return 'joke_or_non_log'
   if (types.has('save_failed_event')) return 'save_path_failure'
+  if (types.has('duplicate_food_row')) return 'identity_failure'
   if (types.has('user_measurement_not_preserved') || types.has('parse_saved_unit_changed') || types.has('parse_saved_quantity_changed')) {
     return 'quantity_unit_failure'
   }
@@ -1178,6 +1228,8 @@ function packetTitle(lane: ActionLane, type: FindingType, transcript: string | n
       return `Preserve user quantity/unit${phrase}`
     case 'source_ref_stale':
       return `Repair stale library identity${phrase}`
+    case 'duplicate_food_row':
+      return `Stop duplicate food rows${phrase}`
     case 'parse_slow':
     case 'llm_fallback_expensive':
       return `Move slow parse onto a fast path${phrase}`
@@ -1196,6 +1248,7 @@ function packetTitle(lane: ActionLane, type: FindingType, transcript: string | n
 function recommendedAction(type: FindingType, lane: ActionLane): string {
   if (type === 'save_failed_event') return 'Reproduce the save, inspect backend error text, and add a regression test before changing user-facing behavior.'
   if (type === 'user_measurement_not_preserved') return 'Preserve the unit Luke said in the displayed plate and ensure unit alternatives support the conversion.'
+  if (type === 'duplicate_food_row') return 'Reproduce the parse path and prevent one spoken item from becoming multiple saved plate rows.'
   if (type === 'source_ref_stale') return 'Resolve the stale source_ref to a live identity or strip it before save/search surfaces reuse it.'
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Add pantry identity, alias, or parser guard so this phrase resolves before the LLM fallback.'
   if (type === 'parse_saved_name_changed') return 'Treat the saved name as a correction signal; consider alias/rejection proposals after confirming intent.'
@@ -1209,6 +1262,7 @@ function recommendedAction(type: FindingType, lane: ActionLane): string {
 function whyItMatters(type: FindingType): string {
   if (type === 'save_failed_event') return 'Save failures break trust completely: the user did the work and still loses the log.'
   if (type === 'user_measurement_not_preserved') return 'The displayed unit is how Luke confirms Pantheon heard him correctly.'
+  if (type === 'duplicate_food_row') return 'Duplicate rows silently inflate calories and macros even when the visible parse looks plausible.'
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Slow parses are usually missing pantry or matcher knowledge.'
   if (type === 'source_ref_stale') return 'Stale identities can resurrect deleted meals or trip database constraints.'
   if (type === 'parse_abandoned_event') return 'Abandonment is often the clearest sign that the result was not worth saving.'
