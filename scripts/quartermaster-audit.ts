@@ -1,11 +1,11 @@
-// Quartermaster v0: read-only food logging audit.
+// Quartermaster: read-only food logging audit and work-packet generator.
 //
 // This script reads Pantheon's visible food log history, compares original
 // parse output to saved output, and emits local action packets. It does not
 // write production data.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
 
 import { createClient } from '@supabase/supabase-js'
@@ -14,6 +14,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizeFoodText } from '../lib/pantry-builder/normalize'
 
 type Severity = 'low' | 'medium' | 'high'
+type Priority = 'P0' | 'P1' | 'P2' | 'P3'
+type Confidence = 'low' | 'medium' | 'high'
 type FindingType =
   | 'parse_slow'
   | 'llm_fallback_expensive'
@@ -36,6 +38,18 @@ type FindingType =
   | 'edit_event'
   | 'telemetry_gap'
 
+type OutcomeType =
+  | 'clean_success'
+  | 'slow_success'
+  | 'edited_success'
+  | 'identity_failure'
+  | 'quantity_unit_failure'
+  | 'coverage_failure'
+  | 'confidently_wrong'
+  | 'save_path_failure'
+  | 'joke_or_non_log'
+  | 'ambiguous_review'
+
 type ActionLane =
   | 'alias_add'
   | 'rejection_add'
@@ -43,6 +57,7 @@ type ActionLane =
   | 'product_unit_add'
   | 'saved_meal_repair'
   | 'parser_bug'
+  | 'backend_bug'
   | 'native_ui_or_telemetry'
   | 'ignore_or_joke'
   | 'manual_review'
@@ -53,6 +68,9 @@ interface Args {
   json: boolean
   markdown: boolean
   outputDir: string
+  cycle: boolean
+  stateFile: string | null
+  writeState: boolean
 }
 
 interface TelemetrySnapshot {
@@ -129,6 +147,7 @@ interface Finding {
   type: FindingType
   severity: Severity
   action_lane: ActionLane
+  score: number
   food_log_entry_id: string
   logged_at: string
   raw_input_text: string | null
@@ -136,14 +155,67 @@ interface Finding {
   evidence: Record<string, unknown>
 }
 
+interface InteractionOutcome {
+  id: string
+  outcome: OutcomeType
+  grade: 'pass' | 'warn' | 'fail' | 'unknown'
+  action_lane: ActionLane
+  score: number
+  session_id: string | null
+  food_log_entry_id: string | null
+  raw_input_text: string | null
+  started_at: string
+  ended_at: string
+  summary: string
+  evidence: Record<string, unknown>
+}
+
+interface WorkPacket {
+  id: string
+  priority: Priority
+  score: number
+  confidence: Confidence
+  action_lane: ActionLane
+  owner: string
+  title: string
+  recommended_action: string
+  why_it_matters: string
+  evidence_count: number
+  finding_types: FindingType[]
+  example_transcripts: string[]
+  finding_ids: string[]
+}
+
+interface CycleState {
+  version: 1
+  last_successful_run_at: string
+  last_run_id: string
+  last_rows_read: number
+  last_events_read: number
+  last_findings: number
+  updated_at: string
+}
+
 interface AuditReport {
   run_id: string
   generated_at: string
   args: Args
+  cycle: {
+    enabled: boolean
+    state_file: string | null
+    previous_run_at: string | null
+    effective_since: string | null
+    since_source: string
+    state_written: boolean
+  }
   summary: Record<string, number | string | null>
+  scoreboard: Record<string, number | string | null>
   path_counts: Record<string, number>
+  outcome_counts: Record<string, number>
   finding_counts: Record<string, number>
   action_counts: Record<string, number>
+  work_packets: WorkPacket[]
+  interaction_outcomes: InteractionOutcome[]
   findings: Finding[]
   data_gaps: string[]
 }
@@ -161,6 +233,9 @@ function parseArgs(argv: string[]): Args {
     json: true,
     markdown: true,
     outputDir: 'scripts/output',
+    cycle: false,
+    stateFile: null,
+    writeState: true,
   }
 
   for (const arg of argv.slice(2)) {
@@ -169,6 +244,9 @@ function parseArgs(argv: string[]): Args {
     else if (arg === '--json-only') args.markdown = false
     else if (arg === '--markdown-only') args.json = false
     else if (arg.startsWith('--output-dir=')) args.outputDir = arg.slice('--output-dir='.length)
+    else if (arg === '--cycle') args.cycle = true
+    else if (arg === '--no-state-write') args.writeState = false
+    else if (arg.startsWith('--state-file=')) args.stateFile = arg.slice('--state-file='.length)
     else throw new Error(`Unknown arg: ${arg}`)
   }
 
@@ -216,6 +294,42 @@ function sinceToIso(since: string | null): string | null {
   const parsed = new Date(since)
   if (Number.isNaN(parsed.getTime())) throw new Error('--since must be an ISO date or <N>d')
   return parsed.toISOString()
+}
+
+function defaultStateFile(args: Args): string {
+  return resolve(args.stateFile ?? join(args.outputDir, 'quartermaster-cycle-state.json'))
+}
+
+function readCycleState(stateFile: string): CycleState | null {
+  if (!existsSync(stateFile)) return null
+  try {
+    const parsed = JSON.parse(readFileSync(stateFile, 'utf8')) as Partial<CycleState>
+    if (parsed.version !== 1 || typeof parsed.last_successful_run_at !== 'string') return null
+    return {
+      version: 1,
+      last_successful_run_at: parsed.last_successful_run_at,
+      last_run_id: typeof parsed.last_run_id === 'string' ? parsed.last_run_id : 'unknown',
+      last_rows_read: typeof parsed.last_rows_read === 'number' ? parsed.last_rows_read : 0,
+      last_events_read: typeof parsed.last_events_read === 'number' ? parsed.last_events_read : 0,
+      last_findings: typeof parsed.last_findings === 'number' ? parsed.last_findings : 0,
+      updated_at: typeof parsed.updated_at === 'string' ? parsed.updated_at : parsed.last_successful_run_at,
+    }
+  } catch {
+    return null
+  }
+}
+
+function writeCycleState(stateFile: string, state: CycleState) {
+  mkdirSync(dirname(stateFile), { recursive: true })
+  writeFileSync(stateFile, `${JSON.stringify(state, null, 2)}\n`)
+}
+
+function resolveSinceForRun(args: Args, state: CycleState | null): { sinceIso: string | null; source: string } {
+  if (args.since) return { sinceIso: sinceToIso(args.since), source: 'arg' }
+  if (args.cycle && state?.last_successful_run_at) {
+    return { sinceIso: state.last_successful_run_at, source: 'cycle_state' }
+  }
+  return { sinceIso: null, source: args.cycle ? 'cycle_no_prior_state' : 'all_history' }
 }
 
 async function fetchAllFoodLogs(
@@ -376,12 +490,29 @@ function unitPreservesMeasurement(unit: string | undefined, measurement: Transcr
   return true
 }
 
-function pushFinding(findings: Finding[], row: FoodLogRow, partial: Omit<Finding, 'id' | 'food_log_entry_id' | 'logged_at' | 'raw_input_text'>) {
+function findingScore(type: FindingType, severity: Severity, lane: ActionLane): number {
+  let score = severityRank(severity) * 20
+  if (type === 'save_failed_event') score += 35
+  if (type === 'source_ref_stale' || type === 'user_measurement_not_preserved') score += 25
+  if (type === 'parse_failed_event' || type === 'parse_abandoned_event') score += 20
+  if (type === 'llm_estimated_saved' || type === 'parse_saved_delta_calories') score += 15
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') score += 10
+  if (lane === 'backend_bug' || lane === 'saved_meal_repair') score += 10
+  if (lane === 'ignore_or_joke') score -= 20
+  return Math.max(1, Math.min(100, score))
+}
+
+function pushFinding(
+  findings: Finding[],
+  row: FoodLogRow,
+  partial: Omit<Finding, 'id' | 'food_log_entry_id' | 'logged_at' | 'raw_input_text' | 'score'>,
+) {
   findings.push({
     id: randomUUID(),
     food_log_entry_id: row.id,
     logged_at: row.logged_at,
     raw_input_text: row.raw_input_text,
+    score: findingScore(partial.type, partial.severity, partial.action_lane),
     ...partial,
   })
 }
@@ -604,32 +735,88 @@ function inspectTranscript(row: FoodLogRow, findings: Finding[]) {
   }
 }
 
-function inspectEvents(events: FoodLogEventRow[], findings: Finding[]) {
+function recordFromUnknown(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null
+}
+
+function foodsFromEventPayload(payload: Record<string, unknown> | null): FoodLike[] {
+  const plateItems = payload?.plateItems
+  if (Array.isArray(plateItems)) return plateItems as FoodLike[]
+  const foods = payload?.foods
+  if (Array.isArray(foods)) return foods as FoodLike[]
+  const parsed = recordFromUnknown(payload?.parsed)
+  if (Array.isArray(parsed?.foods)) return parsed.foods as FoodLike[]
+  return []
+}
+
+function telemetryFromEventPayload(payload: Record<string, unknown> | null): TelemetrySnapshot | undefined {
+  const telemetry = recordFromUnknown(payload?.telemetry)
+  return telemetry ? (telemetry as TelemetrySnapshot) : undefined
+}
+
+function failureText(event: FoodLogEventRow): string {
+  const payload = event.payload ?? {}
+  return [payload.error, payload.message, payload.errorMessage, payload.saveError, payload.httpStatus]
+    .filter((value) => value !== null && value !== undefined)
+    .map(String)
+    .join(' ')
+}
+
+function saveFailureLane(event: FoodLogEventRow): ActionLane {
+  const text = failureText(event).toLowerCase()
+  if (/\bforeign key\b|constraint|invalid input syntax|type integer|food_log_entries|database|postgres|supabase/.test(text)) {
+    return 'backend_bug'
+  }
+  return 'native_ui_or_telemetry'
+}
+
+function eventPseudoRow(event: FoodLogEventRow, foods: FoodLike[] = [], telemetry?: TelemetrySnapshot): FoodLogRow {
+  return {
+    id: event.food_log_entry_id ?? event.id,
+    user_id: event.user_id,
+    logged_at: event.created_at,
+    meal_label: null,
+    log_method: null,
+    raw_input_text: event.raw_input_text,
+    foods_json: null,
+    total_calories: null,
+    total_protein_g: null,
+    total_carbs_g: null,
+    total_fat_g: null,
+    claude_parse_json: foods.length > 0 || telemetry ? { foods, _telemetry: telemetry } : null,
+    saved_meal_id: null,
+    created_at: event.created_at,
+  }
+}
+
+function inspectEvents(
+  events: FoodLogEventRow[],
+  findings: Finding[],
+  savedMealIds: Set<string>,
+  productIds: Set<string>,
+) {
   for (const event of events) {
-    const row: FoodLogRow = {
-      id: event.food_log_entry_id ?? event.id,
-      user_id: event.user_id,
-      logged_at: event.created_at,
-      meal_label: null,
-      log_method: null,
-      raw_input_text: event.raw_input_text,
-      foods_json: null,
-      total_calories: null,
-      total_protein_g: null,
-      total_carbs_g: null,
-      total_fat_g: null,
-      claude_parse_json: null,
-      saved_meal_id: null,
-      created_at: event.created_at,
+    const foods = foodsFromEventPayload(event.payload)
+    const telemetry = telemetryFromEventPayload(event.payload)
+    const row = eventPseudoRow(event, foods, telemetry)
+
+    if (event.event_type === 'parse_returned') {
+      inspectTelemetry(row, findings)
+      inspectTranscript(row, findings)
+      inspectFoodSources(row, findings, savedMealIds, productIds)
+      continue
     }
 
     if (event.event_type === 'save_failed') {
+      const lane = saveFailureLane(event)
       pushFinding(findings, row, {
         type: 'save_failed_event',
         severity: 'high',
-        action_lane: 'native_ui_or_telemetry',
+        action_lane: lane,
         summary: 'Native reported a failed save.',
-        evidence: { event },
+        evidence: { event, failure_text: failureText(event) },
       })
     } else if (event.event_type === 'parse_failed') {
       pushFinding(findings, row, {
@@ -670,21 +857,40 @@ function increment(map: Record<string, number>, key: string) {
 
 function renderMarkdown(report: AuditReport) {
   const topFindings = [...report.findings]
-    .sort((a, b) => severityRank(b.severity) - severityRank(a.severity))
+    .sort((a, b) => b.score - a.score || severityRank(b.severity) - severityRank(a.severity))
     .slice(0, 40)
+  const topOutcomes = [...report.interaction_outcomes].slice(0, 25)
+  const topPackets = [...report.work_packets].slice(0, 20)
 
   const lines: string[] = []
   lines.push(`# Quartermaster Audit ${report.run_id}`)
   lines.push('')
   lines.push(`Generated: ${report.generated_at}`)
   lines.push('')
+  lines.push('## Cycle')
+  lines.push('')
+  lines.push(`- enabled: ${report.cycle.enabled ? 'yes' : 'no'}`)
+  lines.push(`- effective_since: ${report.cycle.effective_since ?? '(all history)'}`)
+  lines.push(`- since_source: ${report.cycle.since_source}`)
+  lines.push(`- previous_run_at: ${report.cycle.previous_run_at ?? '(none)'}`)
+  lines.push(`- state_file: ${report.cycle.state_file ?? '(none)'}`)
+  lines.push(`- state_written: ${report.cycle.state_written ? 'yes' : 'no'}`)
+  lines.push('')
   lines.push('## Summary')
   lines.push('')
   for (const [key, value] of Object.entries(report.summary)) lines.push(`- ${key}: ${value}`)
   lines.push('')
+  lines.push('## Scoreboard')
+  lines.push('')
+  for (const [key, value] of Object.entries(report.scoreboard)) lines.push(`- ${key}: ${value}`)
+  lines.push('')
   lines.push('## Parser Paths')
   lines.push('')
   for (const [key, value] of sortedEntries(report.path_counts)) lines.push(`- ${key}: ${value}`)
+  lines.push('')
+  lines.push('## Outcomes')
+  lines.push('')
+  for (const [key, value] of sortedEntries(report.outcome_counts)) lines.push(`- ${key}: ${value}`)
   lines.push('')
   lines.push('## Finding Counts')
   lines.push('')
@@ -694,10 +900,42 @@ function renderMarkdown(report: AuditReport) {
   lines.push('')
   for (const [key, value] of sortedEntries(report.action_counts)) lines.push(`- ${key}: ${value}`)
   lines.push('')
+  lines.push('## Work Packets')
+  lines.push('')
+  for (const packet of topPackets) {
+    lines.push(`### ${packet.priority} / ${packet.score} - ${packet.title}`)
+    lines.push('')
+    lines.push(`- owner: ${packet.owner}`)
+    lines.push(`- lane: ${packet.action_lane}`)
+    lines.push(`- confidence: ${packet.confidence}`)
+    lines.push(`- evidence_count: ${packet.evidence_count}`)
+    lines.push(`- finding_types: ${packet.finding_types.join(', ')}`)
+    lines.push(`- recommended_action: ${packet.recommended_action}`)
+    lines.push(`- why_it_matters: ${packet.why_it_matters}`)
+    for (const transcript of packet.example_transcripts) lines.push(`- example: ${transcript}`)
+    lines.push('')
+  }
+  if (topPackets.length === 0) lines.push('No work packets.')
+  lines.push('')
+  lines.push('## Top Outcomes')
+  lines.push('')
+  for (const outcome of topOutcomes) {
+    lines.push(`### ${outcome.grade.toUpperCase()} / ${outcome.score} - ${outcome.outcome}`)
+    lines.push('')
+    lines.push(`- transcript: ${outcome.raw_input_text ?? '(none)'}`)
+    lines.push(`- summary: ${outcome.summary}`)
+    lines.push(`- lane: ${outcome.action_lane}`)
+    lines.push(`- session: ${outcome.session_id ?? '(none)'}`)
+    lines.push(`- log id: ${outcome.food_log_entry_id ?? '(none)'}`)
+    lines.push(`- window: ${outcome.started_at} -> ${outcome.ended_at}`)
+    lines.push('')
+  }
+  if (topOutcomes.length === 0) lines.push('No interaction outcomes.')
+  lines.push('')
   lines.push('## Top Findings')
   lines.push('')
   for (const finding of topFindings) {
-    lines.push(`### ${finding.severity.toUpperCase()} - ${finding.type}`)
+    lines.push(`### ${finding.severity.toUpperCase()} / ${finding.score} - ${finding.type}`)
     lines.push('')
     lines.push(`- transcript: ${finding.raw_input_text ?? '(none)'}`)
     lines.push(`- summary: ${finding.summary}`)
@@ -743,13 +981,301 @@ function dedupeFindings(findings: Finding[]) {
   return deduped
 }
 
+function highestSeverity(findings: Finding[]): Severity {
+  if (findings.some((finding) => finding.severity === 'high')) return 'high'
+  if (findings.some((finding) => finding.severity === 'medium')) return 'medium'
+  return 'low'
+}
+
+function gradeForOutcome(outcome: OutcomeType): InteractionOutcome['grade'] {
+  if (outcome === 'clean_success') return 'pass'
+  if (outcome === 'ambiguous_review') return 'unknown'
+  if (outcome === 'save_path_failure' || outcome === 'coverage_failure' || outcome === 'confidently_wrong') return 'fail'
+  return 'warn'
+}
+
+function outcomeScore(outcome: OutcomeType, relatedFindings: Finding[]): number {
+  const maxFinding = relatedFindings.reduce((max, finding) => Math.max(max, finding.score), 0)
+  const base: Record<OutcomeType, number> = {
+    clean_success: 5,
+    slow_success: 35,
+    edited_success: 45,
+    identity_failure: 70,
+    quantity_unit_failure: 75,
+    coverage_failure: 65,
+    confidently_wrong: 85,
+    save_path_failure: 95,
+    joke_or_non_log: 10,
+    ambiguous_review: 30,
+  }
+  return Math.max(base[outcome], maxFinding)
+}
+
+function laneForOutcome(outcome: OutcomeType, relatedFindings: Finding[]): ActionLane {
+  const strongest = [...relatedFindings].sort((a, b) => b.score - a.score)[0]
+  if (strongest) return strongest.action_lane
+  if (outcome === 'save_path_failure') return 'backend_bug'
+  if (outcome === 'quantity_unit_failure') return 'product_unit_add'
+  if (outcome === 'identity_failure' || outcome === 'confidently_wrong') return 'alias_add'
+  if (outcome === 'joke_or_non_log') return 'ignore_or_joke'
+  return 'manual_review'
+}
+
+function outcomeFromFindings(row: FoodLogRow, relatedFindings: Finding[]): OutcomeType {
+  const materialFindings = relatedFindings.filter(
+    (finding) =>
+      finding.type !== 'telemetry_gap' &&
+      !(finding.type === 'unit_missing_or_weak' && finding.severity === 'low'),
+  )
+  const types = new Set(materialFindings.map((finding) => finding.type))
+  if (probablyNonFood(row.raw_input_text)) return 'joke_or_non_log'
+  if (types.has('save_failed_event')) return 'save_path_failure'
+  if (types.has('user_measurement_not_preserved') || types.has('parse_saved_unit_changed') || types.has('parse_saved_quantity_changed')) {
+    return 'quantity_unit_failure'
+  }
+  if (types.has('parse_saved_name_changed') || types.has('parse_saved_delta_food_count')) return 'identity_failure'
+  if (types.has('source_ref_stale') || types.has('llm_estimated_saved') || types.has('database_estimated_saved') || types.has('low_confidence_saved')) {
+    return 'coverage_failure'
+  }
+  if (types.has('parse_slow') || types.has('llm_fallback_expensive')) return 'slow_success'
+  if (types.size > 0) return 'ambiguous_review'
+  return 'clean_success'
+}
+
+function eventSessionKey(event: FoodLogEventRow): string {
+  if (event.session_id) return `session:${event.session_id}`
+  if (event.food_log_entry_id) return `log:${event.food_log_entry_id}`
+  const raw = normalizeFoodText(event.raw_input_text ?? '').slice(0, 80)
+  const minute = event.created_at.slice(0, 16)
+  return `raw:${raw}:${minute}`
+}
+
+function eventOutcome(events: FoodLogEventRow[], relatedFindings: Finding[]): OutcomeType {
+  const types = new Set(events.map((event) => event.event_type))
+  const raw = events.find((event) => event.raw_input_text)?.raw_input_text ?? null
+  if (probablyNonFood(raw)) return 'joke_or_non_log'
+  if (types.has('save_failed')) return 'save_path_failure'
+  if (types.has('parse_failed')) return 'coverage_failure'
+  if (types.has('food_item_deleted')) return 'confidently_wrong'
+  if (types.has('disambiguation_selected')) return 'identity_failure'
+  if (types.has('food_item_edited') || types.has('food_item_added')) return 'edited_success'
+  if (types.has('parse_abandoned')) return 'ambiguous_review'
+  if (types.has('save_succeeded')) return 'clean_success'
+  if (relatedFindings.some((finding) => finding.type === 'parse_slow' || finding.type === 'llm_fallback_expensive')) return 'slow_success'
+  if (types.has('parse_returned')) return 'ambiguous_review'
+  return 'ambiguous_review'
+}
+
+function buildInteractionOutcomes(
+  rows: FoodLogRow[],
+  events: FoodLogEventRow[],
+  findings: Finding[],
+): InteractionOutcome[] {
+  const findingsByLogId = new Map<string, Finding[]>()
+  for (const finding of findings) {
+    const list = findingsByLogId.get(finding.food_log_entry_id) ?? []
+    list.push(finding)
+    findingsByLogId.set(finding.food_log_entry_id, list)
+  }
+
+  const outcomes: InteractionOutcome[] = []
+  for (const row of rows) {
+    const related = findingsByLogId.get(row.id) ?? []
+    const outcome = outcomeFromFindings(row, related)
+    outcomes.push({
+      id: randomUUID(),
+      outcome,
+      grade: gradeForOutcome(outcome),
+      action_lane: laneForOutcome(outcome, related),
+      score: outcomeScore(outcome, related),
+      session_id: null,
+      food_log_entry_id: row.id,
+      raw_input_text: row.raw_input_text,
+      started_at: row.created_at,
+      ended_at: row.logged_at,
+      summary: `Saved log classified as ${outcome.replaceAll('_', ' ')}.`,
+      evidence: {
+        related_finding_ids: related.map((finding) => finding.id),
+        related_finding_types: [...new Set(related.map((finding) => finding.type))],
+        foods_count: row.foods_json?.length ?? 0,
+        parser_path: telemetryPath(row.claude_parse_json?._telemetry),
+      },
+    })
+  }
+
+  const eventsBySession = new Map<string, FoodLogEventRow[]>()
+  for (const event of events) {
+    const key = eventSessionKey(event)
+    const list = eventsBySession.get(key) ?? []
+    list.push(event)
+    eventsBySession.set(key, list)
+  }
+  for (const sessionEvents of eventsBySession.values()) {
+    sessionEvents.sort((a, b) => a.created_at.localeCompare(b.created_at))
+    const first = sessionEvents[0]
+    const last = sessionEvents[sessionEvents.length - 1]
+    const related = sessionEvents.flatMap((event) => findingsByLogId.get(event.food_log_entry_id ?? event.id) ?? [])
+    const outcome = eventOutcome(sessionEvents, related)
+    outcomes.push({
+      id: randomUUID(),
+      outcome,
+      grade: gradeForOutcome(outcome),
+      action_lane: laneForOutcome(outcome, related),
+      score: outcomeScore(outcome, related),
+      session_id: first.session_id,
+      food_log_entry_id: first.food_log_entry_id,
+      raw_input_text: first.raw_input_text ?? sessionEvents.find((event) => event.raw_input_text)?.raw_input_text ?? null,
+      started_at: first.created_at,
+      ended_at: last.created_at,
+      summary: `Event session classified as ${outcome.replaceAll('_', ' ')}.`,
+      evidence: {
+        event_types: sessionEvents.map((event) => event.event_type),
+        event_count: sessionEvents.length,
+        related_finding_ids: related.map((finding) => finding.id),
+      },
+    })
+  }
+
+  return outcomes.sort((a, b) => b.score - a.score || b.ended_at.localeCompare(a.ended_at))
+}
+
+function packetPriority(score: number): Priority {
+  if (score >= 90) return 'P0'
+  if (score >= 70) return 'P1'
+  if (score >= 45) return 'P2'
+  return 'P3'
+}
+
+function ownerForLane(lane: ActionLane): string {
+  switch (lane) {
+    case 'alias_add':
+    case 'rejection_add':
+      return 'Matcher / Pantry Forge'
+    case 'pantry_product_add':
+    case 'product_unit_add':
+      return 'Pantry Forge'
+    case 'saved_meal_repair':
+      return 'Library Identity'
+    case 'parser_bug':
+      return 'Parser'
+    case 'backend_bug':
+      return 'Backend'
+    case 'native_ui_or_telemetry':
+      return 'Native UX / Telemetry'
+    case 'ignore_or_joke':
+      return 'Intent Classifier'
+    case 'manual_review':
+      return 'Human Review'
+  }
+}
+
+function packetTitle(lane: ActionLane, type: FindingType, transcript: string | null): string {
+  const phrase = transcript ? `: "${transcript.slice(0, 80)}${transcript.length > 80 ? '...' : ''}"` : ''
+  switch (type) {
+    case 'save_failed_event':
+      return `Fix save failure${phrase}`
+    case 'user_measurement_not_preserved':
+      return `Preserve user quantity/unit${phrase}`
+    case 'source_ref_stale':
+      return `Repair stale library identity${phrase}`
+    case 'parse_slow':
+    case 'llm_fallback_expensive':
+      return `Move slow parse onto a fast path${phrase}`
+    case 'parse_saved_name_changed':
+      return `Investigate identity correction${phrase}`
+    case 'parse_saved_unit_changed':
+    case 'parse_saved_quantity_changed':
+      return `Investigate unit or portion correction${phrase}`
+    case 'joke_or_non_food':
+      return `Classify non-log intent${phrase}`
+    default:
+      return `${ownerForLane(lane)} packet for ${type.replaceAll('_', ' ')}${phrase}`
+  }
+}
+
+function recommendedAction(type: FindingType, lane: ActionLane): string {
+  if (type === 'save_failed_event') return 'Reproduce the save, inspect backend error text, and add a regression test before changing user-facing behavior.'
+  if (type === 'user_measurement_not_preserved') return 'Preserve the unit Luke said in the displayed plate and ensure unit alternatives support the conversion.'
+  if (type === 'source_ref_stale') return 'Resolve the stale source_ref to a live identity or strip it before save/search surfaces reuse it.'
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Add pantry identity, alias, or parser guard so this phrase resolves before the LLM fallback.'
+  if (type === 'parse_saved_name_changed') return 'Treat the saved name as a correction signal; consider alias/rejection proposals after confirming intent.'
+  if (type === 'parse_saved_unit_changed' || type === 'parse_saved_quantity_changed') return 'Compare parsed versus saved quantity and add missing unit conversion or UI preservation rule.'
+  if (lane === 'pantry_product_add') return 'Create a reviewed product candidate with source, macros, aliases, and unit alternatives.'
+  if (lane === 'alias_add') return 'Create a narrow alias proposal only if the target identity is unambiguous.'
+  if (lane === 'rejection_add') return 'Create a negative match rule so this phrase stops resolving to the wrong identity.'
+  return 'Review the evidence and route the smallest safe fix to the owning lane.'
+}
+
+function whyItMatters(type: FindingType): string {
+  if (type === 'save_failed_event') return 'Save failures break trust completely: the user did the work and still loses the log.'
+  if (type === 'user_measurement_not_preserved') return 'The displayed unit is how Luke confirms Pantheon heard him correctly.'
+  if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Slow parses are usually missing pantry or matcher knowledge.'
+  if (type === 'source_ref_stale') return 'Stale identities can resurrect deleted meals or trip database constraints.'
+  if (type === 'parse_abandoned_event') return 'Abandonment is often the clearest sign that the result was not worth saving.'
+  return 'This is real user-behavior evidence, not theoretical parser hygiene.'
+}
+
+function packetClusterKey(finding: Finding): string {
+  const measurement = recordFromUnknown(finding.evidence.measurement)
+  const sourceRef = typeof finding.evidence.source_ref === 'string' ? finding.evidence.source_ref : null
+  const failure = typeof finding.evidence.failure_text === 'string' ? normalizeFoodText(finding.evidence.failure_text).slice(0, 80) : null
+  const target = typeof measurement?.target === 'string' ? measurement.target : null
+  const normalizedRaw = normalizeFoodText(finding.raw_input_text ?? '').slice(0, 80)
+  return [
+    finding.action_lane,
+    finding.type,
+    sourceRef ?? failure ?? target ?? normalizedRaw,
+  ].join('|')
+}
+
+function buildWorkPackets(findings: Finding[]): WorkPacket[] {
+  const groups = new Map<string, Finding[]>()
+  for (const finding of findings) {
+    if (finding.type === 'telemetry_gap') continue
+    const key = packetClusterKey(finding)
+    const list = groups.get(key) ?? []
+    list.push(finding)
+    groups.set(key, list)
+  }
+
+  const packets: WorkPacket[] = []
+  for (const group of groups.values()) {
+    const sorted = [...group].sort((a, b) => b.score - a.score)
+    const lead = sorted[0]
+    const severity = highestSeverity(sorted)
+    const score = Math.min(100, lead.score + Math.min(25, (sorted.length - 1) * 5))
+    const confidence: Confidence = sorted.length >= 2 || severity === 'high' ? 'high' : lead.action_lane === 'manual_review' ? 'low' : 'medium'
+    packets.push({
+      id: randomUUID(),
+      priority: packetPriority(score),
+      score,
+      confidence,
+      action_lane: lead.action_lane,
+      owner: ownerForLane(lead.action_lane),
+      title: packetTitle(lead.action_lane, lead.type, lead.raw_input_text),
+      recommended_action: recommendedAction(lead.type, lead.action_lane),
+      why_it_matters: whyItMatters(lead.type),
+      evidence_count: sorted.length,
+      finding_types: [...new Set(sorted.map((finding) => finding.type))],
+      example_transcripts: [
+        ...new Set(sorted.map((finding) => finding.raw_input_text).filter((value): value is string => Boolean(value))),
+      ].slice(0, 3),
+      finding_ids: sorted.map((finding) => finding.id),
+    })
+  }
+
+  return packets.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+}
+
 async function main() {
   const args = parseArgs(process.argv)
   loadEnvLocal()
   const supabase = supabaseFromEnv()
   const runId = randomUUID()
   const generatedAt = new Date().toISOString()
-  const sinceIso = sinceToIso(args.since)
+  const stateFile = args.cycle ? defaultStateFile(args) : null
+  const priorState = stateFile ? readCycleState(stateFile) : null
+  const { sinceIso, source: sinceSource } = resolveSinceForRun(args, priorState)
 
   const [rows, eventResult, refs] = await Promise.all([
     fetchAllFoodLogs(supabase, sinceIso, args.limit),
@@ -783,7 +1309,7 @@ async function main() {
     compareFoods(row, findings)
     inspectFoodSources(row, findings, refs.savedMealIds, refs.productIds)
   }
-  inspectEvents(events, findings)
+  inspectEvents(events, findings, refs.savedMealIds, refs.productIds)
 
   const dedupedFindings = dedupeFindings(findings)
   const findingCounts: Record<string, number> = {}
@@ -792,11 +1318,40 @@ async function main() {
     increment(findingCounts, finding.type)
     increment(actionCounts, finding.action_lane)
   }
+  const interactionOutcomes = buildInteractionOutcomes(rows, events, dedupedFindings)
+  const outcomeCounts: Record<string, number> = {}
+  for (const outcome of interactionOutcomes) increment(outcomeCounts, outcome.outcome)
+  const workPackets = buildWorkPackets(dedupedFindings)
+
+  const eventCounts: Record<string, number> = {}
+  for (const event of events) increment(eventCounts, event.event_type)
+  const parseRequested = eventCounts.parse_requested ?? 0
+  const parseReturned = eventCounts.parse_returned ?? 0
+  const parseFailed = eventCounts.parse_failed ?? 0
+  const saveRequested = eventCounts.save_requested ?? 0
+  const saveSucceeded = eventCounts.save_succeeded ?? 0
+  const saveFailed = eventCounts.save_failed ?? 0
+  const editSignals =
+    (eventCounts.food_item_edited ?? 0) +
+    (eventCounts.food_item_deleted ?? 0) +
+    (eventCounts.food_item_added ?? 0) +
+    (eventCounts.disambiguation_selected ?? 0)
+  const passOutcomes = interactionOutcomes.filter((outcome) => outcome.grade === 'pass').length
+  const failOutcomes = interactionOutcomes.filter((outcome) => outcome.grade === 'fail').length
+  const warnOutcomes = interactionOutcomes.filter((outcome) => outcome.grade === 'warn').length
 
   const report: AuditReport = {
     run_id: runId,
     generated_at: generatedAt,
     args,
+    cycle: {
+      enabled: args.cycle,
+      state_file: stateFile,
+      previous_run_at: priorState?.last_successful_run_at ?? null,
+      effective_since: sinceIso,
+      since_source: sinceSource,
+      state_written: Boolean(args.cycle && args.writeState && stateFile),
+    },
     summary: {
       rows_read: rows.length,
       rows_with_raw_input: rowsWithRawInput,
@@ -809,11 +1364,33 @@ async function main() {
       live_saved_meals: refs.savedMealCount,
       live_products: refs.productCount,
       findings: dedupedFindings.length,
+      work_packets: workPackets.length,
+      interaction_outcomes: interactionOutcomes.length,
       since: args.since,
+      effective_since: sinceIso,
+    },
+    scoreboard: {
+      parse_requested_events: parseRequested,
+      parse_returned_events: parseReturned,
+      parse_failed_events: parseFailed,
+      parse_success_rate_pct: parseRequested > 0 ? Math.round((parseReturned / parseRequested) * 1000) / 10 : null,
+      save_requested_events: saveRequested,
+      save_succeeded_events: saveSucceeded,
+      save_failed_events: saveFailed,
+      save_success_rate_pct: saveRequested > 0 ? Math.round((saveSucceeded / saveRequested) * 1000) / 10 : null,
+      edit_or_delete_events: editSignals,
+      saved_rows_likely_accepted_unchanged: likelyAcceptedUnchanged,
+      outcome_pass_count: passOutcomes,
+      outcome_warn_count: warnOutcomes,
+      outcome_fail_count: failOutcomes,
+      top_work_packet_score: workPackets[0]?.score ?? null,
     },
     path_counts: pathCounts,
+    outcome_counts: outcomeCounts,
     finding_counts: findingCounts,
     action_counts: actionCounts,
+    work_packets: workPackets,
+    interaction_outcomes: interactionOutcomes,
     findings: dedupedFindings,
     data_gaps: [
       eventResult.available
@@ -829,6 +1406,17 @@ async function main() {
   const basePath = join(outputDir, `quartermaster-${runId}`)
   if (args.json) writeFileSync(`${basePath}.json`, JSON.stringify(report, null, 2))
   if (args.markdown) writeFileSync(`${basePath}.md`, renderMarkdown(report))
+  if (args.cycle && args.writeState && stateFile) {
+    writeCycleState(stateFile, {
+      version: 1,
+      last_successful_run_at: generatedAt,
+      last_run_id: runId,
+      last_rows_read: rows.length,
+      last_events_read: events.length,
+      last_findings: dedupedFindings.length,
+      updated_at: new Date().toISOString(),
+    })
+  }
 
   console.log('Quartermaster Audit')
   console.log('')
@@ -836,6 +1424,8 @@ async function main() {
   console.log(`rows_read: ${rows.length}`)
   console.log(`events_read: ${events.length}`)
   console.log(`findings: ${dedupedFindings.length}`)
+  console.log(`work_packets: ${workPackets.length}`)
+  if (args.cycle) console.log(`cycle_state: ${stateFile}${args.writeState ? '' : ' (not written)'}`)
   console.log(`json: ${args.json ? `${basePath}.json` : 'skipped'}`)
   console.log(`markdown: ${args.markdown ? `${basePath}.md` : 'skipped'}`)
 }

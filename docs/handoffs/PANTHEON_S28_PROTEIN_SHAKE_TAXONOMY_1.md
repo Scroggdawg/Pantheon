@@ -43,6 +43,9 @@ Added a protein-shake dextrose-intent guard so these no longer blur together:
 - `protein shake with dextrose`
 - `protein shake full dextrose`
 
+Added a protein-shake context guard so generic phrases like `with half an
+ounce of half and half` do not overmatch the half-dextrose shake shortcut.
+
 ## Verification
 
 Passed:
@@ -51,6 +54,10 @@ Passed:
 - `npm run lint`
 - `npx tsx scripts/test-matcher-invariants.ts`
 - `npx tsx scripts/test-segmented-library.ts`
+
+Regression spot-check:
+
+- `with half an ounce of half and half` no longer returns a protein shake.
 
 Live search verification after data write:
 

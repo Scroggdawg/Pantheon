@@ -208,6 +208,17 @@ function hasProteinShakeText(value: string): boolean {
   return /\bprotein\s+shake\b/.test(normalized)
 }
 
+function hasProteinShakeQueryContext(value: string): boolean {
+  const normalized = normalize(value)
+  return /\b(protein\s+shake|isopure|dextrose|nutricost|shake)\b/.test(normalized)
+}
+
+function isProteinShakeContextMismatch(query: string, name: string, aliases: string[]): boolean {
+  const candidateTexts = [name, ...aliases]
+  if (!candidateTexts.some(hasProteinShakeText)) return false
+  return !hasProteinShakeQueryContext(query)
+}
+
 function isDextroseShakeIntentMismatch(query: string, name: string, aliases: string[]): boolean {
   const queryIntent = dextroseIntent(query)
   if (!queryIntent || !hasProteinShakeText(query)) return false
@@ -227,6 +238,7 @@ export function guardedLibraryNameSimilarity(
   name: string,
   aliases: string[] = [],
 ): number {
+  if (isProteinShakeContextMismatch(query, name, aliases)) return 0
   if (isDextroseShakeIntentMismatch(query, name, aliases)) return 0
 
   const score = libraryNameSimilarity(query, name, aliases)

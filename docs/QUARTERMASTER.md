@@ -29,6 +29,8 @@ Useful variants:
 ```bash
 npm run quartermaster -- --since=30d
 npm run quartermaster -- --limit=50
+npm run quartermaster -- --cycle
+npm run quartermaster -- --cycle --no-state-write
 npm run quartermaster -- --markdown-only
 npm run quartermaster -- --json-only
 ```
@@ -40,6 +42,17 @@ available `food_log_events` rows, then writes local reports to `scripts/output/`
 - `quartermaster-<run-id>.md`
 
 The script does not write production data.
+
+`--cycle` turns the audit into a "since last run" loop. It stores local state in
+`scripts/output/quartermaster-cycle-state.json`, which is ignored by Git. Use
+`--no-state-write` to rehearse a cycle without advancing that pointer.
+
+Cycle output includes:
+
+- a scoreboard for parse/save/edit signals;
+- interaction outcomes such as `clean_success`, `quantity_unit_failure`, and
+  `save_path_failure`;
+- ranked work packets with priority, lane, owner, recommendation, and evidence.
 
 ## Current Visibility
 
@@ -81,11 +94,31 @@ Quartermaster classifies findings into action lanes:
 - `product_unit_add`
 - `saved_meal_repair`
 - `parser_bug`
+- `backend_bug`
 - `native_ui_or_telemetry`
 - `ignore_or_joke`
 - `manual_review`
 
-No lane applies changes automatically in v0.
+No lane applies changes automatically.
+
+## Work Packets
+
+A finding says "something happened."
+
+A work packet says "this is probably the next useful repair."
+
+Each packet includes:
+
+- priority: `P0` through `P3`;
+- score: 1-100;
+- owner: Pantry Forge, Parser, Backend, Native UX, Library Identity, or Human Review;
+- recommended action;
+- why it matters;
+- example transcripts;
+- finding ids that support it.
+
+The first use of work packets is triage, not automation. They are intentionally
+reviewable before any live data write, parser rule, or native change.
 
 ## Luke-Facing Unit Rule
 
