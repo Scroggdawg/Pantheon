@@ -16,6 +16,17 @@ import { normalizeFoodText } from '../lib/pantry-builder/normalize'
 type Severity = 'low' | 'medium' | 'high'
 type Priority = 'P0' | 'P1' | 'P2' | 'P3'
 type Confidence = 'low' | 'medium' | 'high'
+type ThemeKind =
+  | 'protein_shake_composition'
+  | 'quantity_display_trust'
+  | 'stale_library_identity'
+  | 'duplicate_food_rows'
+  | 'slow_parse_missing_knowledge'
+  | 'pantry_unit_surface'
+  | 'human_review_delta'
+  | 'save_path_reliability'
+  | 'telemetry_observability'
+  | 'manual_review'
 type FindingType =
   | 'parse_slow'
   | 'llm_fallback_expensive'
@@ -187,6 +198,26 @@ interface WorkPacket {
   finding_ids: string[]
 }
 
+interface LearningTheme {
+  id: string
+  kind: ThemeKind
+  title: string
+  priority: Priority
+  score: number
+  confidence: Confidence
+  action_lanes: ActionLane[]
+  owner: string
+  summary: string
+  doctrine: string
+  durable_fix: string
+  avoid: string
+  evidence_count: number
+  finding_types: FindingType[]
+  example_transcripts: string[]
+  finding_ids: string[]
+  related_packet_ids: string[]
+}
+
 interface CycleState {
   version: 1
   last_successful_run_at: string
@@ -215,6 +246,7 @@ interface AuditReport {
   outcome_counts: Record<string, number>
   finding_counts: Record<string, number>
   action_counts: Record<string, number>
+  learning_themes: LearningTheme[]
   work_packets: WorkPacket[]
   interaction_outcomes: InteractionOutcome[]
   findings: Finding[]
@@ -909,6 +941,7 @@ function renderMarkdown(report: AuditReport) {
     .sort((a, b) => b.score - a.score || severityRank(b.severity) - severityRank(a.severity))
     .slice(0, 40)
   const topOutcomes = [...report.interaction_outcomes].slice(0, 25)
+  const topThemes = [...report.learning_themes].slice(0, 12)
   const topPackets = [...report.work_packets].slice(0, 20)
 
   const lines: string[] = []
@@ -948,6 +981,25 @@ function renderMarkdown(report: AuditReport) {
   lines.push('## Action Lanes')
   lines.push('')
   for (const [key, value] of sortedEntries(report.action_counts)) lines.push(`- ${key}: ${value}`)
+  lines.push('')
+  lines.push('## Learning Themes')
+  lines.push('')
+  for (const theme of topThemes) {
+    lines.push(`### ${theme.priority} / ${theme.score} - ${theme.title}`)
+    lines.push('')
+    lines.push(`- owner: ${theme.owner}`)
+    lines.push(`- lanes: ${theme.action_lanes.join(', ')}`)
+    lines.push(`- confidence: ${theme.confidence}`)
+    lines.push(`- evidence_count: ${theme.evidence_count}`)
+    lines.push(`- finding_types: ${theme.finding_types.join(', ')}`)
+    lines.push(`- summary: ${theme.summary}`)
+    lines.push(`- doctrine: ${theme.doctrine}`)
+    lines.push(`- durable_fix: ${theme.durable_fix}`)
+    lines.push(`- avoid: ${theme.avoid}`)
+    for (const transcript of theme.example_transcripts) lines.push(`- example: ${transcript}`)
+    lines.push('')
+  }
+  if (topThemes.length === 0) lines.push('No learning themes.')
   lines.push('')
   lines.push('## Work Packets')
   lines.push('')
@@ -1321,6 +1373,250 @@ function buildWorkPackets(findings: Finding[]): WorkPacket[] {
   return packets.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
 }
 
+function findingText(finding: Finding): string {
+  return normalizeFoodText(
+    [
+      finding.raw_input_text,
+      finding.summary,
+      JSON.stringify(finding.evidence),
+    ].filter(Boolean).join(' '),
+  )
+}
+
+function themeKindsForFinding(finding: Finding): ThemeKind[] {
+  const raw = normalizeFoodText(finding.raw_input_text ?? '')
+  const text = findingText(finding)
+  const kinds: ThemeKind[] = []
+  if (
+    raw.includes('protein shake') ||
+    raw.includes('isopure') ||
+    raw.includes('dextrose') ||
+    (!raw && (text.includes('protein shake') || text.includes('dextrose')))
+  ) {
+    kinds.push('protein_shake_composition')
+  }
+  if (
+    finding.type === 'user_measurement_not_preserved' ||
+    ((finding.type === 'parse_saved_unit_changed' || finding.type === 'parse_saved_quantity_changed') &&
+      transcriptMeasurements(finding.raw_input_text).length > 0)
+  ) {
+    kinds.push('quantity_display_trust')
+  }
+  if (finding.type === 'source_ref_stale') kinds.push('stale_library_identity')
+  if (finding.type === 'duplicate_food_row') kinds.push('duplicate_food_rows')
+  if (finding.type === 'parse_slow' || finding.type === 'llm_fallback_expensive') kinds.push('slow_parse_missing_knowledge')
+  if (
+    finding.type === 'unit_missing_or_weak' ||
+    finding.type === 'llm_estimated_saved' ||
+    finding.type === 'database_estimated_saved'
+  ) {
+    kinds.push('pantry_unit_surface')
+  }
+  if (finding.type === 'save_failed_event' || finding.type === 'parse_failed_event') kinds.push('save_path_reliability')
+  if (finding.type === 'telemetry_gap' || finding.type === 'parse_abandoned_event' || finding.type === 'edit_event') {
+    kinds.push('telemetry_observability')
+  }
+  if (finding.type === 'parse_saved_delta_calories' || finding.type === 'parse_saved_delta_food_count' || finding.type === 'parse_saved_name_changed') {
+    kinds.push('human_review_delta')
+  }
+  return kinds.length > 0 ? [...new Set(kinds)] : ['manual_review']
+}
+
+function themeOwner(kind: ThemeKind): string {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Parser / Library Identity'
+    case 'quantity_display_trust':
+      return 'Native UX / Pantry Forge'
+    case 'stale_library_identity':
+      return 'Library Identity'
+    case 'duplicate_food_rows':
+      return 'Parser'
+    case 'slow_parse_missing_knowledge':
+      return 'Parser / Pantry Forge'
+    case 'pantry_unit_surface':
+      return 'Pantry Forge'
+    case 'human_review_delta':
+      return 'Human Review'
+    case 'save_path_reliability':
+      return 'Backend'
+    case 'telemetry_observability':
+      return 'Native UX / Telemetry'
+    case 'manual_review':
+      return 'Human Review'
+  }
+}
+
+function themeTitle(kind: ThemeKind): string {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Protein Shake Composition Failure'
+    case 'quantity_display_trust':
+      return 'User Quantity Display Trust Failure'
+    case 'stale_library_identity':
+      return 'Stale Library Identity Failure'
+    case 'duplicate_food_rows':
+      return 'Duplicate Food Row Failure'
+    case 'slow_parse_missing_knowledge':
+      return 'Slow Parse / Missing Knowledge Failure'
+    case 'pantry_unit_surface':
+      return 'Pantry Unit Surface Gap'
+    case 'human_review_delta':
+      return 'Parse Versus Saved Result Delta'
+    case 'save_path_reliability':
+      return 'Save Path Reliability Failure'
+    case 'telemetry_observability':
+      return 'Telemetry / Observability Gap'
+    case 'manual_review':
+      return 'Manual Review Theme'
+  }
+}
+
+function themeSummary(kind: ThemeKind): string {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Protein shake evidence is clustering around one modeling problem: shakes are being treated as opaque identities when Luke is speaking ingredient quantities.'
+    case 'quantity_display_trust':
+      return 'Luke spoke a concrete amount, but the visible plate did not preserve that amount clearly enough for trust.'
+    case 'stale_library_identity':
+      return 'Historical or deleted library identities are still influencing live candidate or save surfaces.'
+    case 'duplicate_food_rows':
+      return 'One intended food can appear more than once, silently inflating calories and macros.'
+    case 'slow_parse_missing_knowledge':
+      return 'The parser is falling onto slower paths where pantry, alias, or matcher knowledge should handle the phrase.'
+    case 'pantry_unit_surface':
+      return 'Foods exist but do not expose strong enough units, alternatives, or reviewed product facts for Luke-style logging.'
+    case 'human_review_delta':
+      return 'The parsed result and saved result differ enough that human review should decide whether this was correction, ambiguity, or a bug.'
+    case 'save_path_reliability':
+      return 'The app failed before or during save, which is a trust-breaking logging failure.'
+    case 'telemetry_observability':
+      return 'Quartermaster can see friction, but not enough detail yet to grade intent confidently.'
+    case 'manual_review':
+      return 'Evidence is real but not yet specific enough for an automatic lane.'
+  }
+}
+
+function themeDoctrine(kind: ThemeKind): string {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Composition beats alias sprawl: protein shake should resolve from protein powder quantity plus dextrose quantity, with saved shortcuts only for common defaults.'
+    case 'quantity_display_trust':
+      return 'User-spoken quantity is display truth unless the system explicitly tells Luke why it cannot preserve it.'
+    case 'stale_library_identity':
+      return 'Historical deleted identities are evidence, not live parent identities.'
+    case 'duplicate_food_rows':
+      return 'A single spoken food should not become multiple saved rows unless Luke clearly asked for multiple portions or separate items.'
+    case 'slow_parse_missing_knowledge':
+      return 'Common Luke phrases should move toward deterministic pantry/parser paths and away from expensive fallback.'
+    case 'pantry_unit_surface':
+      return 'A food is not fully useful until it has the units Luke naturally speaks.'
+    case 'human_review_delta':
+      return 'Parse/save disagreement is user-behavior evidence; inspect it before converting it into aliases or product writes.'
+    case 'save_path_reliability':
+      return 'Saving must degrade gracefully; stale refs and type mismatches should not block logging.'
+    case 'telemetry_observability':
+      return 'If Quartermaster cannot see the event story, it cannot learn the right lesson.'
+    case 'manual_review':
+      return 'Ambiguous evidence should become a question or review packet, not an automatic fix.'
+  }
+}
+
+function themeDurableFix(kind: ThemeKind): string {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Create/verify ingredient identities for Isopure protein and NutriCost dextrose, parse shake utterances into components, retire stale shake identities from live candidates, then add regression phrases.'
+    case 'quantity_display_trust':
+      return 'Preserve the spoken unit in the visible plate and add unit alternatives/conversions only where needed to support that display.'
+    case 'stale_library_identity':
+      return 'Filter or remap stale lib:saved_meal refs before they reach candidate, parse, or save paths.'
+    case 'duplicate_food_rows':
+      return 'Reproduce the segmentation/merge path and add a dedupe or segment ownership guard with regression coverage.'
+    case 'slow_parse_missing_knowledge':
+      return 'Promote repeated slow phrases into pantry identities, aliases, unit conversions, or parser guards.'
+    case 'pantry_unit_surface':
+      return 'Add reviewed product facts and natural unit alternatives for repeated foods before adding broad aliases.'
+    case 'human_review_delta':
+      return 'Compare parse and save artifacts, decide whether Luke corrected the result, then route the smallest safe fix.'
+    case 'save_path_reliability':
+      return 'Add backend/native defensive handling and regression tests for the exact failing payload class.'
+    case 'telemetry_observability':
+      return 'Add or repair event fields so Quartermaster can join parse, display, edit, save, and delete into one session story.'
+    case 'manual_review':
+      return 'Keep this as a review packet until intent is clear.'
+  }
+}
+
+function themeAvoid(kind: ThemeKind): string {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Do not solve this by piling more opaque protein shake aliases onto old saved meals.'
+    case 'quantity_display_trust':
+      return 'Do not hide concrete grams/ounces/counts behind generic serving labels.'
+    case 'stale_library_identity':
+      return 'Do not resurrect deleted identities just because historical logs mention them.'
+    case 'duplicate_food_rows':
+      return 'Do not compensate by changing macros; remove the duplicate cause.'
+    case 'slow_parse_missing_knowledge':
+      return 'Do not accept slow fallback as normal for repeated everyday foods.'
+    case 'pantry_unit_surface':
+      return 'Do not add products that cannot be logged in Luke’s natural units.'
+    case 'human_review_delta':
+      return 'Do not turn every delta into an alias without understanding whether it was a correction.'
+    case 'save_path_reliability':
+      return 'Do not let database strictness make Luke lose a log.'
+    case 'telemetry_observability':
+      return 'Do not infer user intent from screenshots alone when app events can capture it.'
+    case 'manual_review':
+      return 'Do not automate ambiguous nutrition decisions.'
+  }
+}
+
+function buildLearningThemes(findings: Finding[], packets: WorkPacket[]): LearningTheme[] {
+  const groups = new Map<ThemeKind, Finding[]>()
+  for (const finding of findings) {
+    if (finding.type === 'telemetry_gap') continue
+    for (const kind of themeKindsForFinding(finding)) {
+      const group = groups.get(kind) ?? []
+      group.push(finding)
+      groups.set(kind, group)
+    }
+  }
+
+  const themes: LearningTheme[] = []
+  for (const [kind, group] of groups) {
+    const sorted = [...group].sort((a, b) => b.score - a.score)
+    const lead = sorted[0]
+    const score = Math.min(100, lead.score + Math.min(30, (sorted.length - 1) * 3))
+    const actionLanes = [...new Set(sorted.map((finding) => finding.action_lane))]
+    const findingIds = sorted.map((finding) => finding.id)
+    const relatedPackets = packets.filter((packet) => packet.finding_ids.some((id) => findingIds.includes(id)))
+    themes.push({
+      id: randomUUID(),
+      kind,
+      title: themeTitle(kind),
+      priority: packetPriority(score),
+      score,
+      confidence: sorted.length >= 3 || highestSeverity(sorted) === 'high' ? 'high' : 'medium',
+      action_lanes: actionLanes,
+      owner: themeOwner(kind),
+      summary: themeSummary(kind),
+      doctrine: themeDoctrine(kind),
+      durable_fix: themeDurableFix(kind),
+      avoid: themeAvoid(kind),
+      evidence_count: sorted.length,
+      finding_types: [...new Set(sorted.map((finding) => finding.type))],
+      example_transcripts: [
+        ...new Set(sorted.map((finding) => finding.raw_input_text).filter((value): value is string => Boolean(value))),
+      ].slice(0, 5),
+      finding_ids: findingIds,
+      related_packet_ids: relatedPackets.map((packet) => packet.id),
+    })
+  }
+
+  return themes.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+}
+
 async function main() {
   const args = parseArgs(process.argv)
   loadEnvLocal()
@@ -1376,6 +1672,7 @@ async function main() {
   const outcomeCounts: Record<string, number> = {}
   for (const outcome of interactionOutcomes) increment(outcomeCounts, outcome.outcome)
   const workPackets = buildWorkPackets(dedupedFindings)
+  const learningThemes = buildLearningThemes(dedupedFindings, workPackets)
 
   const eventCounts: Record<string, number> = {}
   for (const event of events) increment(eventCounts, event.event_type)
@@ -1418,6 +1715,7 @@ async function main() {
       live_saved_meals: refs.savedMealCount,
       live_products: refs.productCount,
       findings: dedupedFindings.length,
+      learning_themes: learningThemes.length,
       work_packets: workPackets.length,
       interaction_outcomes: interactionOutcomes.length,
       since: args.since,
@@ -1443,6 +1741,7 @@ async function main() {
     outcome_counts: outcomeCounts,
     finding_counts: findingCounts,
     action_counts: actionCounts,
+    learning_themes: learningThemes,
     work_packets: workPackets,
     interaction_outcomes: interactionOutcomes,
     findings: dedupedFindings,
@@ -1478,6 +1777,7 @@ async function main() {
   console.log(`rows_read: ${rows.length}`)
   console.log(`events_read: ${events.length}`)
   console.log(`findings: ${dedupedFindings.length}`)
+  console.log(`learning_themes: ${learningThemes.length}`)
   console.log(`work_packets: ${workPackets.length}`)
   if (args.cycle) console.log(`cycle_state: ${stateFile}${args.writeState ? '' : ' (not written)'}`)
   console.log(`json: ${args.json ? `${basePath}.json` : 'skipped'}`)
