@@ -90,6 +90,10 @@ const cases: Case[] = [
         result._telemetry?.library_segmented_quantity_only_ignored_count === 1,
         'Expected one quantity-only segment to be ignored',
       )
+      assert(
+        result._telemetry?.weighted_protein_fast_path_hit === true,
+        'Expected salmon weighted-protein fast path',
+      )
       const bread = findFood(result, /Dave's Killer Bread/i)
       assertClose(bread.qty, 2, 'Dave bread qty')
       assert(/slice/i.test(bread.unit), `Expected Dave bread unit slice, got ${bread.unit}`)

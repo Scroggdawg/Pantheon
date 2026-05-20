@@ -25,6 +25,7 @@ import {
   lookupResponseCache,
   writeResponseCache,
 } from '@/lib/claude/parse-meal-response-cache'
+import { searchFoodDatabase } from '@/lib/claude/tools/search-food-database'
 import { createClient } from '@/lib/supabase/server'
 import type { FoodItem } from '@/types/database'
 
@@ -79,6 +80,137 @@ function isQuantityOnlySegment(value: string): boolean {
   }
 
   return hasQuantitySignal
+}
+
+const WEIGHTED_PROTEIN_TOKENS = new Set([
+  'beef',
+  'chicken',
+  'cod',
+  'fish',
+  'pork',
+  'salmon',
+  'shrimp',
+  'tilapia',
+  'tuna',
+  'turkey',
+])
+
+function parseWeightedFoodSegment(value: string): {
+  qty: number
+  unit: string
+  grams: number
+  query: string
+} | null {
+  const cleaned = value.trim().replace(/^(?:and|plus|with)\s+/i, '')
+  const match = /^((?:\d+\s+)?\d+(?:\.\d+)?(?:\/\d+)?)\s*(g|grams?|oz|ounces?|lb|lbs|pounds?)\b\s*(?:of\s+)?(.+)$/i.exec(cleaned)
+  if (!match) return null
+
+  const qtyText = match[1].trim()
+  const unitToken = match[2].toLowerCase()
+  const query = match[3].trim().replace(/[.,]+$/g, '')
+  if (!query) return null
+
+  const qty = parseQuantityText(qtyText)
+  if (!Number.isFinite(qty) || qty <= 0) return null
+
+  const unit =
+    unitToken === 'g' || unitToken.startsWith('gram')
+      ? 'grams'
+      : unitToken === 'oz' || unitToken.startsWith('ounce')
+        ? qty === 1 ? 'ounce' : 'ounces'
+        : qty === 1 ? 'lb' : 'lb'
+  const grams =
+    unitToken === 'g' || unitToken.startsWith('gram')
+      ? qty
+      : unitToken === 'oz' || unitToken.startsWith('ounce')
+        ? qty * 28.3495
+        : qty * 453.592
+
+  return { qty, unit, grams, query }
+}
+
+function parseQuantityText(value: string): number {
+  const mixed = /^(\d+)\s+(\d+)\/(\d+)$/.exec(value)
+  if (mixed) {
+    const whole = Number(mixed[1])
+    const num = Number(mixed[2])
+    const den = Number(mixed[3])
+    return den > 0 ? whole + num / den : Number.NaN
+  }
+
+  const fraction = /^(\d+)\/(\d+)$/.exec(value)
+  if (fraction) {
+    const num = Number(fraction[1])
+    const den = Number(fraction[2])
+    return den > 0 ? num / den : Number.NaN
+  }
+
+  return Number(value)
+}
+
+function weightedProteinSearchQuery(query: string): string | null {
+  const normalized = query
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!normalized) return null
+
+  const tokens = normalized.split(' ')
+  if (!tokens.some((token) => WEIGHTED_PROTEIN_TOKENS.has(token))) return null
+  return tokens.includes('raw') || tokens.includes('cooked')
+    ? normalized
+    : `${normalized} raw`
+}
+
+async function tryWeightedProteinDatabaseFastPath(
+  segment: string,
+): Promise<FoodItem | null> {
+  const parsed = parseWeightedFoodSegment(segment)
+  if (!parsed) return null
+  const query = weightedProteinSearchQuery(parsed.query)
+  if (!query) return null
+
+  const db = await searchFoodDatabase({ query, dataset: 'all', limit: 3 })
+  const top = db.results[0]
+  if (!top || top.match_confidence.score < 0.6) return null
+  if (top.match_confidence.warnings.includes('low_name_similarity')) return null
+  const per100g = top.per_100g
+  if (
+    per100g.kcal === null ||
+    per100g.protein_g === null ||
+    per100g.carbs_g === null ||
+    per100g.fat_g === null
+  ) {
+    return null
+  }
+
+  const scale = parsed.grams / 100
+  return {
+    name: displayNameForWeightedFastPath(top.name, parsed.query),
+    qty: parsed.qty,
+    unit: parsed.unit,
+    calories: Math.round(per100g.kcal * scale),
+    protein_g: Math.round(per100g.protein_g * scale * 10) / 10,
+    carbs_g: Math.round(per100g.carbs_g * scale * 10) / 10,
+    fat_g: Math.round(per100g.fat_g * scale * 10) / 10,
+    source: top.match_confidence.score >= 0.8 ? 'database_exact' : 'database_estimated',
+    source_ref: top.id,
+    match_confidence: {
+      score: top.match_confidence.score,
+      label: top.match_confidence.label,
+      warnings: [...top.match_confidence.warnings],
+    },
+    notes:
+      top.match_confidence.score < 0.8
+        ? 'Generic database match; macros may vary by cut or species.'
+        : null,
+  }
+}
+
+function displayNameForWeightedFastPath(databaseName: string, userQuery: string): string {
+  if (/\bsalmon\b/i.test(userQuery)) return 'Salmon fillet, raw'
+  return databaseName
 }
 
 // Op FASTRAK Alpha.3 layer 3 — accept whisper telemetry forwarded from
@@ -331,6 +463,86 @@ export async function POST(request: Request) {
             library_segmented_unresolved_count: 0,
             fallback_llm_hit: false,
             total_route_latency_ms: Date.now() - routeStarted,
+            cache_lookup_ms: cacheLookupMs,
+            library_shortcut_lookup_ms: shortcutLookupMs,
+            library_segmented_lookup_ms: segLookupMs,
+            llm_latency_ms: 0,
+            ...whisperTelemetry,
+          },
+        })
+      }
+
+      const fastPathResolved = (
+        await Promise.all(
+          unresolvedForLlm.map(async (u) => ({
+            unresolved: u,
+            food: await tryWeightedProteinDatabaseFastPath(u.original_segment),
+          })),
+        )
+      ).filter((item): item is typeof item & { food: FoodItem } => item.food !== null)
+      const fastPathPositions = new Set(
+        fastPathResolved.map((item) => item.unresolved.position),
+      )
+      const remainingUnresolvedForLlm = unresolvedForLlm.filter(
+        (u) => !fastPathPositions.has(u.position),
+      )
+
+      if (fastPathResolved.length > 0 && remainingUnresolvedForLlm.length === 0) {
+        const sortedResolved = [
+          ...segmented.resolved.map((r) => ({
+            food: r.food,
+            position: r.position,
+            segment: r.segment,
+          })),
+          ...fastPathResolved.map((r) => ({
+            food: r.food,
+            position: r.unresolved.position,
+            segment: r.unresolved.segment,
+          })),
+        ].sort((a, b) => a.position - b.position)
+        const foods = sortedResolved.map((r) => r.food)
+        const totalCal = foods.reduce((acc, f) => acc + f.calories, 0)
+        const totalProt = foods.reduce((acc, f) => acc + f.protein_g, 0)
+        const totalCarbs = foods.reduce((acc, f) => acc + f.carbs_g, 0)
+        const totalFat = foods.reduce((acc, f) => acc + f.fat_g, 0)
+        const totalLatencyMs = Date.now() - routeStarted
+
+        console.log({
+          type: 'parse_meal_telemetry',
+          latency_ms: totalLatencyMs,
+          library_segmented_partial_hit: true,
+          weighted_protein_fast_path_hit: true,
+          weighted_protein_fast_path_count: fastPathResolved.length,
+          library_segmented_resolved_count: segmented.resolved.length,
+          library_segmented_unresolved_count: unresolvedForLlm.length,
+          library_segmented_quantity_only_ignored_count: ignoredQuantityOnly.length,
+          response_cache_hit: false,
+          library_shortcut_hit: false,
+        })
+
+        return Response.json({
+          foods,
+          total_calories: Math.round(totalCal),
+          total_protein_g: Math.round(totalProt * 100) / 100,
+          total_carbs_g: Math.round(totalCarbs * 100) / 100,
+          total_fat_g: Math.round(totalFat * 100) / 100,
+          clarification_needed: null,
+          disambiguation: null,
+          _telemetry: {
+            latency_ms: totalLatencyMs,
+            tool_calls: 0,
+            iters: 0,
+            cache_hits: 0,
+            response_cache_hit: false,
+            library_shortcut_hit: false,
+            library_segmented_partial_hit: true,
+            weighted_protein_fast_path_hit: true,
+            weighted_protein_fast_path_count: fastPathResolved.length,
+            library_segmented_resolved_count: segmented.resolved.length,
+            library_segmented_unresolved_count: unresolvedForLlm.length,
+            library_segmented_quantity_only_ignored_count: ignoredQuantityOnly.length,
+            fallback_llm_hit: false,
+            total_route_latency_ms: totalLatencyMs,
             cache_lookup_ms: cacheLookupMs,
             library_shortcut_lookup_ms: shortcutLookupMs,
             library_segmented_lookup_ms: segLookupMs,
