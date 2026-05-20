@@ -6,6 +6,7 @@ export type Confidence = 'low' | 'medium' | 'high'
 // Wyze deprecated Session 15, removed Session 26.
 export type WeightSource = 'wyze_sync' | 'manual' | 'withings'
 export type CalEstimateMethod = 'MET_estimate' | 'user_override' | 'apple_health'
+export type WorkoutExternalSource = 'healthkit'
 
 export interface User {
   id: string
@@ -254,6 +255,9 @@ export interface WorkoutSession {
   avg_heart_rate: number | null
   perceived_effort: number | null
   workout_notes: string | null
+  external_source: WorkoutExternalSource | null
+  external_id: string | null
+  external_payload: Record<string, unknown>
   created_at: string
 }
 
