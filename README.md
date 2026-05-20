@@ -38,6 +38,9 @@ npm run build
 - `app/api/admin/pantry/*` - product search/save workflows.
 - `supabase/migrations/` - database migrations.
 - `AGENTS.md` - operating rules for agents.
+- `docs/CODEX_MULTI_CHAT_PROTOCOL.md` - branch/worktree and multi-chat coordination rules.
+- `docs/CODEX_MULTI_CHAT_STARTUP.md` - practical checklist for starting parallel chats.
+- `docs/CODEX_CHAT_BRIEFS.md` - paste-ready prompts for parallel Codex chats.
 
 ## Environment
 
