@@ -6,35 +6,11 @@ Status: Active operating map
 
 ## ELI5
 
-Quartermaster is the part of Pantheon that watches what happened when Luke used the app.
+Quartermaster watches what happened when Luke used Pantheon.
 
-It should learn from real use, not guesses.
-
-The goal is not to create a thousand tiny patches. The goal is to notice patterns:
-
-- "Luke said grams, but the app showed serving."
-- "One protein shake became two protein shakes."
-- "The old protein shake identity came back from history."
-- "This is not three different problems. This is one protein shake modeling problem."
-
-Quartermaster should help Pantheon become a better student of Luke.
-
-## The Big Loop
-
-The mature loop is:
-
-```text
-Luke uses Pantheon normally.
-Pantheon records the whole story.
-Quartermaster audits what happened.
-Quartermaster groups symptoms into themes.
-Quartermaster recommends durable fixes.
-The right lane fixes the problem.
-The original phrase is replayed.
-Metrics improve.
-Doctrine updates.
-The next cycle starts smarter.
-```
+It should learn from real use, not guesses. The goal is not to create a
+thousand tiny patches. The goal is to notice patterns, fix the shared cause, and
+then replay the original phrase to prove the fix worked.
 
 ## Anti-Drift Rule
 
@@ -45,10 +21,8 @@ Bad path:
 ```text
 Add one alias.
 Add another alias.
-Add another alias.
 Patch one phrase.
-Patch another phrase.
-The system gets dense, slow, and hard to reason about.
+The system gets dense and hard to reason about.
 ```
 
 Good path:
@@ -61,11 +35,10 @@ Add narrow aliases only when they support the model.
 Add regression tests from Luke's actual phrases.
 ```
 
-Example:
+The operating rule is:
 
 ```text
-Bad: add twelve opaque protein shake aliases.
-Good: model protein shake as protein powder quantity plus dextrose quantity.
+Group boldly. Execute narrowly.
 ```
 
 ## Identity And Measurement Doctrine
@@ -85,7 +58,11 @@ The layers should not collapse into each other.
 - A display name can change without changing the food.
 - User-visible quantity should preserve what Luke said whenever possible.
 
-Plain English: if Luke hearts a Yasso bar, then `one Yasso bar`, `two Yasso bars`, and a slightly different product display name should still feel like the same hearted food when they point at the same product. Pantheon can multiply the macros for the quantity, but it should not create a separate favorite identity for every count.
+Plain English: if Luke hearts a Yasso bar, then `one Yasso bar`, `two Yasso
+bars`, and a slightly different product display name should still feel like the
+same hearted food when they point at the same product. Pantheon can multiply the
+macros for the quantity, but it should not create a separate favorite identity
+for every count.
 
 Quartermaster should flag violations as identity fractures, not just unit bugs:
 
@@ -95,263 +72,127 @@ Quartermaster should flag violations as identity fractures, not just unit bugs:
 - history emits `lib:saved_meal:*` when a cleaner `lib:product:*` identity exists
 - display quantity differs from spoken quantity even when macros are close
 
-## Track Legs
+## Current Track Position
+
+Quartermaster is not moving through the track like a strict staircase. It is a
+machine with layers. Later work can strengthen earlier legs.
+
+Current overall position: **Leg 5 - Generate Repair Packets**.
+
+Current grade: **C+**.
+
+Plain English: Quartermaster can now group real app failures into larger
+lessons and produce repair packets, but it still needs stronger closed-loop
+execution, verification, and trend memory before it can be trusted as an
+autonomous manager.
+
+## Legs
 
 ### Leg 0: Instrument Reality
 
 Goal: capture what actually happened.
 
-Quartermaster needs:
+Grade: B-
 
-- what Luke said
-- transcription text
-- parser result
-- displayed plate
-- save success or failure
-- edits
-- deletes
-- abandons
-- disambiguation choices
-- timing
-- error messages
-- saved final result
-
-Plain English: "Did we record the whole story?"
-
-Current grade: B-
-
-Status: mostly live. Native telemetry and web event storage are deployed, and real phone events are flowing. Save-event coverage still needs confirmation and strengthening.
+Status: real events exist and phone telemetry is flowing, but save-event and
+edit-event coverage still need hardening.
 
 ### Leg 1: Detect Concrete Failures
 
-Goal: turn raw behavior into specific findings.
+Goal: turn raw behavior into findings.
 
-Examples:
+Grade: B+
 
-- stale saved meal identity
-- duplicate food row
-- grams not preserved
-- parse too slow
-- LLM fallback used
-- parse/save mismatch
-- save failed
-- user edited result
-- user deleted result
-- joke or non-food
-- low-confidence saved item
-- bad unit surface
-
-Plain English: "Can Quartermaster point at what went wrong?"
-
-Current grade: B
-
-Status: active and useful. Quartermaster now detects duplicate food rows, stale refs, unit display failures, parse slowness, and several parse/save deltas.
+Status: detects stale refs, duplicate rows, unit display failures, slow parses,
+parse/save deltas, save failures, and identity fractures.
 
 ### Leg 2: Group Symptoms Into Themes
 
 Goal: stop treating every finding as a separate chore.
 
-Theme examples:
+Grade: C
 
-- Protein Shake Composition Failure
-- User Quantity Display Trust Failure
-- Stale Library Identity Failure
-- Generic Serving Unit Failure
-- Slow Parse Due To Missing Staples
-- Restaurant/Composite Meal Ambiguity
-- Pantry Alias Overgrowth Risk
-
-Plain English: "Are these ten problems actually one bigger lesson?"
-
-Current grade: D
-
-Status: not built yet. This is the next major Quartermaster layer.
+Status: themes exist and are useful. They still need better severity tuning and
+subtheme splitting when a theme is too broad.
 
 ### Leg 3: Assign Ownership Lanes
 
-Goal: route work to the correct fix surface.
+Goal: route work to the right surface.
 
-Lanes:
+Grade: C+
 
-- Pantry Forge
-- Parser
-- Native UI
-- Backend
-- Saved Meal / Library Identity
-- Data Repair
-- Doctrine
-- Human Review
-- Ignore / Joke
-
-Plain English: "Who should fix this?"
-
-Current grade: C+
-
-Status: partially built. Finding-level lanes exist. Theme-level lanes do not.
+Status: finding and packet lanes exist. Theme-level ownership is useful but
+still needs sharper routing.
 
 ### Leg 4: Recommend Durable Fix Strategy
 
-Goal: recommend the smallest robust change, not a pile of local patches.
+Goal: recommend the smallest robust change, not a pile of patches.
 
-Bad recommendation:
+Grade: C
 
-```text
-Add 12 protein shake aliases.
-```
-
-Good recommendation:
-
-```text
-Model protein shake as ingredient composition:
-Isopure protein quantity plus NutriCost dextrose quantity.
-Then add shortcut aliases only for common defaults.
-```
-
-Plain English: "What is the clean fix?"
-
-Current grade: D+
-
-Status: mostly still human/Codex reasoning. Quartermaster does not yet synthesize durable strategy by itself.
+Status: durable-fix language exists for themes, but some product judgment still
+lives in Codex/docs instead of the machine.
 
 ### Leg 5: Generate Repair Packets
 
-Goal: produce work packets that are specific enough to execute.
+Goal: produce work packets specific enough to execute.
 
-A good repair packet includes:
+Grade: C+
 
-- root cause
-- affected examples
-- proposed fix
-- likely files or data areas
-- risk level
-- regression tests
-- "do not do this" guidance
-- expected improvement metric
-
-Plain English: "Can someone pick this up and fix it?"
-
-Current grade: C-
-
-Status: early. Work packets exist, but they are still too shallow.
+Status: work packets and top theme execution plans exist. Theme plans now carry
+grouping scope, execution mode, safety gates, allowed actions, and blocked
+actions.
 
 ### Leg 6: Execute Or Delegate Repairs
 
 Goal: Quartermaster becomes the dispatcher.
 
-It should decide:
+Grade: D+
 
-- this goes to Pantry Forge
-- this goes to parser code
-- this goes to native UI
-- this goes to backend
-- this needs human confirmation
-- this should be ignored
-- this should become doctrine
-
-Plain English: "Can Quartermaster manage the work instead of just describing it?"
-
-Current grade: D
-
-Status: not really built. Codex is still doing most routing manually.
+Status: Codex can execute from Quartermaster output, but Quartermaster is not
+yet managing agents or automatically opening safe work lanes.
 
 ### Leg 7: Verify The Repair
 
 Goal: every fix gets tested against original evidence.
 
-For each repair:
+Grade: C
 
-- replay the original phrase
-- confirm displayed result
-- confirm saved result
-- confirm telemetry
-- confirm the old failure packet disappears
-- add regression coverage where possible
-
-Plain English: "Did the fix actually fix Luke's problem?"
-
-Current grade: C
-
-Status: partially possible. We have parser tests, Quartermaster dry runs, and Maestro, but not a full closed-loop verifier.
+Status: parser tests, dry runs, and some app replay are possible. The full
+app-to-data closed loop is not mature yet.
 
 ### Leg 8: Learn Memory / Doctrine
 
 Goal: repeated lessons become standing rules.
 
-Doctrine examples:
+Grade: C-
 
-- User-spoken quantity is display truth.
-- Protein shake is ingredient composition, not an opaque saved meal.
-- Brand does not matter when macros are equivalent within tolerance.
-- Do not auto-approve composite/recipe foods into product pantry.
-- Do not turn every symptom into a new alias.
-- Historical deleted identities must not be emitted as live refs.
-
-Plain English: "What should Pantheon remember forever?"
-
-Current grade: D+
-
-Status: mostly in chat/docs. Needs more machine-readable doctrine.
+Status: doctrine exists in docs and theme plans. More of it should become
+machine-readable and regression-backed.
 
 ### Leg 9: Measure Improvement Over Time
 
 Goal: know whether Pantheon is actually getting better.
 
-Metrics:
+Grade: C-
 
-- parse success rate
-- save success rate
-- edit/delete rate
-- abandon rate
-- average parse latency
-- LLM fallback rate
-- repeated failure count
-- duplicate row rate
-- unit preservation rate
-- stale identity rate
-- accepted-unchanged rate
-- top recurring themes
-
-Plain English: "Are we improving or just moving stuff around?"
-
-Current grade: C-
-
-Status: early scoreboard exists. Longitudinal trend tracking is not mature yet.
+Status: scoreboards and cycle memory exist. Longitudinal trend reporting is
+still early.
 
 ### Leg 10: Self-Improving Pantry/Product Loop
 
 Goal: Quartermaster drives Pantry Forge.
 
-Quartermaster should say:
+Grade: C
 
-- add these products
-- add these aliases
-- add these unit conversions
-- reject these bad matches
-- genericize these equivalent foods
-- do not add these because they are jokes, composites, brands, or outliers
-- rerun these phrases afterward
-
-Plain English: "Can real app use tell Pantry Forge what to build next?"
-
-Current grade: C
-
-Status: partially manual. Pantry Forge and Quartermaster both exist, but they are not tightly joined.
+Status: Pantry Forge and Quartermaster both exist, but their handoff is still
+partly manual.
 
 ### Leg 11: Multi-Agent Coordination
 
 Goal: Quartermaster becomes the work manager.
 
-Possible agents:
-
-- Pantry agent: products, aliases, units, rejections
-- Parser agent: segmentation, scoring, guards
-- Native agent: display and edit flow
-- Backend agent: save/reference problems
-- Review agent: ambiguous evidence
-
-Plain English: "Can Quartermaster coordinate the team?"
-
-Current grade: F
+Grade: F
 
 Status: conceptual only.
 
@@ -359,84 +200,18 @@ Status: conceptual only.
 
 Goal: Pantheon improves from Luke using it.
 
-Plain English: "Pantheon gets smarter because Luke lives in it."
+Grade: D+
 
-Completion means:
+Status: the foundation is real, but the full machine is not there yet.
 
-- Quartermaster captures every meaningful interaction.
-- It grades failures and successes.
-- It groups symptoms into themes.
-- It recommends durable fixes.
-- It routes work to the right lane.
-- Repairs are verified against original evidence.
-- Doctrine updates.
-- Metrics improve across cycles.
+## Footer Contract
 
-Current grade: D+
-
-Status: foundation exists, but the full machine is not there yet.
-
-## Current Track Position
-
-Current leg: Leg 1 complete enough to move forward.
-
-Next leg: Leg 2 - Group Symptoms Into Themes.
-
-Overall maturity: D+
-
-Main risk: fixing symptoms one by one instead of teaching the system.
-
-Next move: implement Quartermaster Themes v1.
-
-## Progress Footer Contract
-
-At the end of every substantial Quartermaster generation, Codex should include one final line using this exact shape:
+At the end of every substantial Quartermaster generation, Codex should include
+one final line using this exact shape:
 
 ```text
 Quartermaster Track: Leg X - <leg name> | Grade: <grade> | Plain English: <what just changed> | Next: <next checkpoint>
 ```
 
-Examples:
-
-```text
-Quartermaster Track: Leg 2 - Group Symptoms Into Themes | Grade: D -> C- | Plain English: Quartermaster learned to group separate problems into bigger lessons. | Next: make those themes easier to judge.
-```
-
-```text
-Quartermaster Track: Leg 5 - Generate Repair Packets | Grade: C -> C+ | Plain English: Quartermaster can now turn the biggest lesson into a concrete fix plan. | Next: add cycle memory before executing the protein shake plan.
-```
-
-Plain English should avoid internal shorthand. For example:
-
-```text
-Bad: connected themes to strongest repair packets.
-Good: Quartermaster can now pick the most important problem and show the exact fixes attached to it.
-```
-
-## Grade Key
-
-```text
-A  = strong, reliable, and ready to depend on
-B  = useful and working, but still has known gaps
-C  = partly working; good enough for guided use, not autonomous
-D  = concept exists, but the machine cannot really do it yet
-F  = not built
-```
-
-## Color Key
-
-```text
-GREEN  = dependable enough to build on
-YELLOW = useful but needs supervision
-RED    = missing or risky
-```
-
-Current color map:
-
-```text
-GREEN:  none yet
-YELLOW: Legs 0, 1, 3, 5, 7, 9, 10
-RED:    Legs 2, 4, 6, 8, 11, 12
-```
-
-Quartermaster Track: Leg 5 - Generate Repair Packets | Grade: C+ | Plain English: Quartermaster can now pick the most important problem and show the exact fixes attached to it. | Next: add cycle memory before executing the protein shake plan
+The footer should report the real overall track position, not merely the
+technical layer touched during the last code change.

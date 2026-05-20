@@ -120,6 +120,28 @@ Each packet includes:
 The first use of work packets is triage, not automation. They are intentionally
 reviewable before any live data write, parser rule, or native change.
 
+## Theme Safety
+
+Quartermaster should group boldly and execute narrowly.
+
+A theme is allowed to say "these symptoms are one larger lesson." That is how
+Pantheon avoids a pile of tiny aliases, duplicate saved foods, and one-off
+patches. But a theme is not permission to make broad live changes.
+
+Each theme execution plan now includes:
+
+- `grouping_scope`: how far the evidence can safely be grouped;
+- `execution_mode`: `observe_only`, `plan_only`, `narrow_repair`, or
+  `human_review_required`;
+- `safety_gates`: checks that must pass before repair work counts as safe;
+- `allowed_actions`: the kinds of narrow work this theme can justify;
+- `blocked_actions`: moves that would create clutter, over-merge identities, or
+  mutate production data too broadly.
+
+Plain English: Quartermaster can think in big patterns, but repairs should start
+with the strongest evidence, replay Luke's real phrase, and ship as small tested
+changes.
+
 ## Luke-Facing Unit Rule
 
 If Luke says `five strawberries`, Pantheon should show `5 strawberries`.

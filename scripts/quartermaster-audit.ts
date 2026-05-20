@@ -18,6 +18,7 @@ type Priority = 'P0' | 'P1' | 'P2' | 'P3'
 type Confidence = 'low' | 'medium' | 'high'
 type ThemeUrgency = 'fix_now' | 'fix_next' | 'watch' | 'defer'
 type ThemeMaturity = 'strong_pattern' | 'emerging_pattern' | 'single_incident' | 'too_broad'
+type ThemeExecutionMode = 'observe_only' | 'plan_only' | 'narrow_repair' | 'human_review_required'
 type ThemeKind =
   | 'protein_shake_composition'
   | 'quantity_display_trust'
@@ -225,7 +226,12 @@ interface WorkPacket {
 
 interface ThemeExecutionPlan {
   goal: string
+  grouping_scope: string
+  execution_mode: ThemeExecutionMode
   ordered_steps: string[]
+  safety_gates: string[]
+  allowed_actions: string[]
+  blocked_actions: string[]
   acceptance_criteria: string[]
   regression_tests: string[]
   do_not_do: string[]
@@ -1164,6 +1170,8 @@ function renderMarkdown(report: AuditReport) {
     lines.push(`### ${topTheme.priority} / ${topTheme.score} - ${topTheme.title}`)
     lines.push('')
     lines.push(`- goal: ${topTheme.execution_plan.goal}`)
+    lines.push(`- grouping_scope: ${topTheme.execution_plan.grouping_scope}`)
+    lines.push(`- execution_mode: ${topTheme.execution_plan.execution_mode}`)
     lines.push(`- owner: ${topTheme.owner}`)
     lines.push(`- urgency: ${topTheme.urgency}`)
     lines.push(`- maturity: ${topTheme.maturity}`)
@@ -1171,6 +1179,12 @@ function renderMarkdown(report: AuditReport) {
     for (const title of topTheme.strongest_packet_titles) lines.push(`  - ${title}`)
     lines.push(`- ordered_steps:`)
     for (const step of topTheme.execution_plan.ordered_steps) lines.push(`  - ${step}`)
+    lines.push(`- safety_gates:`)
+    for (const gate of topTheme.execution_plan.safety_gates) lines.push(`  - ${gate}`)
+    lines.push(`- allowed_actions:`)
+    for (const action of topTheme.execution_plan.allowed_actions) lines.push(`  - ${action}`)
+    lines.push(`- blocked_actions:`)
+    for (const action of topTheme.execution_plan.blocked_actions) lines.push(`  - ${action}`)
     lines.push(`- acceptance_criteria:`)
     for (const criterion of topTheme.execution_plan.acceptance_criteria) lines.push(`  - ${criterion}`)
     lines.push(`- regression_tests:`)
@@ -1204,6 +1218,10 @@ function renderMarkdown(report: AuditReport) {
     lines.push(`- strongest_packets:`)
     for (const title of theme.strongest_packet_titles) lines.push(`  - ${title}`)
     lines.push(`- execution_goal: ${theme.execution_plan.goal}`)
+    lines.push(`- grouping_scope: ${theme.execution_plan.grouping_scope}`)
+    lines.push(`- execution_mode: ${theme.execution_plan.execution_mode}`)
+    lines.push(`- safety_gates:`)
+    for (const gate of theme.execution_plan.safety_gates.slice(0, 5)) lines.push(`  - ${gate}`)
     lines.push(`- execution_next_steps:`)
     for (const step of theme.execution_plan.ordered_steps.slice(0, 5)) lines.push(`  - ${step}`)
     for (const transcript of theme.example_transcripts) lines.push(`- example: ${transcript}`)
@@ -2063,10 +2081,168 @@ function themeSortScore(theme: LearningTheme): number {
   return urgencyScore[theme.urgency] + maturityScore[theme.maturity] + theme.score
 }
 
-function buildThemeExecutionPlan(kind: ThemeKind, packets: WorkPacket[]): ThemeExecutionPlan {
+function themeGroupingScope(kind: ThemeKind, maturity: ThemeMaturity): string {
+  if (maturity === 'too_broad') return 'Group only for diagnosis. Split into smaller subthemes before any repair work.'
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Group all shake symptoms together for root-cause planning, then repair ingredient composition and stale identity paths in small tested steps.'
+    case 'quantity_display_trust':
+      return 'Group grams, ounces, counts, scoops, and servings as one measurement-trust family, but fix one unit surface at a time with replay evidence.'
+    case 'stale_library_identity':
+      return 'Group stale refs across history, candidates, and save payloads because the shared safety rule is live refs must be verified before reuse.'
+    case 'identity_fracture':
+      return 'Group same-source identity splits together when they share a canonical source_ref; repair one canonical identity at a time.'
+    case 'duplicate_food_rows':
+      return 'Group duplicate-row symptoms by parser merge/segmentation cause, then reproduce one phrase before changing parser behavior.'
+    case 'slow_parse_missing_knowledge':
+      return 'Group repeated slow phrases as a coverage problem, then split by missing food, alias, unit, or parser guard.'
+    case 'pantry_unit_surface':
+      return 'Group weak units as pantry ergonomics, then split by food family and user-spoken unit before adding conversions.'
+    case 'human_review_delta':
+      return 'Group as review evidence only; each delta still needs intent classification before repair.'
+    case 'save_path_reliability':
+      return 'Group save blockers together because every save failure is trust-critical, but patch exact error classes separately.'
+    case 'telemetry_observability':
+      return 'Group missing evidence as observability work, then add the smallest event field needed to remove ambiguity.'
+    case 'manual_review':
+      return 'Group only to keep ambiguous evidence visible; do not infer a shared fix yet.'
+  }
+}
+
+function themeExecutionMode(kind: ThemeKind, urgency: ThemeUrgency, maturity: ThemeMaturity): ThemeExecutionMode {
+  if (maturity === 'too_broad') return 'plan_only'
+  if (kind === 'manual_review' || kind === 'human_review_delta') return 'human_review_required'
+  if (urgency === 'defer' || urgency === 'watch') return 'observe_only'
+  return 'narrow_repair'
+}
+
+function themeSafetyGates(kind: ThemeKind, maturity: ThemeMaturity): string[] {
+  const gates = [
+    'Use the theme for root-cause grouping, not as permission for broad mutation.',
+    'Start from the strongest packet and replay at least one original Luke phrase before changing behavior.',
+    'Add or run the smallest relevant regression check before treating the repair as done.',
+    'Prefer reversible code or routing changes before production data cleanup.',
+  ]
+  if (maturity === 'too_broad') {
+    gates.push('Do not implement repairs until the theme is split into narrower subthemes.')
+  }
+  switch (kind) {
+    case 'protein_shake_composition':
+      gates.push('Verify ingredient facts for protein powder and dextrose before creating or changing shake identities.')
+      gates.push('Keep old shake names out of live candidates before trusting repeat parse behavior.')
+      break
+    case 'quantity_display_trust':
+      gates.push('Confirm the math still uses the correct canonical food while the display preserves Luke-spoken quantity.')
+      gates.push('Do not call the fix successful unless the visible row shows the amount Luke said.')
+      break
+    case 'stale_library_identity':
+      gates.push('Check that a saved-meal ref exists for the user before treating it as a live parent.')
+      break
+    case 'identity_fracture':
+      gates.push('Only collapse identities when source_ref or reviewed evidence proves they are the same food.')
+      gates.push('Do not merge recipes, composites, or branded products just because their names look similar.')
+      break
+    case 'duplicate_food_rows':
+      gates.push('Prove the duplicate comes from one spoken item, not Luke intentionally logging two portions or two foods.')
+      break
+    case 'slow_parse_missing_knowledge':
+      gates.push('Do not add broad aliases to improve speed unless the target identity is unambiguous.')
+      break
+    case 'pantry_unit_surface':
+      gates.push('Use reviewed product facts or reliable source data before adding new unit conversions.')
+      break
+    case 'save_path_reliability':
+      gates.push('Backend should degrade gracefully for metadata errors but must not silently corrupt nutrition totals.')
+      break
+    case 'telemetry_observability':
+      gates.push('Add telemetry fields without exposing secrets or increasing user-visible friction.')
+      break
+    case 'human_review_delta':
+    case 'manual_review':
+      gates.push('Ask for or preserve human context before writing aliases, rejections, or identity repairs.')
+      break
+  }
+  return uniqueStrings(gates)
+}
+
+function themeAllowedActions(kind: ThemeKind): string[] {
+  const common = [
+    'write or update regression tests',
+    'improve read-only Quartermaster diagnosis',
+    'make narrow code-path hardening changes',
+    'produce reviewable repair packets',
+  ]
+  switch (kind) {
+    case 'protein_shake_composition':
+      return [...common, 'create ingredient-first parser behavior after facts are verified', 'add narrow shortcut aliases for confirmed common shakes']
+    case 'quantity_display_trust':
+      return [...common, 'preserve user-spoken quantity in display/save metadata', 'add reviewed unit alternatives for repeated foods']
+    case 'stale_library_identity':
+      return [...common, 'strip, downgrade, or remap stale refs after live-ref checks']
+    case 'identity_fracture':
+      return [...common, 'match favorites by canonical source_ref', 'repair one confirmed canonical identity at a time']
+    case 'duplicate_food_rows':
+      return [...common, 'add parser merge or dedupe guards for replayed phrases']
+    case 'slow_parse_missing_knowledge':
+      return [...common, 'add reviewed pantry coverage or narrow aliases for repeated phrases']
+    case 'pantry_unit_surface':
+      return [...common, 'add reviewed natural units for high-use pantry items']
+    case 'save_path_reliability':
+      return [...common, 'add defensive backend validation and graceful fallback']
+    case 'telemetry_observability':
+      return [...common, 'add non-sensitive event fields that close evidence gaps']
+    case 'human_review_delta':
+    case 'manual_review':
+      return ['summarize evidence', 'ask for confirmation', 'create review-only packets']
+  }
+}
+
+function themeBlockedActions(kind: ThemeKind): string[] {
+  const common = [
+    'destructive cleanup without explicit approval',
+    'production data mutation from a dry-run report',
+    'broad aliases without replay evidence',
+    'hiding failures by changing totals after the fact',
+  ]
+  switch (kind) {
+    case 'protein_shake_composition':
+      return [...common, 'adding opaque saved meals for every shake quantity combination']
+    case 'quantity_display_trust':
+      return [...common, 'normalizing concrete grams, ounces, counts, or scoops to generic serving labels without explanation']
+    case 'stale_library_identity':
+      return [...common, 'recreating deleted saved meals solely to satisfy old history refs']
+    case 'identity_fracture':
+      return [...common, 'merging different products or recipes based only on name similarity']
+    case 'duplicate_food_rows':
+      return [...common, 'silently dividing calories to compensate for duplicate rows']
+    case 'slow_parse_missing_knowledge':
+      return [...common, 'adding speed aliases that weaken nutrition accuracy']
+    case 'pantry_unit_surface':
+      return [...common, 'inventing unit conversions for branded products without source facts']
+    case 'human_review_delta':
+    case 'manual_review':
+      return [...common, 'treating uncertain user intent as doctrine']
+    case 'save_path_reliability':
+      return [...common, 'dropping required nutrition fields just to make insert errors disappear']
+    case 'telemetry_observability':
+      return [...common, 'recording secret values or unnecessary personal data']
+  }
+}
+
+function buildThemeExecutionPlan(
+  kind: ThemeKind,
+  packets: WorkPacket[],
+  urgency: ThemeUrgency,
+  maturity: ThemeMaturity,
+): ThemeExecutionPlan {
   return {
     goal: themeExecutionGoal(kind),
+    grouping_scope: themeGroupingScope(kind, maturity),
+    execution_mode: themeExecutionMode(kind, urgency, maturity),
     ordered_steps: uniqueStrings(themeOrderedSteps(kind, packets)),
+    safety_gates: themeSafetyGates(kind, maturity),
+    allowed_actions: uniqueStrings(themeAllowedActions(kind)).slice(0, 8),
+    blocked_actions: uniqueStrings(themeBlockedActions(kind)).slice(0, 8),
     acceptance_criteria: uniqueStrings(packets.flatMap((packet) => packet.acceptance_criteria)).slice(0, 6),
     regression_tests: uniqueStrings(packets.flatMap((packet) => packet.regression_tests)).slice(0, 6),
     do_not_do: uniqueStrings([themeAvoid(kind), ...packets.map((packet) => packet.do_not_do)]).slice(0, 5),
@@ -2208,7 +2384,7 @@ function buildLearningThemes(findings: Finding[], packets: WorkPacket[]): Learni
       related_packet_ids: relatedPackets.map((packet) => packet.id),
       strongest_packet_ids: strongestPackets.map((packet) => packet.id),
       strongest_packet_titles: strongestPackets.map((packet) => `${packet.priority} / ${packet.score} - ${packet.title}`),
-      execution_plan: buildThemeExecutionPlan(kind, strongestPackets),
+      execution_plan: buildThemeExecutionPlan(kind, strongestPackets, urgency, maturity),
     })
   }
 
