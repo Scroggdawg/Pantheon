@@ -778,8 +778,12 @@ function parseWrittenLeadingNumber(token: string): number | null {
   return digit ? Number(digit) : null
 }
 
+function stripLeadingSegmentConnector(segment: string): string {
+  return segment.trim().replace(/^(?:and|plus|with)\s+/i, '')
+}
+
 function parseLeadingQuantity(segment: string): { qty: number; unit: string } | null {
-  const trimmed = segment.trim()
+  const trimmed = stripLeadingSegmentConnector(segment)
   const mixedFraction = /^(\d+)\s+(\d+)\/(\d+)\b\s*(.*)$/i.exec(trimmed)
   if (mixedFraction) {
     const whole = Number(mixedFraction[1])
@@ -812,8 +816,7 @@ function parseLeadingQuantity(segment: string): { qty: number; unit: string } | 
 }
 
 function parseLeadingWeightQuantity(segment: string): { qty: number; unit: string; grams: number } | null {
-  const cleaned = segment.trim().replace(/^(?:and|plus|with)\s+/i, '')
-  const match = /^(\d+(?:\.\d+)?)\s*(g|grams?|oz|ounces?|lb|lbs|pounds?)\b/i.exec(cleaned)
+  const match = /^(\d+(?:\.\d+)?)\s*(g|grams?|oz|ounces?|lb|lbs|pounds?)\b/i.exec(stripLeadingSegmentConnector(segment))
   if (!match) return null
   const qty = Number(match[1])
   if (!Number.isFinite(qty) || qty <= 0) return null
@@ -844,6 +847,17 @@ function servingGramsFromCandidate(candidate: LibrarySearchResult): number | nul
   return null
 }
 
+function singleComponentTotal(candidate: LibrarySearchResult): LibraryTotal | null {
+  if (candidate.components.length !== 1) return null
+  const [component] = candidate.components
+  return {
+    kcal: component.kcal,
+    protein_g: component.protein_g,
+    carbs_g: component.carbs_g,
+    fat_g: component.fat_g,
+  }
+}
+
 function normalizeSegmentQuantityUnit(
   qty: number,
   rawUnit: string,
@@ -872,7 +886,7 @@ function normalizeSegmentQuantityUnit(
 
 function scaleTotal(total: LibraryTotal, qty: number): LibraryTotal {
   return {
-    kcal: Math.round(total.kcal * qty),
+    kcal: Math.round(total.kcal * qty * 10) / 10,
     protein_g: Math.round(total.protein_g * qty * 10) / 10,
     carbs_g: Math.round(total.carbs_g * qty * 10) / 10,
     fat_g: Math.round(total.fat_g * qty * 10) / 10,
@@ -1164,7 +1178,11 @@ export async function tryLibrarySegmentedShortcut(
         : parsedQuantity && !quantityAlreadyBakedIntoLibraryName(top, parsedQuantity.qty)
           ? { ...parsedQuantity, scale: parsedQuantity.qty }
           : null
-    const total = quantity ? scaleTotal(top.total, quantity.scale) : top.total
+    const baseTotal =
+      parsedWeightQuantity && servingGrams
+        ? (singleComponentTotal(top) ?? top.total)
+        : top.total
+    const total = quantity ? scaleTotal(baseTotal, quantity.scale) : top.total
 
     resolved.push({
       food: {
