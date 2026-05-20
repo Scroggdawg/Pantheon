@@ -206,6 +206,15 @@ interface WorkPacket {
   finding_ids: string[]
 }
 
+interface ThemeExecutionPlan {
+  goal: string
+  ordered_steps: string[]
+  acceptance_criteria: string[]
+  regression_tests: string[]
+  do_not_do: string[]
+  expected_metrics: string[]
+}
+
 interface LearningTheme {
   id: string
   kind: ThemeKind
@@ -230,6 +239,9 @@ interface LearningTheme {
   example_transcripts: string[]
   finding_ids: string[]
   related_packet_ids: string[]
+  strongest_packet_ids: string[]
+  strongest_packet_titles: string[]
+  execution_plan: ThemeExecutionPlan
 }
 
 interface CycleState {
@@ -996,6 +1008,30 @@ function renderMarkdown(report: AuditReport) {
   lines.push('')
   for (const [key, value] of sortedEntries(report.action_counts)) lines.push(`- ${key}: ${value}`)
   lines.push('')
+  const topTheme = topThemes[0]
+  if (topTheme) {
+    lines.push('## Top Theme Execution Plan')
+    lines.push('')
+    lines.push(`### ${topTheme.priority} / ${topTheme.score} - ${topTheme.title}`)
+    lines.push('')
+    lines.push(`- goal: ${topTheme.execution_plan.goal}`)
+    lines.push(`- owner: ${topTheme.owner}`)
+    lines.push(`- urgency: ${topTheme.urgency}`)
+    lines.push(`- maturity: ${topTheme.maturity}`)
+    lines.push(`- strongest_packets:`)
+    for (const title of topTheme.strongest_packet_titles) lines.push(`  - ${title}`)
+    lines.push(`- ordered_steps:`)
+    for (const step of topTheme.execution_plan.ordered_steps) lines.push(`  - ${step}`)
+    lines.push(`- acceptance_criteria:`)
+    for (const criterion of topTheme.execution_plan.acceptance_criteria) lines.push(`  - ${criterion}`)
+    lines.push(`- regression_tests:`)
+    for (const test of topTheme.execution_plan.regression_tests) lines.push(`  - ${test}`)
+    lines.push(`- do_not_do:`)
+    for (const item of topTheme.execution_plan.do_not_do) lines.push(`  - ${item}`)
+    lines.push(`- expected_metrics:`)
+    for (const metric of topTheme.execution_plan.expected_metrics) lines.push(`  - ${metric}`)
+    lines.push('')
+  }
   lines.push('## Learning Themes')
   lines.push('')
   for (const theme of topThemes) {
@@ -1016,6 +1052,11 @@ function renderMarkdown(report: AuditReport) {
     lines.push(`- doctrine: ${theme.doctrine}`)
     lines.push(`- durable_fix: ${theme.durable_fix}`)
     lines.push(`- avoid: ${theme.avoid}`)
+    lines.push(`- strongest_packets:`)
+    for (const title of theme.strongest_packet_titles) lines.push(`  - ${title}`)
+    lines.push(`- execution_goal: ${theme.execution_plan.goal}`)
+    lines.push(`- execution_next_steps:`)
+    for (const step of theme.execution_plan.ordered_steps.slice(0, 5)) lines.push(`  - ${step}`)
     for (const transcript of theme.example_transcripts) lines.push(`- example: ${transcript}`)
     lines.push('')
   }
@@ -1746,6 +1787,99 @@ function themeNextCheckpoint(kind: ThemeKind, urgency: ThemeUrgency, maturity: T
   return 'do not spend implementation time here yet'
 }
 
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values.filter(Boolean))]
+}
+
+function themeExecutionGoal(kind: ThemeKind): string {
+  switch (kind) {
+    case 'protein_shake_composition':
+      return 'Make protein shake logging ingredient-based, fast, and free of stale saved-meal identities.'
+    case 'quantity_display_trust':
+      return 'Preserve Luke-spoken quantities in the visible and saved plate evidence.'
+    case 'stale_library_identity':
+      return 'Stop deleted or stale saved-meal refs from appearing in live parse, candidate, or save payloads.'
+    case 'duplicate_food_rows':
+      return 'Prevent one spoken food from becoming multiple saved rows.'
+    case 'slow_parse_missing_knowledge':
+      return 'Move repeated Luke phrases from slow fallback to deterministic pantry/parser paths.'
+    case 'pantry_unit_surface':
+      return 'Split broad weak-unit evidence into focused pantry unit repair batches.'
+    case 'human_review_delta':
+      return 'Classify parse/save deltas before turning them into permanent data or parser changes.'
+    case 'save_path_reliability':
+      return 'Make save failures degrade gracefully and become regression-tested.'
+    case 'telemetry_observability':
+      return 'Make event evidence complete enough for Quartermaster to grade user intent.'
+    case 'manual_review':
+      return 'Keep ambiguous evidence review-first until intent is clear.'
+  }
+}
+
+function themeOrderedSteps(kind: ThemeKind, packets: WorkPacket[]): string[] {
+  const packetSteps = packets.slice(0, 3).map((packet) => `Packet: ${packet.title}: ${packet.recommended_action}`)
+  switch (kind) {
+    case 'protein_shake_composition':
+      return [
+        '1. Verify the ingredient facts and canonical homes for Isopure protein and NutriCost dextrose.',
+        '2. Remove stale/deleted shake identities from live candidate and source_ref surfaces.',
+        '3. Add parser composition behavior so shake phrases resolve to protein powder plus dextrose quantities.',
+        '4. Replay no/half/full/double dextrose phrases and the sweet potato mixed plate.',
+        ...packetSteps,
+      ]
+    case 'quantity_display_trust':
+      return [
+        '1. Trace one failing phrase from transcript to parser food to native display to saved foods_json.',
+        '2. Preserve the user-spoken unit when a conversion is known.',
+        '3. Add a regression that fails when grams/ounces/counts collapse to serving.',
+        ...packetSteps,
+      ]
+    case 'pantry_unit_surface':
+      return [
+        '1. Split this broad theme into unit subthemes before implementing.',
+        '2. Rank repeated foods by real usage and friction.',
+        '3. Add natural units only for the highest-value repeated foods.',
+        ...packetSteps,
+      ]
+    case 'human_review_delta':
+      return [
+        '1. Pick the highest-score delta and inspect parsed versus saved artifacts.',
+        '2. Decide whether it was user correction, parser drift, or acceptable ambiguity.',
+        '3. Route only confirmed bugs into parser/pantry/native repairs.',
+        ...packetSteps,
+      ]
+    default:
+      return packetSteps.length > 0 ? packetSteps : [`1. ${themeNextCheckpoint(kind, 'fix_next', 'emerging_pattern')}`]
+  }
+}
+
+function themeSortScore(theme: LearningTheme): number {
+  const urgencyScore: Record<ThemeUrgency, number> = {
+    fix_now: 400,
+    fix_next: 300,
+    watch: 150,
+    defer: 0,
+  }
+  const maturityScore: Record<ThemeMaturity, number> = {
+    strong_pattern: 80,
+    emerging_pattern: 40,
+    single_incident: 10,
+    too_broad: -120,
+  }
+  return urgencyScore[theme.urgency] + maturityScore[theme.maturity] + theme.score
+}
+
+function buildThemeExecutionPlan(kind: ThemeKind, packets: WorkPacket[]): ThemeExecutionPlan {
+  return {
+    goal: themeExecutionGoal(kind),
+    ordered_steps: uniqueStrings(themeOrderedSteps(kind, packets)),
+    acceptance_criteria: uniqueStrings(packets.flatMap((packet) => packet.acceptance_criteria)).slice(0, 6),
+    regression_tests: uniqueStrings(packets.flatMap((packet) => packet.regression_tests)).slice(0, 6),
+    do_not_do: uniqueStrings([themeAvoid(kind), ...packets.map((packet) => packet.do_not_do)]).slice(0, 5),
+    expected_metrics: uniqueStrings(packets.map((packet) => packet.expected_metric)).slice(0, 5),
+  }
+}
+
 function themeDoctrine(kind: ThemeKind): string {
   switch (kind) {
     case 'protein_shake_composition':
@@ -1839,7 +1973,10 @@ function buildLearningThemes(findings: Finding[], packets: WorkPacket[]): Learni
     const score = Math.min(100, lead.score + Math.min(30, (sorted.length - 1) * 3))
     const actionLanes = [...new Set(sorted.map((finding) => finding.action_lane))]
     const findingIds = sorted.map((finding) => finding.id)
-    const relatedPackets = packets.filter((packet) => packet.finding_ids.some((id) => findingIds.includes(id)))
+    const relatedPackets = packets
+      .filter((packet) => packet.finding_ids.some((id) => findingIds.includes(id)))
+      .sort((a, b) => b.score - a.score || b.evidence_count - a.evidence_count || a.title.localeCompare(b.title))
+    const strongestPackets = relatedPackets.slice(0, 5)
     const urgency = themeUrgency(kind, sorted)
     const maturity = themeMaturity(kind, sorted)
     themes.push({
@@ -1868,10 +2005,13 @@ function buildLearningThemes(findings: Finding[], packets: WorkPacket[]): Learni
       ].slice(0, 5),
       finding_ids: findingIds,
       related_packet_ids: relatedPackets.map((packet) => packet.id),
+      strongest_packet_ids: strongestPackets.map((packet) => packet.id),
+      strongest_packet_titles: strongestPackets.map((packet) => `${packet.priority} / ${packet.score} - ${packet.title}`),
+      execution_plan: buildThemeExecutionPlan(kind, strongestPackets),
     })
   }
 
-  return themes.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+  return themes.sort((a, b) => themeSortScore(b) - themeSortScore(a) || b.score - a.score || a.title.localeCompare(b.title))
 }
 
 async function main() {
