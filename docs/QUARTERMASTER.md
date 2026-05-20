@@ -151,10 +151,10 @@ Readiness is Quartermaster's plain answer to: "Can we stop here for now?"
 
 Statuses:
 
-- `blocked`: missing telemetry, a P0 packet, or a `fix_now` theme means the
-  loop should keep working before pausing.
-- `active_repair`: the loop is stable, but non-emergency user-facing failures
-  or P1/P2 review or repair packets are still worth handling.
+- `blocked`: a current failure, missing telemetry table, P0 packet, or `fix_now`
+  theme means the loop should keep working before pausing.
+- `active_repair`: the loop is stable, but P1/P2 review or repair packets are
+  still worth handling.
 - `checkpoint_ready`: no blocking failures are visible, cycle memory works, and
   remaining work is queued as watch/review.
 
