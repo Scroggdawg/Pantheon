@@ -284,15 +284,63 @@ function looksLikeProteinShakeOnlyTranscript(value: string): boolean {
   return residue.length === 0
 }
 
+function singularizeSimpleUnit(value: string): string {
+  const normalized = normalizeShortcutText(value)
+  if (normalized.endsWith('ies') && normalized.length > 3) return `${normalized.slice(0, -3)}y`
+  if (normalized.endsWith('s') && !normalized.endsWith('ss') && normalized.length > 3) return normalized.slice(0, -1)
+  return normalized
+}
+
+function singleSegmentShortcutQuery(transcript: string): string | null {
+  const segments = segmentTranscript(transcript)
+  if (segments.length !== 1) return null
+  return segments[0]?.stripped || null
+}
+
+function singleCountQuantity(
+  transcript: string,
+  candidate: LibrarySearchResult,
+): { qty: number; unit: string; scale: number } | null {
+  const normalized = normalizeShortcutText(transcript)
+  if (!/^(?:one|1|a|an)\b/.test(normalized)) return null
+
+  const candidateName = singularizeSimpleUnit(candidate.name)
+  const unit = candidate.unit_alternatives?.find((alt) => {
+    const normalizedUnit = singularizeSimpleUnit(alt.unit)
+    return (
+      normalizedUnit.length > 0 &&
+      !WEIGHT_OR_VOLUME_UNITS.has(normalizedUnit) &&
+      (candidateName.includes(normalizedUnit) || normalized.includes(normalizedUnit))
+    )
+  })?.unit
+
+  if (!unit) return null
+  return { qty: 1, unit, scale: 1 }
+}
+
 export async function tryLibraryShortcut(
   supabase: SupabaseClient,
   userId: string,
   transcript: string,
 ): Promise<LibraryShortcutResult | null> {
-  const libRes = await searchUserLibrary(
+  const direct = await searchUserLibrary(
     { query: transcript, limit: 2 },
     { userId, supabase },
   )
+  const directTop = direct.results[0]
+  const directSecond = direct.results[1]
+  const directClears =
+    directTop &&
+    directTop.match_confidence.score >= SHORTCUT_SCORE_THRESHOLD &&
+    directTop.match_confidence.score - (directSecond?.match_confidence.score ?? 0) >= SHORTCUT_GAP_THRESHOLD
+
+  const relaxedQuery = singleSegmentShortcutQuery(transcript)
+  const libRes = directClears || !relaxedQuery || relaxedQuery === transcript.toLowerCase().trim()
+    ? direct
+    : await searchUserLibrary(
+        { query: relaxedQuery, limit: 2 },
+        { userId, supabase },
+      )
 
   const results = libRes.results
   if (results.length === 0) return null
@@ -306,18 +354,18 @@ export async function tryLibraryShortcut(
   if (topScore < SHORTCUT_SCORE_THRESHOLD) return null
   if (gap < SHORTCUT_GAP_THRESHOLD) return null
 
-  // High-confidence single hit. Build a one-food response. Unit
-  // is hardcoded 'serving' because LibrarySearchResult.total is
-  // per-serving by construction (saved_meals divided by
-  // yield_servings; products are 1 unit per serving).
+  const quantity = parseCandidateQuantity(transcript, top) ?? singleCountQuantity(transcript, top)
+  const total = quantity ? scaleTotal(top.total, quantity.scale) : top.total
+
+  // High-confidence single hit. Build a one-food response.
   const food: FoodItem = {
     name: top.name,
-    qty: 1,
-    unit: 'serving',
-    calories: top.total.kcal,
-    protein_g: top.total.protein_g,
-    carbs_g: top.total.carbs_g,
-    fat_g: top.total.fat_g,
+    qty: quantity?.qty ?? 1,
+    unit: quantity?.unit ?? 'serving',
+    calories: total.kcal,
+    protein_g: total.protein_g,
+    carbs_g: total.carbs_g,
+    fat_g: total.fat_g,
     source: 'library',
     source_ref: liveSourceRefForResult(top),
     unit_alternatives: top.unit_alternatives,
@@ -343,6 +391,7 @@ export async function tryLibraryShortcut(
     top_score: topScore,
     second_score: secondScore,
     gap,
+    lookup_count: direct === libRes ? 1 : 2,
   }
 }
 

@@ -4,9 +4,10 @@
 //
 // Order of operations:
 //   1. Response cache lookup (Step 4e — exact-transcript hash)
-//   2. Library shortcut single-hit (Step 4f — high-confidence)
-//   3. Library candidates mode (Step 4g — 2+ plausible matches)
-//   4. Sonnet synthesis (existing fallback path)
+//   2. Deterministic fast paths that should override stale cache
+//   3. Cached response return
+//   4. Library candidates mode (Step 4g — 2+ plausible matches)
+//   5. Sonnet synthesis (existing fallback path)
 //
 // Layers 1-3 return ~100-200ms. Sonnet path runs ~7-19s and
 // writes its result to the response cache on success.
@@ -295,32 +296,9 @@ export async function POST(request: Request) {
       })
     }
 
-    if (cachedResponse) {
-      console.log({
-        type: 'parse_meal_telemetry',
-        latency_ms: cacheLookupMs,
-        response_cache_hit: true,
-        library_shortcut_hit: false,
-        library_candidates_hit: false,
-      })
-      return Response.json({
-        ...cachedResponse,
-        _telemetry: {
-          latency_ms: cacheLookupMs,
-          response_cache_hit: true,
-          library_shortcut_hit: false,
-          library_candidates_hit: false,
-          tool_calls: 0,
-          iters: 0,
-          cache_hits: 0,
-          total_route_latency_ms: Date.now() - routeStarted,
-          cache_lookup_ms: cacheLookupMs,
-          ...whisperTelemetry,
-        },
-      })
-    }
-
-    // Step 4f — library shortcut (single high-confidence hit)
+    // Step 4f — library shortcut (single high-confidence hit). This runs
+    // before returning response-cache hits so newly curated pantry/library
+    // identities can replace older LLM cached responses.
     const shortcutStarted = Date.now()
     const shortcut = await tryLibraryShortcut(supabase, userId, transcript)
     const shortcutLookupMs = Date.now() - shortcutStarted
@@ -348,6 +326,31 @@ export async function POST(request: Request) {
           total_route_latency_ms: Date.now() - routeStarted,
           cache_lookup_ms: cacheLookupMs,
           library_shortcut_lookup_ms: shortcutLookupMs,
+          ...whisperTelemetry,
+        },
+      })
+    }
+
+    if (cachedResponse) {
+      console.log({
+        type: 'parse_meal_telemetry',
+        latency_ms: cacheLookupMs,
+        response_cache_hit: true,
+        library_shortcut_hit: false,
+        library_candidates_hit: false,
+      })
+      return Response.json({
+        ...cachedResponse,
+        _telemetry: {
+          latency_ms: cacheLookupMs,
+          response_cache_hit: true,
+          library_shortcut_hit: false,
+          library_candidates_hit: false,
+          tool_calls: 0,
+          iters: 0,
+          cache_hits: 0,
+          total_route_latency_ms: Date.now() - routeStarted,
+          cache_lookup_ms: cacheLookupMs,
           ...whisperTelemetry,
         },
       })
