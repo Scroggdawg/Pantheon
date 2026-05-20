@@ -163,6 +163,21 @@ const cases: Case[] = [
     },
   },
   {
+    id: 'coconut-water-four-servings-candidates-mode',
+    transcript: 'Harmless Harvest Organic Coconut Water, 4 servings',
+    assert(result) {
+      const coconutWater = findFood(result, /Harmless Harvest Organic Coconut Water/i)
+      assertClose(coconutWater.qty, 4, 'Coconut water qty')
+      assert(/serving/i.test(coconutWater.unit), `Expected coconut water unit serving, got ${coconutWater.unit}`)
+      assertClose(coconutWater.calories, 200, 'Coconut water calories')
+      assertClose(coconutWater.carbs_g, 50.3, 'Coconut water carbs')
+      assert(
+        coconutWater.match_confidence?.warnings.includes('library_candidates_quantity_applied'),
+        'Expected candidate quantity warning',
+      )
+    },
+  },
+  {
     id: 'double-protein-full-dextrose',
     transcript:
       'Double protein shake, two scoops of Isopure chocolate protein, with one serving of NutriCost dextrose',

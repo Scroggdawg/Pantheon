@@ -387,25 +387,30 @@ export async function tryLibraryCandidates(
   const topN = sorted.slice(0, CANDIDATES_MAX_COUNT)
   const top = topN[0]
 
+  const quantity = parseCandidateQuantity(transcript, top)
+  const total = quantity ? scaleTotal(top.total, quantity.scale) : top.total
+
   // Placeholder food uses top candidate as best-guess. Native UI
   // will replace it when the user picks from disambiguation.
   // 'library_candidates_mode' warning flags the placeholder
   // status for the native renderer.
   const placeholderFood: FoodItem = {
     name: top.name,
-    qty: 1,
-    unit: 'serving',
-    calories: top.total.kcal,
-    protein_g: top.total.protein_g,
-    carbs_g: top.total.carbs_g,
-    fat_g: top.total.fat_g,
+    qty: quantity?.qty ?? 1,
+    unit: quantity?.unit ?? 'serving',
+    calories: total.kcal,
+    protein_g: total.protein_g,
+    carbs_g: total.carbs_g,
+    fat_g: total.fat_g,
     source: 'library',
     source_ref: normalizeFoodSourceRef(top.source_ref ?? top.library_id),
     unit_alternatives: top.unit_alternatives,
     match_confidence: {
       score: top.match_confidence.score,
       label: top.match_confidence.label,
-      warnings: ['library_candidates_mode'],
+      warnings: quantity
+        ? ['library_candidates_mode', 'library_candidates_quantity_applied']
+        : ['library_candidates_mode'],
     },
     notes: null,
   }
@@ -813,6 +818,62 @@ function parseLeadingQuantity(segment: string): { qty: number; unit: string } | 
   }
 
   return null
+}
+
+function parseTrailingQuantity(segment: string): { qty: number; unit: string } | null {
+  const trimmed = segment
+    .trim()
+    .replace(/[.?!]+$/g, '')
+    .replace(/\s+/g, ' ')
+  const match = /(?:,\s*|\s+)(\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+([a-z]+s?)$/i.exec(
+    trimmed,
+  )
+  if (!match) return null
+
+  const rawQty = match[1].toLowerCase()
+  const qty = /^\d/.test(rawQty)
+    ? Number(rawQty)
+    : parseWrittenLeadingNumber(rawQty)
+  if (qty === null) return null
+
+  return normalizeSegmentQuantityUnit(qty, match[2])
+}
+
+function parseCandidateQuantity(
+  transcript: string,
+  candidate: LibrarySearchResult,
+): { qty: number; unit: string; scale: number } | null {
+  const parsed =
+    parseLeadingWeightQuantity(transcript) ??
+    parseLeadingQuantity(transcript) ??
+    parseTrailingQuantity(transcript)
+
+  if (!parsed) return null
+
+  if (isWeightQuantity(parsed)) {
+    const servingGrams = servingGramsFromCandidate(candidate)
+    if (!servingGrams) return null
+    return {
+      qty: parsed.qty,
+      unit: parsed.unit,
+      scale: parsed.grams / servingGrams,
+    }
+  }
+
+  if (quantityAlreadyBakedIntoLibraryName(candidate, parsed.qty)) return null
+
+  // Saved-meal candidates often come from historical logs whose totals
+  // already represent the user's corrected plate. Preserve the visible
+  // quantity for trust, but do not multiply a historical composite again.
+  if (candidate.source === 'saved_meal') return { ...parsed, scale: 1 }
+
+  return { ...parsed, scale: parsed.qty }
+}
+
+function isWeightQuantity(
+  quantity: { qty: number; unit: string } | { qty: number; unit: string; grams: number },
+): quantity is { qty: number; unit: string; grams: number } {
+  return 'grams' in quantity && Number.isFinite(quantity.grams)
 }
 
 function parseLeadingWeightQuantity(segment: string): { qty: number; unit: string; grams: number } | null {
