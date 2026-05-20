@@ -53,6 +53,7 @@ type FindingType =
   | 'parse_failed_event'
   | 'parse_abandoned_event'
   | 'edit_event'
+  | 'orphan_save_event'
   | 'telemetry_gap'
 
 type OutcomeType =
@@ -299,6 +300,15 @@ interface CycleMemory {
   plain_english: string
 }
 
+interface QuartermasterReadiness {
+  status: 'blocked' | 'active_repair' | 'checkpoint_ready'
+  grade: string
+  plain_english: string
+  stop_conditions_met: string[]
+  remaining_risks: string[]
+  next_best_step: string
+}
+
 interface AuditReport {
   run_id: string
   generated_at: string
@@ -318,6 +328,7 @@ interface AuditReport {
   finding_counts: Record<string, number>
   action_counts: Record<string, number>
   cycle_memory: CycleMemory
+  readiness: QuartermasterReadiness
   learning_themes: LearningTheme[]
   work_packets: WorkPacket[]
   interaction_outcomes: InteractionOutcome[]
@@ -735,6 +746,7 @@ function compareFoods(row: FoodLogRow, findings: Finding[]) {
   for (let index = 0; index < count; index += 1) {
     const parsed = parsedFoods[index]
     const saved = savedFoods[index]
+    const likelyUserQuantityCorrection = isLikelyUserQuantityCorrection(row, parsed, saved)
     const parsedName = normalizeFoodText(parsed.name ?? '')
     const savedName = normalizeFoodText(saved.name ?? '')
     if (parsedName && savedName && parsedName !== savedName) {
@@ -762,10 +774,17 @@ function compareFoods(row: FoodLogRow, findings: Finding[]) {
     if (parsedQty !== null && savedQty !== null && Math.abs(parsedQty - savedQty) > 0.01) {
       pushFinding(findings, row, {
         type: 'parse_saved_quantity_changed',
-        severity: 'medium',
-        action_lane: 'product_unit_add',
-        summary: `Food ${index + 1} quantity changed from ${parsedQty} to ${savedQty}.`,
-        evidence: { index, parsed: displayFood(parsed), saved: displayFood(saved) },
+        severity: likelyUserQuantityCorrection ? 'low' : 'medium',
+        action_lane: likelyUserQuantityCorrection ? 'manual_review' : 'product_unit_add',
+        summary: likelyUserQuantityCorrection
+          ? `Food ${index + 1} quantity changed from ${parsedQty} to ${savedQty}; macros scaled cleanly, so this is likely a user quantity correction.`
+          : `Food ${index + 1} quantity changed from ${parsedQty} to ${savedQty}.`,
+        evidence: {
+          index,
+          parsed: displayFood(parsed),
+          saved: displayFood(saved),
+          likely_user_quantity_correction: likelyUserQuantityCorrection,
+        },
       })
     }
 
@@ -774,7 +793,7 @@ function compareFoods(row: FoodLogRow, findings: Finding[]) {
     if (parsedCalories !== null && savedCalories !== null) {
       const delta = Math.abs(parsedCalories - savedCalories)
       const threshold = Math.max(25, parsedCalories * 0.15)
-      if (delta >= threshold) {
+      if (delta >= threshold && !likelyUserQuantityCorrection) {
         pushFinding(findings, row, {
           type: 'parse_saved_delta_calories',
           severity: delta >= Math.max(75, parsedCalories * 0.3) ? 'high' : 'medium',
@@ -785,6 +804,35 @@ function compareFoods(row: FoodLogRow, findings: Finding[]) {
       }
     }
   }
+}
+
+function hasExplicitQuantity(text: string | null): boolean {
+  const normalized = normalizeFoodText(text ?? '')
+  return /\b(\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|half|double|triple)\b/.test(normalized)
+}
+
+function scaledClose(parsedValue: number | null, savedValue: number | null, ratio: number, tolerance: number): boolean {
+  if (parsedValue === null || savedValue === null) return true
+  return Math.abs(savedValue - parsedValue * ratio) <= tolerance
+}
+
+function isLikelyUserQuantityCorrection(row: FoodLogRow, parsed: FoodLike, saved: FoodLike): boolean {
+  if (hasExplicitQuantity(row.raw_input_text)) return false
+  const parsedQty = numeric(parsed.qty)
+  const savedQty = numeric(saved.qty)
+  if (parsedQty === null || savedQty === null || parsedQty <= 0 || savedQty <= 0) return false
+  const ratio = savedQty / parsedQty
+  if (!Number.isFinite(ratio) || ratio <= 0 || Math.abs(ratio - 1) < 0.01) return false
+  if (Math.abs(ratio - Math.round(ratio * 2) / 2) > 0.01) return false
+  if (normalizeFoodText(parsed.name ?? '') !== normalizeFoodText(saved.name ?? '')) return false
+  if ((parsed.unit ?? '') !== (saved.unit ?? '')) return false
+  if ((parsed.source_ref ?? null) !== (saved.source_ref ?? null)) return false
+  return (
+    scaledClose(numeric(parsed.calories), numeric(saved.calories), ratio, 5) &&
+    scaledClose(numeric(parsed.protein_g), numeric(saved.protein_g), ratio, 0.5) &&
+    scaledClose(numeric(parsed.carbs_g), numeric(saved.carbs_g), ratio, 0.5) &&
+    scaledClose(numeric(parsed.fat_g), numeric(saved.fat_g), ratio, 0.5)
+  )
 }
 
 function inspectFoodSources(
@@ -997,6 +1045,14 @@ function failureText(event: FoodLogEventRow): string {
     .join(' ')
 }
 
+function savedLogEntryIdFromEvent(event: FoodLogEventRow): string | null {
+  if (event.food_log_entry_id) return event.food_log_entry_id
+  const response = recordFromUnknown(event.payload?.response)
+  const bodyResponse = recordFromUnknown(recordFromUnknown(event.payload?.body)?.response)
+  const responseId = response?.food_log_entry_id ?? bodyResponse?.food_log_entry_id
+  return typeof responseId === 'string' && responseId.length > 0 ? responseId : null
+}
+
 function saveFailureLane(event: FoodLogEventRow): ActionLane {
   const text = failureText(event).toLowerCase()
   if (/\bforeign key\b|constraint|invalid input syntax|type integer|food_log_entries|database|postgres|supabase/.test(text)) {
@@ -1030,6 +1086,7 @@ function inspectEvents(
   savedMealIds: Set<string>,
   productIds: Set<string>,
   savedMealsBySourceRef: Map<string, SavedMealRefRow[]>,
+  visibleFoodLogIds: Set<string>,
 ) {
   for (const event of events) {
     const foods = foodsFromEventPayload(event.payload)
@@ -1043,7 +1100,23 @@ function inspectEvents(
       continue
     }
 
-    if (event.event_type === 'save_failed') {
+    if (event.event_type === 'save_succeeded') {
+      const savedLogId = savedLogEntryIdFromEvent(event)
+      if (savedLogId && !visibleFoodLogIds.has(savedLogId)) {
+        pushFinding(findings, row, {
+          type: 'orphan_save_event',
+          severity: 'low',
+          action_lane: 'native_ui_or_telemetry',
+          summary: 'Native reported a successful save, but the saved food log row is no longer visible.',
+          evidence: {
+            event_id: event.id,
+            session_id: event.session_id,
+            saved_food_log_entry_id: savedLogId,
+            likely_meaning: 'The row was deleted or this was a QA/test save. Keep the event as evidence, but do not count it as a current accepted food log.',
+          },
+        })
+      }
+    } else if (event.event_type === 'save_failed') {
       const lane = saveFailureLane(event)
       pushFinding(findings, row, {
         type: 'save_failed_event',
@@ -1146,6 +1219,19 @@ function renderMarkdown(report: AuditReport) {
   lines.push('## Scoreboard')
   lines.push('')
   for (const [key, value] of Object.entries(report.scoreboard)) lines.push(`- ${key}: ${value}`)
+  lines.push('')
+  lines.push('## Readiness')
+  lines.push('')
+  lines.push(`- status: ${report.readiness.status}`)
+  lines.push(`- grade: ${report.readiness.grade}`)
+  lines.push(`- plain_english: ${report.readiness.plain_english}`)
+  lines.push(`- next_best_step: ${report.readiness.next_best_step}`)
+  lines.push('- stop_conditions_met:')
+  for (const item of report.readiness.stop_conditions_met) lines.push(`  - ${item}`)
+  if (report.readiness.stop_conditions_met.length === 0) lines.push('  - (none)')
+  lines.push('- remaining_risks:')
+  for (const item of report.readiness.remaining_risks) lines.push(`  - ${item}`)
+  if (report.readiness.remaining_risks.length === 0) lines.push('  - (none)')
   lines.push('')
   lines.push('## Parser Paths')
   lines.push('')
@@ -1368,6 +1454,16 @@ function outcomeFromFindings(row: FoodLogRow, relatedFindings: Finding[]): Outco
   if (probablyNonFood(row.raw_input_text)) return 'joke_or_non_log'
   if (types.has('save_failed_event')) return 'save_path_failure'
   if (types.has('duplicate_food_row')) return 'identity_failure'
+  if (
+    materialFindings.length > 0 &&
+    materialFindings.every(
+      (finding) =>
+        finding.type === 'parse_saved_quantity_changed' &&
+        finding.evidence.likely_user_quantity_correction === true,
+    )
+  ) {
+    return 'ambiguous_review'
+  }
   if (types.has('user_measurement_not_preserved') || types.has('parse_saved_unit_changed') || types.has('parse_saved_quantity_changed')) {
     return 'quantity_unit_failure'
   }
@@ -1390,6 +1486,7 @@ function eventSessionKey(event: FoodLogEventRow): string {
 
 function eventOutcome(events: FoodLogEventRow[], relatedFindings: Finding[]): OutcomeType {
   const types = new Set(events.map((event) => event.event_type))
+  const findingTypes = new Set(relatedFindings.map((finding) => finding.type))
   const raw = events.find((event) => event.raw_input_text)?.raw_input_text ?? null
   if (probablyNonFood(raw)) return 'joke_or_non_log'
   if (types.has('save_failed')) return 'save_path_failure'
@@ -1398,6 +1495,7 @@ function eventOutcome(events: FoodLogEventRow[], relatedFindings: Finding[]): Ou
   if (types.has('disambiguation_selected')) return 'identity_failure'
   if (types.has('food_item_edited') || types.has('food_item_added')) return 'edited_success'
   if (types.has('parse_abandoned')) return 'ambiguous_review'
+  if (findingTypes.has('orphan_save_event')) return 'ambiguous_review'
   if (types.has('save_succeeded')) return 'clean_success'
   if (relatedFindings.some((finding) => finding.type === 'parse_slow' || finding.type === 'llm_fallback_expensive')) return 'slow_success'
   if (types.has('parse_returned')) return 'ambiguous_review'
@@ -1530,6 +1628,8 @@ function packetTitle(lane: ActionLane, type: FindingType, transcript: string | n
       return `Investigate unit or portion correction${phrase}`
     case 'joke_or_non_food':
       return `Classify non-log intent${phrase}`
+    case 'orphan_save_event':
+      return `Review deleted or QA save event${phrase}`
     default:
       return `${ownerForLane(lane)} packet for ${type.replaceAll('_', ' ')}${phrase}`
   }
@@ -1735,6 +1835,7 @@ function themeKindsForFinding(finding: Finding): ThemeKind[] {
   const raw = normalizeFoodText(finding.raw_input_text ?? '')
   const text = findingText(finding)
   const kinds: ThemeKind[] = []
+  if (finding.type === 'orphan_save_event') return ['telemetry_observability']
   if (
     raw.includes('protein shake') ||
     raw.includes('isopure') ||
@@ -2489,6 +2590,94 @@ function buildCycleMemory(
   }
 }
 
+function buildReadinessAssessment({
+  eventTableAvailable,
+  cycleMemory,
+  themes,
+  workPackets,
+  interactionOutcomes,
+  orphanSaveEvents,
+}: {
+  eventTableAvailable: boolean
+  cycleMemory: CycleMemory
+  themes: LearningTheme[]
+  workPackets: WorkPacket[]
+  interactionOutcomes: InteractionOutcome[]
+  orphanSaveEvents: number
+}): QuartermasterReadiness {
+  const stopConditions: string[] = []
+  const risks: string[] = []
+  const hasP0 = workPackets.some((packet) => packet.priority === 'P0')
+  const hasFixNow = themes.some((theme) => theme.urgency === 'fix_now')
+  const failCount = interactionOutcomes.filter((outcome) => outcome.grade === 'fail').length
+  const topPacket = workPackets[0] ?? null
+
+  if (eventTableAvailable) stopConditions.push('food_log_events is available for native parse/save telemetry.')
+  else risks.push('food_log_events is unavailable, so failed or abandoned app attempts may be invisible.')
+
+  if (cycleMemory.available) stopConditions.push('cycle memory is available, so Quartermaster can compare new/repeated/resolved themes.')
+  else risks.push('cycle memory is not established yet; trend judgment is limited.')
+
+  if (!hasP0) stopConditions.push('no P0 work packet is currently blocking the loop.')
+  else risks.push('at least one P0 work packet needs immediate repair before pausing.')
+
+  if (!hasFixNow) stopConditions.push('no theme is currently marked fix_now.')
+  else risks.push('at least one theme is marked fix_now.')
+
+  if (failCount === 0) stopConditions.push('no current interaction outcome is graded fail.')
+  else risks.push(`${failCount} current interaction outcome${failCount === 1 ? '' : 's'} graded fail.`)
+
+  if (topPacket && topPacket.priority !== 'P0') {
+    stopConditions.push(`top packet is ${topPacket.priority}, so the next work is review/repair rather than emergency response.`)
+  }
+
+  if (orphanSaveEvents > 0) {
+    risks.push(`${orphanSaveEvents} save success event${orphanSaveEvents === 1 ? '' : 's'} no longer map to visible food log rows; these should stay out of clean-success metrics.`)
+  }
+
+  if (themes.some((theme) => theme.kind === 'human_review_delta')) {
+    risks.push('parse-vs-save deltas still require human intent review before becoming product or parser changes.')
+  }
+
+  if (themes.some((theme) => theme.kind === 'pantry_unit_surface')) {
+    risks.push('some products still have weak natural unit surfaces and should feed Pantry Forge later.')
+  }
+
+  if (!eventTableAvailable || hasP0 || hasFixNow) {
+    return {
+      status: 'blocked',
+      grade: 'C',
+      plain_english: 'Quartermaster is seeing a current blocking condition and should not be considered parked.',
+      stop_conditions_met: stopConditions,
+      remaining_risks: risks,
+      next_best_step: topPacket ? topPacket.title : 'Fix the blocking telemetry or save-path issue, then rerun the cycle.',
+    }
+  }
+
+  if (failCount > 0 || workPackets.some((packet) => packet.priority === 'P1' || packet.priority === 'P2')) {
+    return {
+      status: 'active_repair',
+      grade: failCount > 0 ? 'B-' : 'B',
+      plain_english:
+        failCount > 0
+          ? 'Quartermaster is stable enough to guide work, and it has non-emergency user-facing failures queued for repair.'
+          : 'Quartermaster is stable enough to work from, but it still has review or repair packets worth handling before a full pause.',
+      stop_conditions_met: stopConditions,
+      remaining_risks: risks,
+      next_best_step: topPacket ? topPacket.title : 'Run the next cycle after real app usage.',
+    }
+  }
+
+  return {
+    status: 'checkpoint_ready',
+    grade: 'B+',
+    plain_english: 'Quartermaster is at a reasonable stopping point: no blocking failures, cycle memory works, and remaining work is queued as watch/review.',
+    stop_conditions_met: stopConditions,
+    remaining_risks: risks,
+    next_best_step: 'Advance cycle state after review, then let new real app usage create the next batch of evidence.',
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv)
   loadEnvLocal()
@@ -2532,7 +2721,14 @@ async function main() {
     compareFoods(row, findings)
     inspectFoodSources(row, findings, refs.savedMealIds, refs.productIds, savedMealsBySourceRef)
   }
-  inspectEvents(events, findings, refs.savedMealIds, refs.productIds, savedMealsBySourceRef)
+  inspectEvents(
+    events,
+    findings,
+    refs.savedMealIds,
+    refs.productIds,
+    savedMealsBySourceRef,
+    new Set(rows.map((row) => row.id)),
+  )
 
   const dedupedFindings = dedupeFindings(findings)
   const findingCounts: Record<string, number> = {}
@@ -2556,6 +2752,8 @@ async function main() {
   const saveRequested = eventCounts.save_requested ?? 0
   const saveSucceeded = eventCounts.save_succeeded ?? 0
   const saveFailed = eventCounts.save_failed ?? 0
+  const orphanSaveEvents = dedupedFindings.filter((finding) => finding.type === 'orphan_save_event').length
+  const visibleSaveSucceeded = Math.max(0, saveSucceeded - orphanSaveEvents)
   const editSignals =
     (eventCounts.food_item_edited ?? 0) +
     (eventCounts.food_item_deleted ?? 0) +
@@ -2564,6 +2762,14 @@ async function main() {
   const passOutcomes = interactionOutcomes.filter((outcome) => outcome.grade === 'pass').length
   const failOutcomes = interactionOutcomes.filter((outcome) => outcome.grade === 'fail').length
   const warnOutcomes = interactionOutcomes.filter((outcome) => outcome.grade === 'warn').length
+  const readiness = buildReadinessAssessment({
+    eventTableAvailable: eventResult.available,
+    cycleMemory,
+    themes: learningThemes,
+    workPackets,
+    interactionOutcomes,
+    orphanSaveEvents,
+  })
 
   const report: AuditReport = {
     run_id: runId,
@@ -2609,8 +2815,11 @@ async function main() {
       parse_success_rate_pct: parseRequested > 0 ? Math.round((parseReturned / parseRequested) * 1000) / 10 : null,
       save_requested_events: saveRequested,
       save_succeeded_events: saveSucceeded,
+      visible_save_succeeded_events: visibleSaveSucceeded,
+      orphan_save_events: orphanSaveEvents,
       save_failed_events: saveFailed,
       save_success_rate_pct: saveRequested > 0 ? Math.round((saveSucceeded / saveRequested) * 1000) / 10 : null,
+      visible_save_success_rate_pct: saveRequested > 0 ? Math.round((visibleSaveSucceeded / saveRequested) * 1000) / 10 : null,
       edit_or_delete_events: editSignals,
       saved_rows_likely_accepted_unchanged: likelyAcceptedUnchanged,
       outcome_pass_count: passOutcomes,
@@ -2623,6 +2832,7 @@ async function main() {
     finding_counts: findingCounts,
     action_counts: actionCounts,
     cycle_memory: cycleMemory,
+    readiness,
     learning_themes: learningThemes,
     work_packets: workPackets,
     interaction_outcomes: interactionOutcomes,
