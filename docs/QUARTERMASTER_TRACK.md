@@ -68,6 +68,33 @@ Bad: add twelve opaque protein shake aliases.
 Good: model protein shake as protein powder quantity plus dextrose quantity.
 ```
 
+## Identity And Measurement Doctrine
+
+Quartermaster must treat every food log as five connected layers:
+
+```text
+user words -> canonical identity -> quantity/unit -> displayed trust surface -> saved evidence
+```
+
+The layers should not collapse into each other.
+
+- A quantity is not a new food.
+- A serving count is not a new favorite.
+- A saved history row is not automatically a canonical identity.
+- A heart belongs to the canonical food identity when one exists.
+- A display name can change without changing the food.
+- User-visible quantity should preserve what Luke said whenever possible.
+
+Plain English: if Luke hearts a Yasso bar, then `one Yasso bar`, `two Yasso bars`, and a slightly different product display name should still feel like the same hearted food when they point at the same product. Pantheon can multiply the macros for the quantity, but it should not create a separate favorite identity for every count.
+
+Quartermaster should flag violations as identity fractures, not just unit bugs:
+
+- same product source_ref appears with multiple favorite wrappers
+- a product-backed favorite appears unhearted after a quantity change
+- logged quantity changes create new saved meals instead of preserving source_ref
+- history emits `lib:saved_meal:*` when a cleaner `lib:product:*` identity exists
+- display quantity differs from spoken quantity even when macros are close
+
 ## Track Legs
 
 ### Leg 0: Instrument Reality
