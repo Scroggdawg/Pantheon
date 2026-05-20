@@ -36,6 +36,9 @@ interface Case {
   assert: (result: ParsedWithTelemetry) => void
 }
 
+const STALE_PROTEIN_SHAKE_SOURCE_REF =
+  'lib:saved_meal:1a2ac44d-80d4-4afd-83ed-bd388e77e14e'
+
 function fail(message: string): never {
   throw new Error(message)
 }
@@ -56,6 +59,23 @@ function assertNoSavedShakeShortcut(result: ParsedMealResponse) {
       !/protein shake/i.test(food.name),
       `Unexpected saved protein-shake shortcut row: ${food.name}`,
     )
+  }
+}
+
+function assertNoStaleProteinShakeSourceRef(result: ParsedMealResponse) {
+  for (const food of result.foods) {
+    assert(
+      food.source_ref !== STALE_PROTEIN_SHAKE_SOURCE_REF,
+      `Unexpected stale protein-shake source_ref on ${food.name}`,
+    )
+  }
+  for (const group of result.disambiguation ?? []) {
+    for (const candidate of group.candidates) {
+      assert(
+        candidate.source_ref !== STALE_PROTEIN_SHAKE_SOURCE_REF,
+        `Unexpected stale protein-shake candidate source_ref on ${candidate.name}`,
+      )
+    }
   }
 }
 
@@ -108,13 +128,38 @@ const cases: Case[] = [
     },
   },
   {
+    id: 'plain-protein-shake-with-dextrose',
+    transcript: 'Protein shake with dextrose.',
+    assert(result) {
+      assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
+      assertClose(result.total_protein_g, 25, 'Plain full dextrose protein')
+      assertClose(result.total_carbs_g, 20, 'Plain full dextrose carbs')
+      assert(result.foods.length === 2, `Expected protein + dextrose rows, got ${result.foods.length}`)
+      assert(result._telemetry?.protein_shake_ingredient_shortcut_hit === true, 'Expected shake shortcut')
+    },
+  },
+  {
     id: 'protein-shake-full-dextrose',
     transcript:
       'Protein shake with Isopure chocolate protein and one serving of NutriCost dextrose',
     assert(result) {
       assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
       assertClose(result.total_protein_g, 25, 'Full dextrose protein')
       assertClose(result.total_carbs_g, 20, 'Full dextrose carbs')
+      assert(result._telemetry?.protein_shake_ingredient_shortcut_hit === true, 'Expected shake shortcut')
+    },
+  },
+  {
+    id: 'protein-shake-voice-mangled-nutricost',
+    transcript: 'Isopure Protein Shake with Nutri-Cust Dextrose',
+    assert(result) {
+      assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
+      assertClose(result.total_protein_g, 25, 'Voice-mangled Nutricost protein')
+      assertClose(result.total_carbs_g, 20, 'Voice-mangled Nutricost carbs')
+      assert(result.foods.length === 2, `Expected protein + dextrose rows, got ${result.foods.length}`)
       assert(result._telemetry?.protein_shake_ingredient_shortcut_hit === true, 'Expected shake shortcut')
     },
   },
@@ -124,6 +169,7 @@ const cases: Case[] = [
       'Protein shake with Isopure chocolate protein and half a serving of NutriCost dextrose',
     assert(result) {
       assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
       assertClose(result.total_protein_g, 25, 'Half dextrose protein')
       assertClose(result.total_carbs_g, 10.5, 'Half dextrose carbs')
       assert(result._telemetry?.protein_shake_ingredient_shortcut_hit === true, 'Expected shake shortcut')
@@ -134,6 +180,7 @@ const cases: Case[] = [
     transcript: 'Protein shake with Isopure chocolate protein, no dextrose',
     assert(result) {
       assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
       assertClose(result.total_protein_g, 25, 'No dextrose protein')
       assertClose(result.total_carbs_g, 1, 'No dextrose carbs')
       assert(result.foods.length === 1, `Expected one protein row, got ${result.foods.length}`)
@@ -144,6 +191,7 @@ const cases: Case[] = [
     transcript: 'One protein shake, no dextrose',
     assert(result) {
       assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
       assertClose(result.total_protein_g, 25, 'Plain no dextrose protein')
       assert(result.foods.length === 1, `Expected one protein row, got ${result.foods.length}`)
       assert(result._telemetry?.protein_shake_ingredient_shortcut_hit === true, 'Expected shake shortcut')
@@ -154,12 +202,29 @@ const cases: Case[] = [
     transcript: 'One protein shake, no dextrose, and 278 grams of sweet potatoes.',
     assert(result) {
       assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
       const proteinRows = result.foods.filter((food) => /isopure|protein/i.test(food.name))
       assert(proteinRows.length === 1, `Expected one protein ingredient row, got ${proteinRows.length}`)
       const sweetPotatoes = findFood(result, /Sweet potatoes/i)
       assertClose(sweetPotatoes.qty, 278, 'Sweet potato qty')
       assert(/grams/i.test(sweetPotatoes.unit), `Expected sweet potato unit grams, got ${sweetPotatoes.unit}`)
       assertClose(Math.round(sweetPotatoes.calories * 10) / 10, 215.2, 'Sweet potato calories')
+    },
+  },
+  {
+    id: 'one-scoop-isopure-with-sweet-potatoes',
+    transcript: 'One scoop of Isopure protein and 260 grams of sweet potatoes.',
+    assert(result) {
+      assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
+      const protein = findFood(result, /Isopure/i)
+      assertClose(protein.qty, 1, 'Isopure protein qty')
+      assert(/scoop/i.test(protein.unit), `Expected Isopure unit scoop, got ${protein.unit}`)
+      const sweetPotatoes = findFood(result, /Sweet potatoes/i)
+      assertClose(sweetPotatoes.qty, 260, 'Sweet potato qty')
+      assert(/grams/i.test(sweetPotatoes.unit), `Expected sweet potato unit grams, got ${sweetPotatoes.unit}`)
+      assert(result._telemetry?.library_segmented_hit === true, 'Expected fully segmented library shortcut')
+      assert(result._telemetry?.fallback_llm_hit !== true, 'Expected no LLM fallback')
     },
   },
   {
@@ -183,6 +248,7 @@ const cases: Case[] = [
       'Double protein shake, two scoops of Isopure chocolate protein, with one serving of NutriCost dextrose',
     assert(result) {
       assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
       assertClose(result.total_protein_g, 50, 'Double full protein')
       assertClose(result.total_carbs_g, 21, 'Double full carbs')
     },
@@ -193,6 +259,7 @@ const cases: Case[] = [
       'Two scoop protein shake with Isopure chocolate protein and half a serving of NutriCost dextrose',
     assert(result) {
       assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
       assertClose(result.total_protein_g, 50, 'Double half protein')
       assertClose(result.total_carbs_g, 11.5, 'Double half carbs')
     },
@@ -202,6 +269,7 @@ const cases: Case[] = [
     transcript: 'Double protein shake, two scoops of Isopure chocolate protein, no dextrose',
     assert(result) {
       assertNoSavedShakeShortcut(result)
+      assertNoStaleProteinShakeSourceRef(result)
       assertClose(result.total_protein_g, 50, 'Double none protein')
       assertClose(result.total_carbs_g, 2, 'Double none carbs')
       assert(result.foods.length === 1, `Expected one protein row, got ${result.foods.length}`)

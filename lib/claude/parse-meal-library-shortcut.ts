@@ -37,6 +37,7 @@ import type {
   UnitAlternative,
 } from '@/types/database'
 
+import { applyBrandAliases } from '../brand-voice-aliases'
 import { confidenceLabel } from './tools/constants'
 import {
   searchUserLibrary,
@@ -87,7 +88,7 @@ export interface LibraryShortcutResult {
 type DextroseIntent = 'none' | 'half' | 'full' | null
 
 function normalizeShortcutText(value: string): string {
-  return (value || '')
+  return applyBrandAliases(value || '').substituted
     .toLowerCase()
     .replace(/['’]/g, '')
     .replace(/[^a-z0-9 ]+/g, ' ')
@@ -284,6 +285,84 @@ function looksLikeProteinShakeOnlyTranscript(value: string): boolean {
   return residue.length === 0
 }
 
+function looksLikePlainIsopureProteinPowderOnlyTranscript(value: string): boolean {
+  const normalized = normalizeShortcutText(value)
+  if (!/\bisopure\b/.test(normalized)) return false
+  if (!/\bprotein\b/.test(normalized)) return false
+  if (hasProteinShakeText(normalized) || /\b(shake|dextrose|nutricost)\b/.test(normalized)) return false
+
+  const residue = normalized
+    .replace(/\b\d+\b/g, ' ')
+    .replace(/\b(?:one|a|an|two|double)\b/g, ' ')
+    .replace(/\bisopure\b/g, ' ')
+    .replace(/\bchocolate\b/g, ' ')
+    .replace(/\blow\b/g, ' ')
+    .replace(/\bcarb\b/g, ' ')
+    .replace(/\bwhey\b/g, ' ')
+    .replace(/\bisolate\b/g, ' ')
+    .replace(/\bprotein\b/g, ' ')
+    .replace(/\bpowder\b/g, ' ')
+    .replace(/\bscoops?\b/g, ' ')
+    .replace(/\bservings?\b/g, ' ')
+    .replace(/\bof\b/g, ' ')
+    .replace(/\band\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return residue.length === 0
+}
+
+async function resolvePlainIsopureProteinPowderShortcut(
+  supabase: SupabaseClient,
+  userId: string,
+  transcript: string,
+): Promise<LibraryShortcutResult | null> {
+  if (!looksLikePlainIsopureProteinPowderOnlyTranscript(transcript)) return null
+
+  const proteinRes = await searchUserLibrary(
+    { query: 'isopure chocolate protein', limit: 5 },
+    { userId, supabase },
+  )
+  const protein = proteinRes.results.find((r) => {
+    const name = normalizeShortcutText(r.name)
+    return name.includes('isopure') && name.includes('protein') && !name.includes('shake') && !name.includes('dextrose')
+  })
+  if (!protein) return null
+
+  const parsedQuantity = parseLeadingQuantity(transcript)
+  const scoopQty =
+    parsedQuantity && /^scoops?$/.test(parsedQuantity.unit)
+      ? parsedQuantity.qty
+      : hasDoubleProteinIntent(transcript)
+        ? 2
+        : 1
+  const total = scaleTotal(protein.total, scoopQty)
+  const food = foodFromLibraryTotal({
+    name: protein.name,
+    qty: scoopQty,
+    unit: 'scoop',
+    total,
+    sourceRef: liveSourceRefForResult(protein),
+    score: protein.match_confidence.score,
+    unitAlternatives: protein.unit_alternatives,
+  })
+
+  return {
+    response: {
+      foods: [food],
+      total_calories: food.calories,
+      total_protein_g: food.protein_g,
+      total_carbs_g: food.carbs_g,
+      total_fat_g: food.fat_g,
+      clarification_needed: null,
+      disambiguation: null,
+    },
+    hit: true,
+    top_score: protein.match_confidence.score,
+    lookup_count: 1,
+  }
+}
+
 function singularizeSimpleUnit(value: string): string {
   const normalized = normalizeShortcutText(value)
   if (normalized.endsWith('ies') && normalized.length > 3) return `${normalized.slice(0, -3)}y`
@@ -323,6 +402,9 @@ export async function tryLibraryShortcut(
   userId: string,
   transcript: string,
 ): Promise<LibraryShortcutResult | null> {
+  const plainProteinPowder = await resolvePlainIsopureProteinPowderShortcut(supabase, userId, transcript)
+  if (plainProteinPowder?.hit) return plainProteinPowder
+
   const direct = await searchUserLibrary(
     { query: transcript, limit: 2 },
     { userId, supabase },
@@ -1213,6 +1295,14 @@ export async function tryLibrarySegmentedShortcut(
   // written-numbers-normalized).
   const segmentResults = await Promise.all(
     segments.map(async (seg) => {
+      const plainProteinPowder = await resolvePlainIsopureProteinPowderShortcut(supabase, userId, seg.original)
+      if (plainProteinPowder?.hit) {
+        return {
+          proteinShake: plainProteinPowder,
+          results: [],
+        }
+      }
+
       if (isIsopureShakeIngredientShortcutTranscript(seg.original)) {
         const shake = await resolveProteinShakeIngredientShortcut(supabase, userId, seg.original)
         if (shake?.hit) {
