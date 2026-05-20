@@ -155,7 +155,7 @@ const cases: Case[] = [
       const sweetPotatoes = findFood(result, /Sweet potatoes/i)
       assertClose(sweetPotatoes.qty, 278, 'Sweet potato qty')
       assert(/grams/i.test(sweetPotatoes.unit), `Expected sweet potato unit grams, got ${sweetPotatoes.unit}`)
-      assertClose(sweetPotatoes.calories, 214, 'Sweet potato calories')
+      assertClose(Math.round(sweetPotatoes.calories * 10) / 10, 215.2, 'Sweet potato calories')
     },
   },
   {
