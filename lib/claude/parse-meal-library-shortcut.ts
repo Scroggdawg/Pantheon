@@ -125,7 +125,7 @@ function hasDoubleProteinIntent(value: string): boolean {
 
 function isIsopureShakeIngredientShortcutTranscript(value: string): boolean {
   const normalized = normalizeShortcutText(value)
-  return hasProteinShakeText(value) && /\bisopure\b/.test(normalized)
+  return hasProteinShakeText(value) && (/\bisopure\b/.test(normalized) || dextroseIntent(value) !== null)
 }
 
 function foodFromLibraryTotal(args: {
@@ -161,6 +161,16 @@ export async function tryProteinShakeIngredientShortcut(
   transcript: string,
 ): Promise<LibraryShortcutResult | null> {
   if (!isIsopureShakeIngredientShortcutTranscript(transcript)) return null
+  if (!looksLikeProteinShakeOnlyTranscript(transcript)) return null
+
+  return resolveProteinShakeIngredientShortcut(supabase, userId, transcript)
+}
+
+async function resolveProteinShakeIngredientShortcut(
+  supabase: SupabaseClient,
+  userId: string,
+  transcript: string,
+): Promise<LibraryShortcutResult | null> {
 
   const proteinScoops = hasDoubleProteinIntent(transcript) ? 2 : 1
   const intent = dextroseIntent(transcript)
@@ -229,6 +239,35 @@ export async function tryProteinShakeIngredientShortcut(
     hit: true,
     lookup_count: lookupCount,
   }
+}
+
+function looksLikeProteinShakeOnlyTranscript(value: string): boolean {
+  const normalized = normalizeShortcutText(value)
+  if (!hasProteinShakeText(normalized)) return false
+
+  const residue = normalized
+    .replace(/\b(?:one|1|two|2|double)\b/g, ' ')
+    .replace(/\bprotein\s+shake\b/g, ' ')
+    .replace(/\bisopure\b/g, ' ')
+    .replace(/\bchocolate\b/g, ' ')
+    .replace(/\bprotein\b/g, ' ')
+    .replace(/\bscoops?\b/g, ' ')
+    .replace(/\bwith(?:out)?\b/g, ' ')
+    .replace(/\ba\b/g, ' ')
+    .replace(/\ban\b/g, ' ')
+    .replace(/\bno\b/g, ' ')
+    .replace(/\bhalf\b/g, ' ')
+    .replace(/\bfull\b/g, ' ')
+    .replace(/\bone\b/g, ' ')
+    .replace(/\bservings?\b/g, ' ')
+    .replace(/\bof\b/g, ' ')
+    .replace(/\band\b/g, ' ')
+    .replace(/\bnutricost\b/g, ' ')
+    .replace(/\bdextrose\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return residue.length === 0
 }
 
 export async function tryLibraryShortcut(
@@ -767,6 +806,39 @@ function parseLeadingQuantity(segment: string): { qty: number; unit: string } | 
   return null
 }
 
+function parseLeadingWeightQuantity(segment: string): { qty: number; unit: string; grams: number } | null {
+  const cleaned = segment.trim().replace(/^(?:and|plus|with)\s+/i, '')
+  const match = /^(\d+(?:\.\d+)?)\s*(g|grams?|oz|ounces?|lb|lbs|pounds?)\b/i.exec(cleaned)
+  if (!match) return null
+  const qty = Number(match[1])
+  if (!Number.isFinite(qty) || qty <= 0) return null
+
+  const unitToken = match[2].toLowerCase()
+  if (unitToken === 'g' || unitToken.startsWith('gram')) return { qty, unit: 'grams', grams: qty }
+  if (unitToken === 'oz' || unitToken.startsWith('ounce')) {
+    return { qty, unit: qty === 1 ? 'ounce' : 'ounces', grams: qty * 28.3495 }
+  }
+  return { qty, unit: qty === 1 ? 'pound' : 'pounds', grams: qty * 453.592 }
+}
+
+function servingGramsFromCandidate(candidate: LibrarySearchResult): number | null {
+  for (const component of candidate.components) {
+    const match = /^(\d+(?:\.\d+)?)\s*(?:g|grams?)$/i.exec(component.unit.trim())
+    if (match) {
+      const grams = Number(match[1])
+      if (Number.isFinite(grams) && grams > 0) return grams
+    }
+  }
+
+  const servingAlt = candidate.unit_alternatives?.find((alt) => {
+    const unit = alt.unit.toLowerCase()
+    return unit === 'serving' || unit === 'portion'
+  })
+  if (servingAlt && Number.isFinite(servingAlt.grams) && servingAlt.grams > 0) return servingAlt.grams
+
+  return null
+}
+
 function normalizeSegmentQuantityUnit(
   qty: number,
   rawUnit: string,
@@ -916,6 +988,32 @@ export function segmentTranscript(
   return allSegments
 }
 
+function isStandaloneDextroseModifier(segment: TranscriptSegment): boolean {
+  const normalized = normalizeShortcutText(segment.original)
+  return (
+    /\bdextrose\b/.test(normalized) &&
+    /^(?:with\s+)?(?:no|without|half|full|one|1)(?:\s+(?:a\s+)?serving)?(?:\s+of)?(?:\s+nutricost)?\s+dextrose$/.test(normalized)
+  )
+}
+
+function mergeProteinShakeDextroseSegments(segments: TranscriptSegment[]): TranscriptSegment[] {
+  const merged: TranscriptSegment[] = []
+  for (let i = 0; i < segments.length; i++) {
+    const current = segments[i]
+    const next = segments[i + 1]
+    if (hasProteinShakeText(current.original) && next && isStandaloneDextroseModifier(next)) {
+      merged.push({
+        original: `${current.original}, ${next.original}`,
+        stripped: `${current.stripped} ${next.stripped}`.trim(),
+      })
+      i += 1
+      continue
+    }
+    merged.push(current)
+  }
+  return merged
+}
+
 // Op FASTRAK Alpha.4 — mixed-resolution segmented shortcut.
 //
 // Pre-Alpha.4 this helper required ALL segments to clear the single-hit
@@ -960,7 +1058,7 @@ export async function tryLibrarySegmentedShortcut(
   userId: string,
   transcript: string,
 ): Promise<LibrarySegmentedShortcutResult | null> {
-  const staticSegments = segmentTranscript(transcript)
+  const staticSegments = mergeProteinShakeDextroseSegments(segmentTranscript(transcript))
   // Single-segment utterances are 4f's job; this helper is for
   // multi-item only. Return null so the route's existing 4g/Sonnet
   // path takes over without double work.
@@ -968,7 +1066,7 @@ export async function tryLibrarySegmentedShortcut(
 
   const runtimeCompositeNames = await loadRuntimeCompositeNames(supabase, userId)
   const segments = runtimeCompositeNames.length > 0
-    ? segmentTranscript(transcript, runtimeCompositeNames)
+    ? mergeProteinShakeDextroseSegments(segmentTranscript(transcript, runtimeCompositeNames))
     : staticSegments
   if (segments.length < 2) return null
 
@@ -977,9 +1075,19 @@ export async function tryLibrarySegmentedShortcut(
   // written-numbers-normalized).
   const segmentResults = await Promise.all(
     segments.map(async (seg) => {
+      if (isIsopureShakeIngredientShortcutTranscript(seg.original)) {
+        const shake = await resolveProteinShakeIngredientShortcut(supabase, userId, seg.original)
+        if (shake?.hit) {
+          return {
+            proteinShake: shake,
+            results: [],
+          }
+        }
+      }
+
       const primary = await searchUserLibrary({ query: seg.stripped, limit: 2 }, { userId, supabase })
       const relaxed = relaxedSegmentQuery(seg.stripped)
-      if (!relaxed || relaxed === seg.stripped) return primary
+      if (!relaxed || relaxed === seg.stripped) return { proteinShake: null, results: primary.results }
 
       const top = primary.results[0]
       const second = primary.results[1]
@@ -987,9 +1095,10 @@ export async function tryLibrarySegmentedShortcut(
         top &&
         top.match_confidence.score >= SEGMENT_SHORTCUT_SCORE_THRESHOLD &&
         top.match_confidence.score - (second?.match_confidence.score ?? 0) >= SEGMENT_SHORTCUT_GAP_THRESHOLD
-      if (primaryClears) return primary
+      if (primaryClears) return { proteinShake: null, results: primary.results }
 
-      return searchUserLibrary({ query: relaxed, limit: 2 }, { userId, supabase })
+      const relaxedResults = await searchUserLibrary({ query: relaxed, limit: 2 }, { userId, supabase })
+      return { proteinShake: null, results: relaxedResults.results }
     }),
   )
 
@@ -1004,6 +1113,20 @@ export async function tryLibrarySegmentedShortcut(
 
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]
+    const proteinShake = segmentResults[i].proteinShake
+    if (proteinShake?.hit) {
+      for (let ingredientIndex = 0; ingredientIndex < proteinShake.response.foods.length; ingredientIndex++) {
+        resolved.push({
+          food: proteinShake.response.foods[ingredientIndex],
+          segment: seg.stripped,
+          original_segment: seg.original,
+          position: i + ingredientIndex / 100,
+          score: 1,
+        })
+      }
+      continue
+    }
+
     const r = segmentResults[i].results
 
     if (r.length === 0) {
@@ -1023,12 +1146,20 @@ export async function tryLibrarySegmentedShortcut(
       continue
     }
 
+    const parsedWeightQuantity = parseLeadingWeightQuantity(seg.original)
+    const servingGrams = parsedWeightQuantity ? servingGramsFromCandidate(top) : null
     const parsedQuantity = parseLeadingQuantity(seg.original)
     const quantity =
-      parsedQuantity && !quantityAlreadyBakedIntoLibraryName(top, parsedQuantity.qty)
-        ? parsedQuantity
-        : null
-    const total = quantity ? scaleTotal(top.total, quantity.qty) : top.total
+      parsedWeightQuantity && servingGrams
+        ? {
+            qty: parsedWeightQuantity.qty,
+            unit: parsedWeightQuantity.unit,
+            scale: parsedWeightQuantity.grams / servingGrams,
+          }
+        : parsedQuantity && !quantityAlreadyBakedIntoLibraryName(top, parsedQuantity.qty)
+          ? { ...parsedQuantity, scale: parsedQuantity.qty }
+          : null
+    const total = quantity ? scaleTotal(top.total, quantity.scale) : top.total
 
     resolved.push({
       food: {

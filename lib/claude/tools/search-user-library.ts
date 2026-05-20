@@ -373,6 +373,7 @@ function savedMealToCandidate(
   row: SavedMealRow,
   score: number,
   learnedAliases: string[] = [],
+  productServingGramsByRef: Map<string, number> = new Map(),
 ): LibrarySearchResult {
   const ys = row.yield_servings && row.yield_servings > 0 ? row.yield_servings : 1
   const totalBatch: LibraryTotal = {
@@ -390,7 +391,10 @@ function savedMealToCandidate(
   const components: LibraryComponent[] = (row.foods_json ?? []).map((f) => ({
     name: f.name,
     qty: f.qty,
-    unit: f.unit,
+    unit:
+      f.unit === 'serving' && f.source_ref && productServingGramsByRef.has(f.source_ref)
+        ? `${productServingGramsByRef.get(f.source_ref)} g`
+        : f.unit,
     kcal: f.calories,
     protein_g: f.protein_g,
     carbs_g: f.carbs_g,
@@ -807,7 +811,12 @@ export async function searchUserLibrary(
   // backed hourly entries — though saved_meals store unit_alternatives
   // inside foods_json[i], not as a separate column.
   const productAltsById = new Map<string, UnitAlternative[]>()
+  const productServingGramsByRef = new Map<string, number>()
   for (const p of products) {
+    const sourceRef = `lib:product:${p.id}`
+    if (typeof p.serving_size_g === 'number' && p.serving_size_g > 0) {
+      productServingGramsByRef.set(sourceRef, p.serving_size_g)
+    }
     if (Array.isArray(p.unit_alternatives) && p.unit_alternatives.length > 0) {
       productAltsById.set(p.id, p.unit_alternatives)
     }
@@ -835,7 +844,7 @@ export async function searchUserLibrary(
     const aliases = [...new Set([...(m.tags ?? []), ...(aliasesByRef.get(sourceRef) ?? [])])]
     const score = guardedLibraryNameSimilarity(searchQuery, m.name ?? '', aliases)
     if (score < minScore) continue
-    matches.push(savedMealToCandidate(m, score, aliasesByRef.get(sourceRef) ?? []))
+    matches.push(savedMealToCandidate(m, score, aliasesByRef.get(sourceRef) ?? [], productServingGramsByRef))
   }
   for (const p of products) {
     const displayName =
