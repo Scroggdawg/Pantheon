@@ -22,6 +22,7 @@ type ThemeKind =
   | 'protein_shake_composition'
   | 'quantity_display_trust'
   | 'stale_library_identity'
+  | 'identity_fracture'
   | 'duplicate_food_rows'
   | 'slow_parse_missing_knowledge'
   | 'pantry_unit_surface'
@@ -45,6 +46,7 @@ type FindingType =
   | 'parse_saved_quantity_changed'
   | 'unit_missing_or_weak'
   | 'user_measurement_not_preserved'
+  | 'identity_fracture'
   | 'joke_or_non_food'
   | 'save_failed_event'
   | 'parse_failed_event'
@@ -120,6 +122,20 @@ interface FoodLike {
   source_ref?: string | null
   match_confidence?: MatchConfidence
   unit_alternatives?: unknown[]
+}
+
+interface SavedMealRefRow {
+  id: string
+  name: string | null
+  foods_json: FoodLike[] | null
+  total_calories: number | null
+  total_protein_g: number | null
+  total_carbs_g: number | null
+  total_fat_g: number | null
+  yield_servings: number | null
+  times_logged: number | null
+  last_logged_at: string | null
+  is_favorite: boolean | null
 }
 
 interface FoodLogRow {
@@ -487,7 +503,7 @@ async function fetchAllFoodLogEvents(
 async function fetchLiveRefs(supabase: SupabaseClient) {
   const [{ data: savedMeals, error: savedMealsError }, { data: products, error: productsError }] =
     await Promise.all([
-      supabase.from('saved_meals').select('id,name,total_calories,total_protein_g,total_carbs_g,total_fat_g,yield_servings,times_logged,last_logged_at'),
+      supabase.from('saved_meals').select('id,name,foods_json,total_calories,total_protein_g,total_carbs_g,total_fat_g,yield_servings,times_logged,last_logged_at,is_favorite'),
       supabase.from('products').select('id,name,brand,calories_per_serving,protein_g_per_serving,carbs_g_per_serving,fat_g_per_serving,unit,serving_size_g'),
     ])
   if (savedMealsError) throw new Error(`saved_meals query failed: ${savedMealsError.message}`)
@@ -496,6 +512,7 @@ async function fetchLiveRefs(supabase: SupabaseClient) {
   return {
     savedMealIds: new Set((savedMeals ?? []).map((row: { id: string }) => row.id)),
     productIds: new Set((products ?? []).map((row: { id: string }) => row.id)),
+    savedMeals: (savedMeals ?? []) as SavedMealRefRow[],
     savedMealCount: savedMeals?.length ?? 0,
     productCount: products?.length ?? 0,
   }
@@ -521,6 +538,46 @@ function displayFood(food: FoodLike | undefined): string {
   const qty = numeric(food.qty)
   const qtyText = qty === null ? '?' : String(qty)
   return `${food.name ?? '(unnamed)'} - ${qtyText} ${food.unit ?? '(no unit)'} - ${food.calories ?? '?'} cal`
+}
+
+function foodIdentitySignature(food: FoodLike): string {
+  return [
+    normalizeFoodText(food.name ?? ''),
+    normalizeFoodText(food.unit ?? ''),
+    numeric(food.qty) ?? '?',
+    numeric(food.calories) ?? '?',
+  ].join('|')
+}
+
+function singleFoodSavedMealSourceRef(row: SavedMealRefRow): string | null {
+  const foods = row.foods_json
+  if (!Array.isArray(foods) || foods.length !== 1) return null
+  return foods[0]?.source_ref ?? null
+}
+
+function buildSavedMealSourceRefIndex(savedMeals: SavedMealRefRow[]): Map<string, SavedMealRefRow[]> {
+  const index = new Map<string, SavedMealRefRow[]>()
+  for (const row of savedMeals) {
+    const ref = singleFoodSavedMealSourceRef(row)
+    if (!ref) continue
+    const list = index.get(ref) ?? []
+    list.push(row)
+    index.set(ref, list)
+  }
+  return index
+}
+
+function savedMealWrapperSummary(row: SavedMealRefRow): Record<string, unknown> {
+  const food = Array.isArray(row.foods_json) ? row.foods_json[0] : undefined
+  return {
+    saved_meal_id: row.id,
+    name: row.name,
+    is_favorite: row.is_favorite === true,
+    times_logged: row.times_logged,
+    last_logged_at: row.last_logged_at,
+    food: displayFood(food),
+    source_ref: food?.source_ref ?? null,
+  }
 }
 
 function sourceRefKind(ref: string | null | undefined): { kind: 'saved_meal' | 'product' | 'other' | 'none'; id: string | null } {
@@ -581,7 +638,7 @@ function unitPreservesMeasurement(unit: string | undefined, measurement: Transcr
 function findingScore(type: FindingType, severity: Severity, lane: ActionLane): number {
   let score = severityRank(severity) * 20
   if (type === 'save_failed_event') score += 35
-  if (type === 'source_ref_stale' || type === 'user_measurement_not_preserved') score += 25
+  if (type === 'source_ref_stale' || type === 'user_measurement_not_preserved' || type === 'identity_fracture') score += 25
   if (type === 'duplicate_food_row') score += 30
   if (type === 'parse_failed_event' || type === 'parse_abandoned_event') score += 20
   if (type === 'llm_estimated_saved' || type === 'parse_saved_delta_calories') score += 15
@@ -729,6 +786,7 @@ function inspectFoodSources(
   findings: Finding[],
   savedMealIds: Set<string>,
   productIds: Set<string>,
+  savedMealsBySourceRef: Map<string, SavedMealRefRow[]>,
 ) {
   const foods = [...(row.claude_parse_json?.foods ?? []), ...(row.foods_json ?? [])]
   for (const food of foods) {
@@ -761,6 +819,39 @@ function inspectFoodSources(
         summary: `Product source ref no longer exists for "${food.name ?? '(unnamed food)'}".`,
         evidence: { source_ref: ref, food: displayFood(food) },
       })
+    }
+
+    if (ref) {
+      const wrappers = savedMealsBySourceRef.get(ref) ?? []
+      const favoriteWrappers = wrappers.filter((wrapper) => wrapper.is_favorite === true)
+      const wrapperSignatures = new Set(
+        wrappers
+          .map((wrapper) => (Array.isArray(wrapper.foods_json) ? wrapper.foods_json[0] : null))
+          .filter((wrapperFood): wrapperFood is FoodLike => Boolean(wrapperFood))
+          .map(foodIdentitySignature),
+      )
+      const loggedSignature = foodIdentitySignature(food)
+      const hasDifferentFavoriteWrapper = favoriteWrappers.some((wrapper) => {
+        const wrapperFood = Array.isArray(wrapper.foods_json) ? wrapper.foods_json[0] : null
+        return wrapperFood ? foodIdentitySignature(wrapperFood) !== loggedSignature : false
+      })
+
+      if (wrappers.length > 1 || wrapperSignatures.size > 1 || hasDifferentFavoriteWrapper) {
+        pushFinding(findings, row, {
+          type: 'identity_fracture',
+          severity: favoriteWrappers.length > 0 || wrappers.length > 1 ? 'medium' : 'low',
+          action_lane: 'saved_meal_repair',
+          summary: `Canonical identity has ${wrappers.length} saved-meal wrapper${wrappers.length === 1 ? '' : 's'} that may drift across quantity or display name for "${food.name ?? '(unnamed food)'}".`,
+          evidence: {
+            source_ref: ref,
+            logged_food: displayFood(food),
+            wrapper_count: wrappers.length,
+            favorite_wrapper_count: favoriteWrappers.length,
+            distinct_wrapper_shapes: wrapperSignatures.size,
+            wrappers: wrappers.slice(0, 5).map(savedMealWrapperSummary),
+          },
+        })
+      }
     }
 
     const confidence = food.match_confidence
@@ -932,6 +1023,7 @@ function inspectEvents(
   findings: Finding[],
   savedMealIds: Set<string>,
   productIds: Set<string>,
+  savedMealsBySourceRef: Map<string, SavedMealRefRow[]>,
 ) {
   for (const event of events) {
     const foods = foodsFromEventPayload(event.payload)
@@ -941,7 +1033,7 @@ function inspectEvents(
     if (event.event_type === 'parse_returned') {
       inspectTelemetry(row, findings)
       inspectTranscript(row, findings)
-      inspectFoodSources(row, findings, savedMealIds, productIds)
+      inspectFoodSources(row, findings, savedMealIds, productIds, savedMealsBySourceRef)
       continue
     }
 
@@ -1406,6 +1498,8 @@ function packetTitle(lane: ActionLane, type: FindingType, transcript: string | n
       return `Preserve user quantity/unit${phrase}`
     case 'source_ref_stale':
       return `Repair stale library identity${phrase}`
+    case 'identity_fracture':
+      return `Repair fractured favorite identity${phrase}`
     case 'duplicate_food_row':
       return `Stop duplicate food rows${phrase}`
     case 'parse_slow':
@@ -1428,6 +1522,7 @@ function recommendedAction(type: FindingType, lane: ActionLane): string {
   if (type === 'user_measurement_not_preserved') return 'Preserve the unit Luke said in the displayed plate and ensure unit alternatives support the conversion.'
   if (type === 'duplicate_food_row') return 'Reproduce the parse path and prevent one spoken item from becoming multiple saved plate rows.'
   if (type === 'source_ref_stale') return 'Resolve the stale source_ref to a live identity or strip it before save/search surfaces reuse it.'
+  if (type === 'identity_fracture') return 'Collapse favorite and saved-meal behavior around the canonical source_ref so quantities and display names do not create separate food identities.'
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Add pantry identity, alias, or parser guard so this phrase resolves before the LLM fallback.'
   if (type === 'parse_saved_name_changed') return 'Treat the saved name as a correction signal; consider alias/rejection proposals after confirming intent.'
   if (type === 'parse_saved_unit_changed' || type === 'parse_saved_quantity_changed') return 'Compare parsed versus saved quantity and add missing unit conversion or UI preservation rule.'
@@ -1443,6 +1538,7 @@ function whyItMatters(type: FindingType): string {
   if (type === 'duplicate_food_row') return 'Duplicate rows silently inflate calories and macros even when the visible parse looks plausible.'
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Slow parses are usually missing pantry or matcher knowledge.'
   if (type === 'source_ref_stale') return 'Stale identities can resurrect deleted meals or trip database constraints.'
+  if (type === 'identity_fracture') return 'Favorite state and learning memory should attach to the food identity, not to one logged quantity or saved-meal wrapper.'
   if (type === 'parse_abandoned_event') return 'Abandonment is often the clearest sign that the result was not worth saving.'
   return 'This is real user-behavior evidence, not theoretical parser hygiene.'
 }
@@ -1451,6 +1547,7 @@ function rootCauseHypothesis(type: FindingType, lane: ActionLane): string {
   if (type === 'duplicate_food_row') return 'A parse segment or candidate merge path is allowing one intended item to survive as multiple saved plate rows.'
   if (type === 'user_measurement_not_preserved') return 'The parse may know the spoken quantity, but display/save normalization is replacing it with a generic unit surface.'
   if (type === 'source_ref_stale') return 'Historical library evidence is being reused as a live parent identity without verifying the referenced saved meal still exists.'
+  if (type === 'identity_fracture') return 'The same canonical food is represented by saved/favorite wrappers whose names, units, or quantities differ enough to make the app treat one food as several identities.'
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'The fast pantry/library path lacks enough identity, alias, unit, or segmentation knowledge for this phrase.'
   if (type === 'parse_saved_delta_calories') return 'Parsed and saved nutrition diverged; this may be a user correction, a bad match, or a unit conversion issue.'
   if (type === 'parse_saved_delta_food_count') return 'The parse and saved plate disagree about how many foods belong on the plate.'
@@ -1473,6 +1570,7 @@ function likelySurfaces(type: FindingType, lane: ActionLane): string[] {
   if (type === 'duplicate_food_row') return ['parser segmentation', 'candidate merge/dedupe', 'plate normalization', 'parser regression tests']
   if (type === 'user_measurement_not_preserved') return ['native plate display', 'parser unit output', 'unit alternatives', 'save payload']
   if (type === 'source_ref_stale') return ['library search', 'hourly/recent history', 'saved meal refs', 'backend save guard']
+  if (type === 'identity_fracture') return ['favorites lookup', 'saved_meals wrappers', 'canonical source_ref', 'native heart display', 'library ranking']
   if (type === 'source_ref_chained') return ['library search', 'history evidence', 'source_ref emission', 'parser response shaping']
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return ['pantry aliases', 'library shortcut', 'segmented resolver', 'parser guards']
   if (type === 'parse_saved_delta_calories' || type === 'parse_saved_delta_food_count' || type === 'parse_saved_name_changed') return ['parse output', 'candidate selection', 'native edits', 'saved foods_json']
@@ -1488,6 +1586,7 @@ function acceptanceCriteria(type: FindingType): string[] {
   if (type === 'duplicate_food_row') return ['The original phrase produces one row for the intended single food.', 'Total calories/macros no longer include duplicated rows.', 'A regression test fails if the duplicate returns.']
   if (type === 'user_measurement_not_preserved') return ['The visible plate preserves the spoken unit and quantity.', 'The saved row keeps enough unit metadata for Quartermaster to verify it.', 'The user can visually confirm what they said.']
   if (type === 'source_ref_stale') return ['No live parse/candidate/save payload emits the stale source_ref.', 'Historical evidence can still rank results without acting as a live parent.', 'Saving succeeds even if stale refs appear in old logs.']
+  if (type === 'identity_fracture') return ['A product-backed favorite remains hearted across quantity changes.', 'The same source_ref does not accumulate duplicate favorite wrappers for different counts.', 'Library ranking prefers the canonical product/saved-meal identity without quantity-shaped clutter.']
   if (type === 'source_ref_chained') return ['Derived history refs are stripped, downgraded, or mapped before reaching saved plate output.', 'Canonical product/saved meal refs remain intact.', 'Quartermaster no longer reports the chained ref for the replay phrase.']
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return ['The replay phrase resolves without slow fallback where practical.', 'Parse latency improves on the replay phrase.', 'The chosen identity remains nutritionally correct.']
   if (type === 'parse_saved_delta_calories' || type === 'parse_saved_delta_food_count' || type === 'parse_saved_name_changed') return ['The delta is classified as user correction, parser bug, or acceptable ambiguity.', 'Only confirmed bugs become code/data changes.', 'A replay or review artifact documents the decision.']
@@ -1503,6 +1602,7 @@ function regressionTests(type: FindingType, examples: string[]): string[] {
   if (type === 'duplicate_food_row') return [...replay, 'Assert duplicate row count is zero for same name/unit/macros.']
   if (type === 'user_measurement_not_preserved') return [...replay, 'Assert spoken unit appears in displayed/saved food evidence.']
   if (type === 'source_ref_stale' || type === 'source_ref_chained') return [...replay, 'Assert emitted source_ref is live canonical ref or null, not stale/history-derived.']
+  if (type === 'identity_fracture') return [...replay, 'Assert same source_ref keeps one favorite identity across quantity/name variations.']
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return [...replay, 'Assert parser path is deterministic fast path when product coverage exists.']
   if (type === 'save_failed_event') return [...replay, 'Post the original save payload to /api/meals/log and assert success or graceful degradation.']
   if (type === 'unit_missing_or_weak') return [...replay, 'Assert unit alternatives contain Luke-spoken unit.']
@@ -1513,6 +1613,7 @@ function doNotDo(type: FindingType, lane: ActionLane): string {
   if (type === 'duplicate_food_row') return 'Do not hide the problem by changing calories or merging totals after the fact.'
   if (type === 'user_measurement_not_preserved') return 'Do not replace a concrete spoken unit with "serving" unless the app explicitly explains the conversion.'
   if (type === 'source_ref_stale') return 'Do not recreate deleted saved meals just to satisfy old historical refs.'
+  if (type === 'identity_fracture') return 'Do not create separate saved/favorite foods just because the user logged a different quantity.'
   if (type === 'source_ref_chained') return 'Do not treat hourly/recent-history refs as durable canonical IDs.'
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Do not accept repeated daily foods staying on the expensive fallback path.'
   if (type === 'parse_saved_delta_calories' || type === 'parse_saved_delta_food_count' || type === 'parse_saved_name_changed') return 'Do not create aliases or product writes until the delta is understood.'
@@ -1525,6 +1626,7 @@ function expectedMetric(type: FindingType, lane: ActionLane): string {
   if (type === 'duplicate_food_row') return 'duplicate_food_row count decreases; accepted unchanged rate increases for replay phrases'
   if (type === 'user_measurement_not_preserved') return 'user_measurement_not_preserved count decreases; unit preservation rate increases'
   if (type === 'source_ref_stale') return 'source_ref_stale count decreases; save failures from stale refs remain zero'
+  if (type === 'identity_fracture') return 'identity_fracture count decreases; repeated product-backed foods keep stable favorite state'
   if (type === 'source_ref_chained') return 'source_ref_chained count decreases'
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'average parse latency and LLM fallback rate decrease for repeated phrases'
   if (type === 'save_failed_event') return 'save_failed_events decrease; save success rate increases'
@@ -1631,6 +1733,7 @@ function themeKindsForFinding(finding: Finding): ThemeKind[] {
     kinds.push('quantity_display_trust')
   }
   if (finding.type === 'source_ref_stale') kinds.push('stale_library_identity')
+  if (finding.type === 'identity_fracture') kinds.push('identity_fracture')
   if (finding.type === 'duplicate_food_row') kinds.push('duplicate_food_rows')
   if (finding.type === 'parse_slow' || finding.type === 'llm_fallback_expensive') kinds.push('slow_parse_missing_knowledge')
   if (
@@ -1658,6 +1761,8 @@ function themeOwner(kind: ThemeKind): string {
       return 'Native UX / Pantry Forge'
     case 'stale_library_identity':
       return 'Library Identity'
+    case 'identity_fracture':
+      return 'Library Identity / Native UX'
     case 'duplicate_food_rows':
       return 'Parser'
     case 'slow_parse_missing_knowledge':
@@ -1683,6 +1788,8 @@ function themeTitle(kind: ThemeKind): string {
       return 'User Quantity Display Trust Failure'
     case 'stale_library_identity':
       return 'Stale Library Identity Failure'
+    case 'identity_fracture':
+      return 'Favorite Identity Fracture'
     case 'duplicate_food_rows':
       return 'Duplicate Food Row Failure'
     case 'slow_parse_missing_knowledge':
@@ -1708,6 +1815,8 @@ function themeSummary(kind: ThemeKind): string {
       return 'Luke spoke a concrete amount, but the visible plate did not preserve that amount clearly enough for trust.'
     case 'stale_library_identity':
       return 'Historical or deleted library identities are still influencing live candidate or save surfaces.'
+    case 'identity_fracture':
+      return 'The same real food identity is appearing through quantity-shaped or display-shaped wrappers, so favorites and learning memory can drift.'
     case 'duplicate_food_rows':
       return 'One intended food can appear more than once, silently inflating calories and macros.'
     case 'slow_parse_missing_knowledge':
@@ -1733,6 +1842,8 @@ function themeLukeSummary(kind: ThemeKind): string {
       return 'When you say a real amount like grams or scoops, the app needs to show that same amount back to you.'
     case 'stale_library_identity':
       return 'Old deleted saved meals are still sneaking into live behavior.'
+    case 'identity_fracture':
+      return 'The same real food can look like separate foods because quantity, saved-meal wrappers, or display names are splitting the identity.'
     case 'duplicate_food_rows':
       return 'The app can accidentally count one food twice.'
     case 'slow_parse_missing_knowledge':
@@ -1759,6 +1870,7 @@ function themeUrgency(kind: ThemeKind, findings: Finding[]): ThemeUrgency {
     case 'quantity_display_trust':
     case 'duplicate_food_rows':
     case 'stale_library_identity':
+    case 'identity_fracture':
       return hasHigh ? 'fix_now' : 'fix_next'
     case 'slow_parse_missing_knowledge':
     case 'pantry_unit_surface':
@@ -1790,6 +1902,8 @@ function whyThisIsOneTheme(kind: ThemeKind, findings: Finding[]): string {
       return `The shared user-facing failure is that Luke spoke a concrete measurement but the saved/displayed plate did not preserve that measurement.`
     case 'stale_library_identity':
       return `These findings all involve source refs that point to deleted or unavailable library parents.`
+    case 'identity_fracture':
+      return `These findings all involve one canonical source_ref being represented through multiple wrapper shapes, which can split favorite state and learning memory.`
     case 'duplicate_food_rows':
       return `The shared failure is duplicated saved rows for one intended food, which changes totals without an obvious crash.`
     case 'slow_parse_missing_knowledge':
@@ -1815,6 +1929,8 @@ function themeSubthemeHints(kind: ThemeKind): string[] {
       return ['grams and ounces', 'count units', 'scoops and servings', 'native display labels']
     case 'stale_library_identity':
       return ['saved meal refs', 'history surfaces', 'candidate filtering']
+    case 'identity_fracture':
+      return ['favorite source_ref matching', 'quantity-shaped saved meals', 'display-name drift', 'canonical product identity']
     case 'duplicate_food_rows':
       return ['segmentation ownership', 'candidate merge', 'saved plate dedupe']
     case 'slow_parse_missing_knowledge':
@@ -1844,6 +1960,8 @@ function themeNextCheckpoint(kind: ThemeKind, urgency: ThemeUrgency, maturity: T
         return 'reproduce one duplicate-row parse and add a regression guard'
       case 'stale_library_identity':
         return 'identify every live surface still emitting stale saved meal refs'
+      case 'identity_fracture':
+        return 'collapse the strongest fractured food identity around its canonical source_ref'
       default:
         return 'turn this theme into an execution-ready repair packet'
     }
@@ -1865,6 +1983,8 @@ function themeExecutionGoal(kind: ThemeKind): string {
       return 'Preserve Luke-spoken quantities in the visible and saved plate evidence.'
     case 'stale_library_identity':
       return 'Stop deleted or stale saved-meal refs from appearing in live parse, candidate, or save payloads.'
+    case 'identity_fracture':
+      return 'Keep favorite state and learning memory attached to canonical food identity instead of quantity-shaped wrappers.'
     case 'duplicate_food_rows':
       return 'Prevent one spoken food from becoming multiple saved rows.'
     case 'slow_parse_missing_knowledge':
@@ -1905,6 +2025,14 @@ function themeOrderedSteps(kind: ThemeKind, packets: WorkPacket[]): string[] {
         '1. Split this broad theme into unit subthemes before implementing.',
         '2. Rank repeated foods by real usage and friction.',
         '3. Add natural units only for the highest-value repeated foods.',
+        ...packetSteps,
+      ]
+    case 'identity_fracture':
+      return [
+        '1. Pick the highest-use canonical source_ref with multiple saved/favorite shapes.',
+        '2. Decide the canonical home: product identity, saved-meal shortcut, or true recipe.',
+        '3. Make heart display, heart API lookup, and library ranking prefer the canonical source_ref.',
+        '4. Avoid creating saved foods for each quantity; quantity belongs in the measurement layer.',
         ...packetSteps,
       ]
     case 'human_review_delta':
@@ -1954,6 +2082,8 @@ function themeDoctrine(kind: ThemeKind): string {
       return 'User-spoken quantity is display truth unless the system explicitly tells Luke why it cannot preserve it.'
     case 'stale_library_identity':
       return 'Historical deleted identities are evidence, not live parent identities.'
+    case 'identity_fracture':
+      return 'Favorites and learning memory belong to stable food identity; quantity and display wording are measurement/display layers.'
     case 'duplicate_food_rows':
       return 'A single spoken food should not become multiple saved rows unless Luke clearly asked for multiple portions or separate items.'
     case 'slow_parse_missing_knowledge':
@@ -1979,6 +2109,8 @@ function themeDurableFix(kind: ThemeKind): string {
       return 'Preserve the spoken unit in the visible plate and add unit alternatives/conversions only where needed to support that display.'
     case 'stale_library_identity':
       return 'Filter or remap stale lib:saved_meal refs before they reach candidate, parse, or save paths.'
+    case 'identity_fracture':
+      return 'Use canonical source_ref matching for hearts and library memory, then clean or downgrade duplicate saved-meal wrappers that exist only because quantity/display drift created them.'
     case 'duplicate_food_rows':
       return 'Reproduce the segmentation/merge path and add a dedupe or segment ownership guard with regression coverage.'
     case 'slow_parse_missing_knowledge':
@@ -2004,6 +2136,8 @@ function themeAvoid(kind: ThemeKind): string {
       return 'Do not hide concrete grams/ounces/counts behind generic serving labels.'
     case 'stale_library_identity':
       return 'Do not resurrect deleted identities just because historical logs mention them.'
+    case 'identity_fracture':
+      return 'Do not create one favorite or saved-meal identity per serving count, bar count, bottle count, or display-name variant.'
     case 'duplicate_food_rows':
       return 'Do not compensate by changing macros; remove the duplicate cause.'
     case 'slow_parse_missing_knowledge':
@@ -2197,6 +2331,7 @@ async function main() {
   const events = eventResult.rows
 
   const findings: Finding[] = []
+  const savedMealsBySourceRef = buildSavedMealSourceRefIndex(refs.savedMeals)
   const pathCounts: Record<string, number> = {}
   let rowsWithRawInput = 0
   let rowsWithParseFoods = 0
@@ -2219,9 +2354,9 @@ async function main() {
     inspectTelemetry(row, findings)
     inspectTranscript(row, findings)
     compareFoods(row, findings)
-    inspectFoodSources(row, findings, refs.savedMealIds, refs.productIds)
+    inspectFoodSources(row, findings, refs.savedMealIds, refs.productIds, savedMealsBySourceRef)
   }
-  inspectEvents(events, findings, refs.savedMealIds, refs.productIds)
+  inspectEvents(events, findings, refs.savedMealIds, refs.productIds, savedMealsBySourceRef)
 
   const dedupedFindings = dedupeFindings(findings)
   const findingCounts: Record<string, number> = {}
