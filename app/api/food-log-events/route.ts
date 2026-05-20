@@ -15,6 +15,12 @@ const EVENT_TYPES = new Set([
   'save_failed',
   'quick_add_after_parse',
   'retry_after_parse',
+  'barcode_scan_started',
+  'barcode_scan_resolved',
+  'barcode_scan_failed',
+  'barcode_product_selected',
+  'barcode_product_edited',
+  'barcode_log_saved',
 ])
 
 interface FoodLogEventBody {
