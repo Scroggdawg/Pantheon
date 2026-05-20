@@ -67,6 +67,16 @@ interface RejectionRow {
   active: boolean | null
 }
 
+interface ProductIdentityRepairPacket {
+  priority: 'P0' | 'P1' | 'P2' | 'P3'
+  lane: 'data_repair_plan' | 'quartermaster_watch' | 'pantry_forge' | 'parser_contract'
+  title: string
+  plain_english: string
+  evidence: string[]
+  allowed_actions: string[]
+  blocked_actions: string[]
+}
+
 function loadEnvLocal() {
   const envPath = join(__dirname, '..', '.env.local')
   if (!existsSync(envPath)) return
@@ -136,6 +146,160 @@ function hasCompositionShape(name: string | null | undefined): boolean {
 
 function foodSummary(food: FoodLike): string {
   return `${food.name ?? '(unnamed)'}${food.qty ? ` x${food.qty}` : ''}${food.unit ? ` ${food.unit}` : ''}${food.source_ref ? ` [${food.source_ref}]` : ''}`
+}
+
+function packetScore(packet: ProductIdentityRepairPacket): number {
+  const priorityScore = packet.priority === 'P0' ? 400 : packet.priority === 'P1' ? 300 : packet.priority === 'P2' ? 200 : 100
+  return priorityScore + packet.evidence.length
+}
+
+function buildRepairPackets(args: {
+  hourlyRefsInsideMeals: Array<{ meal: SavedMealRow; ref: string }>
+  sourceRefMissingMeals: SavedMealRow[]
+  compositionProducts: ProductRow[]
+  productBackedFavoriteWrappers: SavedMealRow[]
+  duplicateProductWrappers: Array<[string, number]>
+  barcodeProducts: ProductRow[]
+  productsWithUnits: ProductRow[]
+  products: ProductRow[]
+}): ProductIdentityRepairPacket[] {
+  const packets: ProductIdentityRepairPacket[] = []
+
+  if (args.hourlyRefsInsideMeals.length > 0) {
+    packets.push({
+      priority: 'P1',
+      lane: 'data_repair_plan',
+      title: 'Plan cleanup for hourly wrapper refs inside saved meals',
+      plain_english: 'Some saved-meal components still point at recall/history wrappers instead of durable product or saved-meal identities.',
+      evidence: firstRows(args.hourlyRefsInsideMeals, 8).map((item) => `${item.meal.name ?? '(unnamed saved meal)'} -> ${item.ref}`),
+      allowed_actions: [
+        'write a dry-run repair plan that maps each wrapper to a live product/saved-meal ref or null',
+        'verify parser output already strips hourly wrappers before any data cleanup',
+        'route any production data mutation through integration approval',
+      ],
+      blocked_actions: [
+        'do not mutate saved_meals from this audit script',
+        'do not recreate hourly_go_to refs as durable identities',
+        'do not delete historical rows to hide the symptom',
+      ],
+    })
+  }
+
+  if (args.sourceRefMissingMeals.length > 0) {
+    packets.push({
+      priority: 'P2',
+      lane: 'quartermaster_watch',
+      title: 'Review saved-meal components with missing source refs',
+      plain_english: 'A few saved meals are usable, but their components lack canonical refs, so hearts and future learning have weaker identity evidence.',
+      evidence: firstRows(args.sourceRefMissingMeals, 8).map((meal) => {
+        const foods = asArray(meal.foods_json).map((food) => foodSummary(food as FoodLike)).join('; ')
+        return `${meal.name ?? '(unnamed saved meal)'} -> ${foods}`
+      }),
+      allowed_actions: [
+        'classify each missing ref as product candidate, saved-meal shortcut, recipe component, or leave-as-manual',
+        'add regression/watch evidence before making any durable alias',
+        'prefer reviewed product identities when an exact product exists',
+      ],
+      blocked_actions: [
+        'do not invent product refs from name similarity alone',
+        'do not treat missing refs as parse failures unless live logs still emit them',
+      ],
+    })
+  }
+
+  if (args.compositionProducts.length > 0) {
+    packets.push({
+      priority: 'P2',
+      lane: 'parser_contract',
+      title: 'Keep composition-shaped products from becoming alias sprawl',
+      plain_english: 'Protein shake shortcut products exist today, but future custom quantities should move toward component math instead of many opaque saved items.',
+      evidence: firstRows(args.compositionProducts, 8).map((product) => `${product.name} -> lib:product:${product.id}`),
+      allowed_actions: [
+        'keep deterministic composition shortcuts for common phrases',
+        'prefer ingredient rows when Luke specifies custom protein or dextrose quantities',
+        'later migrate friendly display into a recipe/composite layer when available',
+      ],
+      blocked_actions: [
+        'do not add saved meals for every scoop/dextrose combination',
+        'do not create broad aliases that hide dextrose quantity differences',
+      ],
+    })
+  }
+
+  if (args.duplicateProductWrappers.length > 0) {
+    packets.push({
+      priority: 'P1',
+      lane: 'data_repair_plan',
+      title: 'Collapse duplicate product-backed favorite wrappers',
+      plain_english: 'Multiple saved-meal wrappers pointing at the same product can make hearts appear to turn off when quantity changes.',
+      evidence: firstRows(args.duplicateProductWrappers, 8).map(([ref, count]) => `${ref} has ${count} wrappers`),
+      allowed_actions: [
+        'choose one canonical wrapper per product only if a wrapper is still needed',
+        'preserve the underlying product source_ref through quantity edits',
+        'test heart display after quantity changes',
+      ],
+      blocked_actions: [
+        'do not create quantity-specific favorites',
+        'do not delete user-facing favorites without explicit approval',
+      ],
+    })
+  } else if (args.productBackedFavoriteWrappers.length > 0) {
+    packets.push({
+      priority: 'P3',
+      lane: 'quartermaster_watch',
+      title: 'Watch product-backed favorite wrappers for heart stability',
+      plain_english: 'Current product-backed favorites do not show duplicate wrapper refs, so this is a watch item rather than an immediate repair.',
+      evidence: firstRows(args.productBackedFavoriteWrappers, 6).map((meal) => {
+        const food = asArray(meal.foods_json)[0] as FoodLike | undefined
+        return `${meal.name ?? '(unnamed saved meal)'} -> ${food?.source_ref ?? '(missing ref)'}`
+      }),
+      allowed_actions: [
+        'use real edit/save telemetry to confirm hearts survive quantity changes',
+        'keep product source_ref visible in saved evidence',
+      ],
+      blocked_actions: [
+        'do not change favorite storage based on this watch signal alone',
+      ],
+    })
+  }
+
+  const unitCoverage = args.products.length > 0 ? args.productsWithUnits.length / args.products.length : 0
+  if (unitCoverage < 0.98) {
+    packets.push({
+      priority: unitCoverage < 0.9 ? 'P2' : 'P3',
+      lane: 'pantry_forge',
+      title: 'Improve product unit alternative coverage',
+      plain_english: 'Most products have unit alternatives, but remaining gaps can weaken serving, count, gram, ounce, bar, carton, and scoop handling.',
+      evidence: [`${args.productsWithUnits.length}/${args.products.length} products have unit alternatives (${Math.round(unitCoverage * 100)}%).`],
+      allowed_actions: [
+        'feed missing unit products into Pantry Forge review',
+        'prefer label or USDA/OFF serving facts over LLM-estimated conversions',
+      ],
+      blocked_actions: [
+        'do not guess branded product serving conversions without evidence',
+      ],
+    })
+  }
+
+  if (args.barcodeProducts.length > 0) {
+    packets.push({
+      priority: 'P3',
+      lane: 'quartermaster_watch',
+      title: 'Measure barcode product quality through edits',
+      plain_english: 'Barcode coverage exists; the next learning signal is whether scanned products save cleanly or get edited before save.',
+      evidence: [`${args.barcodeProducts.length} products currently have barcodes.`],
+      allowed_actions: [
+        'join barcode scan events to later saves and edits',
+        'promote OFF/USDA hits only after review or repeated clean saves',
+      ],
+      blocked_actions: [
+        'do not auto-create one saved meal per barcode',
+        'do not treat one clean scan as proof that all units are correct',
+      ],
+    })
+  }
+
+  return packets.sort((a, b) => packetScore(b) - packetScore(a))
 }
 
 async function main() {
@@ -234,6 +398,17 @@ async function main() {
   if (duplicateProductWrappers.length > 0) healthWarnings.push(`${duplicateProductWrappers.length} product source refs have multiple saved-meal wrappers.`)
   if (healthWarnings.length === 0) healthWarnings.push('No high-level identity health warnings found.')
 
+  const repairPackets = buildRepairPackets({
+    hourlyRefsInsideMeals,
+    sourceRefMissingMeals,
+    compositionProducts,
+    productBackedFavoriteWrappers,
+    duplicateProductWrappers,
+    barcodeProducts,
+    productsWithUnits,
+    products,
+  })
+
   const report: string[] = []
   report.push('Product Identity Model Audit')
   report.push('')
@@ -310,6 +485,17 @@ async function main() {
   }
   if (sourceRefMissingMeals.length === 0) report.push('- (none)')
   report.push('')
+  report.push('Prioritized Product Identity Repair Plan')
+  for (const [index, packet] of repairPackets.entries()) {
+    report.push(`${index + 1}. [${packet.priority}] ${packet.title}`)
+    report.push(`   - lane: ${packet.lane}`)
+    report.push(`   - plain_english: ${packet.plain_english}`)
+    report.push(`   - evidence: ${packet.evidence.slice(0, 3).join(' | ') || '(none)'}`)
+    report.push(`   - allowed: ${packet.allowed_actions[0]}`)
+    report.push(`   - blocked: ${packet.blocked_actions[0]}`)
+  }
+  if (repairPackets.length === 0) report.push('- (none)')
+  report.push('')
   report.push('Next Repair Hints')
   report.push('- If a barcode product is edited repeatedly, promote or repair its product facts rather than creating saved-meal variants.')
   report.push('- If a saved meal wraps a single product only for favoriting, preserve the product source_ref so hearts survive quantity changes.')
@@ -335,6 +521,7 @@ async function main() {
     stale_product_refs: staleProductRefs.length,
     stale_saved_meal_refs: staleSavedMealRefs.length,
     hourly_refs_inside_saved_meals: hourlyRefsInsideMeals.length,
+    repair_packets: repairPackets,
   }
   if (process.argv.includes('--json')) console.log(JSON.stringify(json, null, 2))
 }
