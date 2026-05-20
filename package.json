@@ -11,6 +11,7 @@
     "backup": "npx tsx scripts/backup.ts",
     "replay": "npx tsx scripts/replay-parse.ts",
     "test:parse-regressions": "npx tsx scripts/test-parse-meal-regressions.ts",
+    "product-identity:audit": "npx tsx scripts/report-product-identity-model.ts",
     "quartermaster": "npx tsx scripts/quartermaster-audit.ts"
   },
   "dependencies": {
