@@ -366,17 +366,24 @@ Next move: implement Quartermaster Themes v1.
 At the end of every substantial Quartermaster generation, Codex should include one final line using this exact shape:
 
 ```text
-Quartermaster Track: Leg X - <leg name> | Grade: <grade> | Next: <next checkpoint>
+Quartermaster Track: Leg X - <leg name> | Grade: <grade> | Plain English: <what just changed> | Next: <next checkpoint>
 ```
 
 Examples:
 
 ```text
-Quartermaster Track: Leg 2 - Group Symptoms Into Themes | Grade: D -> C- | Next: create theme-level packets from real app evidence
+Quartermaster Track: Leg 2 - Group Symptoms Into Themes | Grade: D -> C- | Plain English: Quartermaster learned to group separate problems into bigger lessons. | Next: make those themes easier to judge.
 ```
 
 ```text
-Quartermaster Track: Leg 5 - Generate Repair Packets | Grade: C- | Next: add root cause, test plan, and do-not-do guidance to packets
+Quartermaster Track: Leg 5 - Generate Repair Packets | Grade: C -> C+ | Plain English: Quartermaster can now turn the biggest lesson into a concrete fix plan. | Next: add cycle memory before executing the protein shake plan.
+```
+
+Plain English should avoid internal shorthand. For example:
+
+```text
+Bad: connected themes to strongest repair packets.
+Good: Quartermaster can now pick the most important problem and show the exact fixes attached to it.
 ```
 
 ## Grade Key
@@ -405,4 +412,4 @@ YELLOW: Legs 0, 1, 3, 5, 7, 9, 10
 RED:    Legs 2, 4, 6, 8, 11, 12
 ```
 
-Quartermaster Track: Leg 2 - Group Symptoms Into Themes | Grade: D | Next: implement Quartermaster Themes v1
+Quartermaster Track: Leg 5 - Generate Repair Packets | Grade: C+ | Plain English: Quartermaster can now pick the most important problem and show the exact fixes attached to it. | Next: add cycle memory before executing the protein shake plan
