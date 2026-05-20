@@ -11,9 +11,11 @@
 //                      direct ID lookup against that uuid (handles re-
 //                      logged saved_meals where the food's source_ref
 //                      points back at its origin).
-//              Path B: name + foods_json[0].source_ref + jsonb_array_
-//                      length=1 match (handles never-favorited foods,
-//                      including legacy null-source entries).
+//              Path B: canonical foods_json[0].source_ref + jsonb_array_
+//                      length=1 match. This keeps product-backed hearts
+//                      stable across quantities and display-name drift.
+//              Path C: name + foods_json[0].source_ref + jsonb_array_
+//                      length=1 match for legacy/null-source entries.
 //            If found: idempotent UPDATE is_favorite=true on that
 //                      saved_meal.
 //            If not: INSERT new single-food saved_meal from foods_json
@@ -83,7 +85,25 @@ async function findSavedMealForFood(
     if (data) return data.id
   }
 
-  // Path B — name + foods_json[0].source_ref + single-food match.
+  // Path B — canonical source_ref + single-food match. Product-backed
+  // favorites should survive quantity changes ("1 bar" vs "2 bars") and
+  // harmless name drift ("Bar" vs "Bars").
+  if (ref) {
+    const { data: refCandidates } = await supabase
+      .from('saved_meals')
+      .select('id, foods_json')
+      .eq('user_id', userId)
+      .limit(500)
+
+    for (const row of refCandidates ?? []) {
+      const foodsJson = row.foods_json as FoodItem[] | null
+      if (!Array.isArray(foodsJson) || foodsJson.length !== 1) continue
+      const candidateRef = foodsJson[0]?.source_ref ?? ''
+      if (candidateRef === ref) return row.id
+    }
+  }
+
+  // Path C — name + foods_json[0].source_ref + single-food match.
   // ilike on name is case-insensitive. Trim handles whitespace. Then
   // filter in JS for the source_ref + array-length constraints (mixing
   // SQL column filters with JSONB-deep filters in supabase-js is awkward;
