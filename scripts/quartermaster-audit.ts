@@ -53,6 +53,8 @@ type FindingType =
   | 'parse_failed_event'
   | 'parse_abandoned_event'
   | 'edit_event'
+  | 'barcode_scan_failed_event'
+  | 'barcode_scan_edited'
   | 'orphan_save_event'
   | 'telemetry_gap'
 
@@ -655,6 +657,7 @@ function unitPreservesMeasurement(unit: string | undefined, measurement: Transcr
 function findingScore(type: FindingType, severity: Severity, lane: ActionLane): number {
   let score = severityRank(severity) * 20
   if (type === 'save_failed_event') score += 35
+  if (type === 'barcode_scan_failed_event' || type === 'barcode_scan_edited') score += 18
   if (type === 'source_ref_stale' || type === 'user_measurement_not_preserved' || type === 'identity_fracture') score += 25
   if (type === 'duplicate_food_row') score += 30
   if (type === 'parse_failed_event' || type === 'parse_abandoned_event') score += 20
@@ -1141,6 +1144,54 @@ function inspectEvents(
         summary: 'Native reported a parse or plate was abandoned.',
         evidence: { event },
       })
+    } else if (event.event_type === 'barcode_scan_failed') {
+      const payload = event.payload ?? {}
+      const source = typeof payload.source === 'string' ? payload.source : 'unknown'
+      const error = typeof payload.error === 'string' ? payload.error : null
+      const notFound = source === 'not_found'
+      pushFinding(findings, row, {
+        type: 'barcode_scan_failed_event',
+        severity: notFound ? 'medium' : 'high',
+        action_lane: notFound ? 'pantry_product_add' : 'native_ui_or_telemetry',
+        summary: notFound
+          ? 'Native reported a barcode lookup miss.'
+          : 'Native reported a barcode scan failure or fallback.',
+        evidence: {
+          event_id: event.id,
+          session_id: event.session_id,
+          barcode: payload.barcode ?? null,
+          source,
+          error,
+          lookup_ms: payload.lookup_ms ?? null,
+          candidate_count: payload.candidate_count ?? null,
+          likely_meaning: notFound
+            ? 'This may be a real product Pantheon should learn through a reviewed product promotion path.'
+            : 'The scanner or lookup path had friction before a barcode-backed plate could be saved.',
+        },
+      })
+    } else if (event.event_type === 'barcode_product_edited') {
+      const payload = event.payload ?? {}
+      pushFinding(findings, row, {
+        type: 'barcode_scan_edited',
+        severity: 'medium',
+        action_lane: 'product_unit_add',
+        summary: 'Native reported that Luke edited a barcode-backed product before save.',
+        evidence: {
+          event_id: event.id,
+          session_id: event.session_id,
+          barcode: payload.barcode ?? null,
+          source: payload.source ?? null,
+          source_ref: payload.source_ref ?? null,
+          selected_name: payload.selected_name ?? null,
+          displayed_qty: payload.displayed_qty ?? null,
+          displayed_unit: payload.displayed_unit ?? null,
+          final_qty: payload.final_qty ?? null,
+          final_unit: payload.final_unit ?? null,
+          beforeFood: payload.beforeFood ?? null,
+          afterFood: payload.afterFood ?? null,
+          likely_meaning: 'A scan succeeded, but the displayed product, unit, or quantity needed human correction.',
+        },
+      })
     } else if (
       event.event_type === 'food_item_edited' ||
       event.event_type === 'food_item_deleted' ||
@@ -1493,6 +1544,9 @@ function eventOutcome(events: FoodLogEventRow[], relatedFindings: Finding[]): Ou
   if (types.has('parse_failed')) return 'coverage_failure'
   if (types.has('food_item_deleted')) return 'confidently_wrong'
   if (types.has('disambiguation_selected')) return 'identity_failure'
+  if (types.has('barcode_log_saved') && types.has('barcode_product_edited')) return 'edited_success'
+  if (types.has('barcode_log_saved')) return 'clean_success'
+  if (types.has('barcode_scan_failed')) return 'coverage_failure'
   if (types.has('food_item_edited') || types.has('food_item_added')) return 'edited_success'
   if (types.has('parse_abandoned')) return 'ambiguous_review'
   if (findingTypes.has('orphan_save_event')) return 'ambiguous_review'
@@ -1628,6 +1682,10 @@ function packetTitle(lane: ActionLane, type: FindingType, transcript: string | n
       return `Investigate unit or portion correction${phrase}`
     case 'joke_or_non_food':
       return `Classify non-log intent${phrase}`
+    case 'barcode_scan_failed_event':
+      return `Review barcode scan failure${phrase}`
+    case 'barcode_scan_edited':
+      return `Review barcode product edit${phrase}`
     case 'orphan_save_event':
       return `Review deleted or QA save event${phrase}`
     default:
@@ -1644,6 +1702,8 @@ function recommendedAction(type: FindingType, lane: ActionLane): string {
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Add pantry identity, alias, or parser guard so this phrase resolves before the LLM fallback.'
   if (type === 'parse_saved_name_changed') return 'Treat the saved name as a correction signal; consider alias/rejection proposals after confirming intent.'
   if (type === 'parse_saved_unit_changed' || type === 'parse_saved_quantity_changed') return 'Compare parsed versus saved quantity and add missing unit conversion or UI preservation rule.'
+  if (type === 'barcode_scan_failed_event') return 'Classify whether the scan missed because of camera/lookup failure or because the product needs reviewed barcode coverage.'
+  if (type === 'barcode_scan_edited') return 'Compare the scanned product display to the saved correction and improve product facts, units, or barcode identity.'
   if (lane === 'pantry_product_add') return 'Create a reviewed product candidate with source, macros, aliases, and unit alternatives.'
   if (lane === 'alias_add') return 'Create a narrow alias proposal only if the target identity is unambiguous.'
   if (lane === 'rejection_add') return 'Create a negative match rule so this phrase stops resolving to the wrong identity.'
@@ -1657,6 +1717,8 @@ function whyItMatters(type: FindingType): string {
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return 'Slow parses are usually missing pantry or matcher knowledge.'
   if (type === 'source_ref_stale') return 'Stale identities can resurrect deleted meals or trip database constraints.'
   if (type === 'identity_fracture') return 'Favorite state and learning memory should attach to the food identity, not to one logged quantity or saved-meal wrapper.'
+  if (type === 'barcode_scan_failed_event') return 'Barcode scanning should save time; misses and fallbacks show where product coverage or scanner reliability is still weak.'
+  if (type === 'barcode_scan_edited') return 'A corrected scan is high-quality feedback about product units, quantities, or identity.'
   if (type === 'parse_abandoned_event') return 'Abandonment is often the clearest sign that the result was not worth saving.'
   return 'This is real user-behavior evidence, not theoretical parser hygiene.'
 }
@@ -1672,6 +1734,8 @@ function rootCauseHypothesis(type: FindingType, lane: ActionLane): string {
   if (type === 'parse_saved_name_changed') return 'The selected/saved identity differs from the parsed identity, which may indicate correction or alias mismatch.'
   if (type === 'parse_saved_unit_changed' || type === 'parse_saved_quantity_changed') return 'The portion representation changed between parse and save, likely through unit normalization or edit flow.'
   if (type === 'save_failed_event') return 'The native save payload or backend insert path rejected a value that should degrade gracefully.'
+  if (type === 'barcode_scan_failed_event') return 'The barcode lookup did not produce a confident product-backed plate, or camera permissions blocked the scan.'
+  if (type === 'barcode_scan_edited') return 'The barcode lookup found a product, but the selected quantity, unit, or identity still needed user correction.'
   if (type === 'parse_failed_event') return 'The parser failed before producing a usable plate.'
   if (type === 'parse_abandoned_event') return 'The user left the flow before save; the result may have been confusing, wrong, too slow, or interrupted.'
   if (type === 'edit_event') return 'The user took a corrective action that Quartermaster should preserve as intent evidence.'
@@ -1696,6 +1760,8 @@ function likelySurfaces(type: FindingType, lane: ActionLane): string[] {
   if (type === 'save_failed_event') return ['native save payload', '/api/meals/log', 'food_log_entries insert', 'backend validation']
   if (type === 'parse_failed_event') return ['parse route', 'transcription payload', 'fallback parser', 'error telemetry']
   if (type === 'parse_abandoned_event' || type === 'edit_event') return ['native telemetry', 'edit/delete actions', 'session join', 'Quartermaster event grouping']
+  if (type === 'barcode_scan_failed_event') return ['barcode lookup endpoint', 'native scanner telemetry', 'product barcode coverage', 'camera permissions']
+  if (type === 'barcode_scan_edited') return ['product units', 'barcode product identity', 'native edit flow', 'Quartermaster scan quality']
   if (lane === 'pantry_product_add') return ['products table', 'pantry aliases', 'unit alternatives', 'Pantry Forge']
   return [ownerForLane(lane)]
 }
@@ -1711,6 +1777,8 @@ function acceptanceCriteria(type: FindingType): string[] {
   if (type === 'parse_saved_unit_changed' || type === 'parse_saved_quantity_changed') return ['The intended portion survives parse, display, and save.', 'Unit conversion math is checked against the product facts.', 'Quartermaster no longer flags the same replay phrase.']
   if (type === 'save_failed_event') return ['The exact failing payload saves or degrades gracefully.', 'Backend returns a useful warning instead of blocking the log when possible.', 'A regression test covers the failure class.']
   if (type === 'parse_failed_event') return ['The phrase returns a usable plate or a clear non-food/error classification.', 'The parser records enough telemetry to diagnose any future failure.']
+  if (type === 'barcode_scan_failed_event') return ['Scanner failures are classified as camera, lookup, missing product, or fallback parse.', 'Real missing products become reviewed product candidates instead of saved-meal clutter.', 'Telemetry failures never block logging.']
+  if (type === 'barcode_scan_edited') return ['The same barcode replays with the corrected unit and quantity.', 'The barcode remains tied to one product identity.', 'Quartermaster can tell whether future scans save cleanly without edits.']
   if (type === 'unit_missing_or_weak') return ['The food has natural units Luke uses.', 'Unit alternatives include conversions needed for the phrase.', 'The pantry item remains reviewed and non-estimated where possible.']
   return ['The replay evidence no longer produces this finding.', 'The fix is covered by the smallest relevant regression check.']
 }
@@ -1723,6 +1791,8 @@ function regressionTests(type: FindingType, examples: string[]): string[] {
   if (type === 'identity_fracture') return [...replay, 'Assert same source_ref keeps one favorite identity across quantity/name variations.']
   if (type === 'parse_slow' || type === 'llm_fallback_expensive') return [...replay, 'Assert parser path is deterministic fast path when product coverage exists.']
   if (type === 'save_failed_event') return [...replay, 'Post the original save payload to /api/meals/log and assert success or graceful degradation.']
+  if (type === 'barcode_scan_failed_event') return [...replay, 'Replay the barcode lookup and assert the scanner records miss/fallback evidence without blocking logging.']
+  if (type === 'barcode_scan_edited') return [...replay, 'Replay the barcode-backed product and assert corrected unit/quantity survives display and save.']
   if (type === 'unit_missing_or_weak') return [...replay, 'Assert unit alternatives contain Luke-spoken unit.']
   return replay.length > 0 ? replay : ['Add a regression around the strongest example transcript.']
 }
@@ -1863,6 +1933,8 @@ function themeKindsForFinding(finding: Finding): ThemeKind[] {
     kinds.push('pantry_unit_surface')
   }
   if (finding.type === 'save_failed_event' || finding.type === 'parse_failed_event') kinds.push('save_path_reliability')
+  if (finding.type === 'barcode_scan_failed_event') kinds.push('pantry_unit_surface', 'telemetry_observability')
+  if (finding.type === 'barcode_scan_edited') kinds.push('pantry_unit_surface', 'human_review_delta')
   if (finding.type === 'telemetry_gap' || finding.type === 'parse_abandoned_event' || finding.type === 'edit_event') {
     kinds.push('telemetry_observability')
   }
