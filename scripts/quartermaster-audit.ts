@@ -186,6 +186,7 @@ interface InteractionOutcome {
 
 interface WorkPacket {
   id: string
+  stable_key: string
   priority: Priority
   score: number
   confidence: Confidence
@@ -217,6 +218,7 @@ interface ThemeExecutionPlan {
 
 interface LearningTheme {
   id: string
+  stable_key: string
   kind: ThemeKind
   title: string
   priority: Priority
@@ -245,13 +247,34 @@ interface LearningTheme {
 }
 
 interface CycleState {
-  version: 1
+  version: 2
   last_successful_run_at: string
   last_run_id: string
   last_rows_read: number
   last_events_read: number
   last_findings: number
+  last_learning_themes: number
+  last_work_packets: number
+  last_theme_keys: string[]
+  last_packet_keys: string[]
+  last_finding_keys: string[]
   updated_at: string
+}
+
+interface CycleMemory {
+  available: boolean
+  previous_run_at: string | null
+  previous_run_id: string | null
+  theme_new: string[]
+  theme_repeated: string[]
+  theme_resolved: string[]
+  packet_new: string[]
+  packet_repeated: string[]
+  packet_resolved: string[]
+  finding_new_count: number
+  finding_repeated_count: number
+  finding_resolved_count: number
+  plain_english: string
 }
 
 interface AuditReport {
@@ -272,6 +295,7 @@ interface AuditReport {
   outcome_counts: Record<string, number>
   finding_counts: Record<string, number>
   action_counts: Record<string, number>
+  cycle_memory: CycleMemory
   learning_themes: LearningTheme[]
   work_packets: WorkPacket[]
   interaction_outcomes: InteractionOutcome[]
@@ -362,15 +386,20 @@ function defaultStateFile(args: Args): string {
 function readCycleState(stateFile: string): CycleState | null {
   if (!existsSync(stateFile)) return null
   try {
-    const parsed = JSON.parse(readFileSync(stateFile, 'utf8')) as Partial<CycleState>
-    if (parsed.version !== 1 || typeof parsed.last_successful_run_at !== 'string') return null
+    const parsed = JSON.parse(readFileSync(stateFile, 'utf8')) as Partial<Omit<CycleState, 'version'>> & { version?: number }
+    if ((parsed.version !== 1 && parsed.version !== 2) || typeof parsed.last_successful_run_at !== 'string') return null
     return {
-      version: 1,
+      version: 2,
       last_successful_run_at: parsed.last_successful_run_at,
       last_run_id: typeof parsed.last_run_id === 'string' ? parsed.last_run_id : 'unknown',
       last_rows_read: typeof parsed.last_rows_read === 'number' ? parsed.last_rows_read : 0,
       last_events_read: typeof parsed.last_events_read === 'number' ? parsed.last_events_read : 0,
       last_findings: typeof parsed.last_findings === 'number' ? parsed.last_findings : 0,
+      last_learning_themes: typeof parsed.last_learning_themes === 'number' ? parsed.last_learning_themes : 0,
+      last_work_packets: typeof parsed.last_work_packets === 'number' ? parsed.last_work_packets : 0,
+      last_theme_keys: Array.isArray(parsed.last_theme_keys) ? parsed.last_theme_keys.filter((value): value is string => typeof value === 'string') : [],
+      last_packet_keys: Array.isArray(parsed.last_packet_keys) ? parsed.last_packet_keys.filter((value): value is string => typeof value === 'string') : [],
+      last_finding_keys: Array.isArray(parsed.last_finding_keys) ? parsed.last_finding_keys.filter((value): value is string => typeof value === 'string') : [],
       updated_at: typeof parsed.updated_at === 'string' ? parsed.updated_at : parsed.last_successful_run_at,
     }
   } catch {
@@ -984,6 +1013,34 @@ function renderMarkdown(report: AuditReport) {
   lines.push(`- state_file: ${report.cycle.state_file ?? '(none)'}`)
   lines.push(`- state_written: ${report.cycle.state_written ? 'yes' : 'no'}`)
   lines.push('')
+  lines.push('## Cycle Memory')
+  lines.push('')
+  lines.push(`- available: ${report.cycle_memory.available ? 'yes' : 'no'}`)
+  lines.push(`- previous_run_at: ${report.cycle_memory.previous_run_at ?? '(none)'}`)
+  lines.push(`- previous_run_id: ${report.cycle_memory.previous_run_id ?? '(none)'}`)
+  lines.push(`- plain_english: ${report.cycle_memory.plain_english}`)
+  lines.push(`- finding_new_count: ${report.cycle_memory.finding_new_count}`)
+  lines.push(`- finding_repeated_count: ${report.cycle_memory.finding_repeated_count}`)
+  lines.push(`- finding_resolved_count: ${report.cycle_memory.finding_resolved_count}`)
+  lines.push('- new_themes:')
+  for (const theme of report.cycle_memory.theme_new.slice(0, 10)) lines.push(`  - ${theme}`)
+  if (report.cycle_memory.theme_new.length === 0) lines.push('  - (none)')
+  lines.push('- repeated_themes:')
+  for (const theme of report.cycle_memory.theme_repeated.slice(0, 10)) lines.push(`  - ${theme}`)
+  if (report.cycle_memory.theme_repeated.length === 0) lines.push('  - (none)')
+  lines.push('- resolved_themes:')
+  for (const theme of report.cycle_memory.theme_resolved.slice(0, 10)) lines.push(`  - ${theme}`)
+  if (report.cycle_memory.theme_resolved.length === 0) lines.push('  - (none)')
+  lines.push('- new_packets:')
+  for (const packet of report.cycle_memory.packet_new.slice(0, 10)) lines.push(`  - ${packet}`)
+  if (report.cycle_memory.packet_new.length === 0) lines.push('  - (none)')
+  lines.push('- repeated_packets:')
+  for (const packet of report.cycle_memory.packet_repeated.slice(0, 10)) lines.push(`  - ${packet}`)
+  if (report.cycle_memory.packet_repeated.length === 0) lines.push('  - (none)')
+  lines.push('- resolved_packets:')
+  for (const packet of report.cycle_memory.packet_resolved.slice(0, 10)) lines.push(`  - ${packet}`)
+  if (report.cycle_memory.packet_resolved.length === 0) lines.push('  - (none)')
+  lines.push('')
   lines.push('## Summary')
   lines.push('')
   for (const [key, value] of Object.entries(report.summary)) lines.push(`- ${key}: ${value}`)
@@ -1489,6 +1546,14 @@ function packetClusterKey(finding: Finding): string {
   ].join('|')
 }
 
+function findingStableKey(finding: Finding): string {
+  return [
+    finding.action_lane,
+    finding.type,
+    packetClusterKey(finding),
+  ].join('|')
+}
+
 function buildWorkPackets(findings: Finding[]): WorkPacket[] {
   const groups = new Map<string, Finding[]>()
   for (const finding of findings) {
@@ -1500,7 +1565,7 @@ function buildWorkPackets(findings: Finding[]): WorkPacket[] {
   }
 
   const packets: WorkPacket[] = []
-  for (const group of groups.values()) {
+  for (const [stableKey, group] of groups) {
     const sorted = [...group].sort((a, b) => b.score - a.score)
     const lead = sorted[0]
     const severity = highestSeverity(sorted)
@@ -1511,6 +1576,7 @@ function buildWorkPackets(findings: Finding[]): WorkPacket[] {
     ].slice(0, 3)
     packets.push({
       id: randomUUID(),
+      stable_key: stableKey,
       priority: packetPriority(score),
       score,
       confidence,
@@ -1981,6 +2047,7 @@ function buildLearningThemes(findings: Finding[], packets: WorkPacket[]): Learni
     const maturity = themeMaturity(kind, sorted)
     themes.push({
       id: randomUUID(),
+      stable_key: kind,
       kind,
       title: themeTitle(kind),
       priority: packetPriority(score),
@@ -2012,6 +2079,104 @@ function buildLearningThemes(findings: Finding[], packets: WorkPacket[]): Learni
   }
 
   return themes.sort((a, b) => themeSortScore(b) - themeSortScore(a) || b.score - a.score || a.title.localeCompare(b.title))
+}
+
+function setDiff(current: string[], prior: string[]): string[] {
+  const priorSet = new Set(prior)
+  return current.filter((key) => !priorSet.has(key))
+}
+
+function setIntersection(current: string[], prior: string[]): string[] {
+  const priorSet = new Set(prior)
+  return current.filter((key) => priorSet.has(key))
+}
+
+function themeLabelMap(themes: LearningTheme[]): Map<string, string> {
+  return new Map(themes.map((theme) => [theme.stable_key, theme.title]))
+}
+
+function packetLabelMap(packets: WorkPacket[]): Map<string, string> {
+  return new Map(packets.map((packet) => [packet.stable_key, packet.title]))
+}
+
+function labelsForKeys(keys: string[], labels: Map<string, string>): string[] {
+  return keys.map((key) => labels.get(key) ?? key)
+}
+
+function buildCycleMemory(
+  priorState: CycleState | null,
+  themes: LearningTheme[],
+  packets: WorkPacket[],
+  findings: Finding[],
+  activityCount: number,
+): CycleMemory {
+  const themeKeys = themes.map((theme) => theme.stable_key)
+  const packetKeys = packets.map((packet) => packet.stable_key)
+  const findingKeys = findings.map(findingStableKey)
+  const currentThemeLabels = themeLabelMap(themes)
+  const currentPacketLabels = packetLabelMap(packets)
+
+  if (!priorState || (priorState.last_theme_keys.length === 0 && priorState.last_packet_keys.length === 0 && priorState.last_finding_keys.length === 0)) {
+    return {
+      available: false,
+      previous_run_at: priorState?.last_successful_run_at ?? null,
+      previous_run_id: priorState?.last_run_id ?? null,
+      theme_new: labelsForKeys(themeKeys, currentThemeLabels),
+      theme_repeated: [],
+      theme_resolved: [],
+      packet_new: labelsForKeys(packetKeys.slice(0, 20), currentPacketLabels),
+      packet_repeated: [],
+      packet_resolved: [],
+      finding_new_count: findingKeys.length,
+      finding_repeated_count: 0,
+      finding_resolved_count: 0,
+      plain_english: 'This run has no prior cycle fingerprint to compare against, so Quartermaster can describe the current state but cannot yet say what changed.',
+    }
+  }
+
+  if (activityCount === 0) {
+    return {
+      available: true,
+      previous_run_at: priorState.last_successful_run_at,
+      previous_run_id: priorState.last_run_id,
+      theme_new: [],
+      theme_repeated: [],
+      theme_resolved: [],
+      packet_new: [],
+      packet_repeated: [],
+      packet_resolved: [],
+      finding_new_count: 0,
+      finding_repeated_count: 0,
+      finding_resolved_count: 0,
+      plain_english: 'No new logs or telemetry events were found since the last cycle, so Quartermaster has nothing new to grade yet.',
+    }
+  }
+
+  const themeNewKeys = setDiff(themeKeys, priorState.last_theme_keys)
+  const themeRepeatedKeys = setIntersection(themeKeys, priorState.last_theme_keys)
+  const themeResolvedKeys = setDiff(priorState.last_theme_keys, themeKeys)
+  const packetNewKeys = setDiff(packetKeys, priorState.last_packet_keys)
+  const packetRepeatedKeys = setIntersection(packetKeys, priorState.last_packet_keys)
+  const packetResolvedKeys = setDiff(priorState.last_packet_keys, packetKeys)
+  const findingNewCount = setDiff(findingKeys, priorState.last_finding_keys).length
+  const findingRepeatedCount = setIntersection(findingKeys, priorState.last_finding_keys).length
+  const findingResolvedCount = setDiff(priorState.last_finding_keys, findingKeys).length
+
+  return {
+    available: true,
+    previous_run_at: priorState.last_successful_run_at,
+    previous_run_id: priorState.last_run_id,
+    theme_new: labelsForKeys(themeNewKeys, currentThemeLabels),
+    theme_repeated: labelsForKeys(themeRepeatedKeys, currentThemeLabels),
+    theme_resolved: themeResolvedKeys,
+    packet_new: labelsForKeys(packetNewKeys.slice(0, 20), currentPacketLabels),
+    packet_repeated: labelsForKeys(packetRepeatedKeys.slice(0, 20), currentPacketLabels),
+    packet_resolved: packetResolvedKeys.slice(0, 20),
+    finding_new_count: findingNewCount,
+    finding_repeated_count: findingRepeatedCount,
+    finding_resolved_count: findingResolvedCount,
+    plain_english: `Compared with the last cycle, Quartermaster sees ${themeNewKeys.length} new theme(s), ${themeRepeatedKeys.length} repeated theme(s), and ${themeResolvedKeys.length} resolved theme(s).`,
+  }
 }
 
 async function main() {
@@ -2070,6 +2235,7 @@ async function main() {
   for (const outcome of interactionOutcomes) increment(outcomeCounts, outcome.outcome)
   const workPackets = buildWorkPackets(dedupedFindings)
   const learningThemes = buildLearningThemes(dedupedFindings, workPackets)
+  const cycleMemory = buildCycleMemory(priorState, learningThemes, workPackets, dedupedFindings, rows.length + events.length)
 
   const eventCounts: Record<string, number> = {}
   for (const event of events) increment(eventCounts, event.event_type)
@@ -2114,6 +2280,13 @@ async function main() {
       findings: dedupedFindings.length,
       learning_themes: learningThemes.length,
       work_packets: workPackets.length,
+      cycle_memory_available: cycleMemory.available ? 'yes' : 'no',
+      cycle_theme_new_count: cycleMemory.theme_new.length,
+      cycle_theme_repeated_count: cycleMemory.theme_repeated.length,
+      cycle_theme_resolved_count: cycleMemory.theme_resolved.length,
+      cycle_packet_new_count: cycleMemory.packet_new.length,
+      cycle_packet_repeated_count: cycleMemory.packet_repeated.length,
+      cycle_packet_resolved_count: cycleMemory.packet_resolved.length,
       interaction_outcomes: interactionOutcomes.length,
       since: args.since,
       effective_since: sinceIso,
@@ -2138,6 +2311,7 @@ async function main() {
     outcome_counts: outcomeCounts,
     finding_counts: findingCounts,
     action_counts: actionCounts,
+    cycle_memory: cycleMemory,
     learning_themes: learningThemes,
     work_packets: workPackets,
     interaction_outcomes: interactionOutcomes,
@@ -2158,12 +2332,17 @@ async function main() {
   if (args.markdown) writeFileSync(`${basePath}.md`, renderMarkdown(report))
   if (args.cycle && args.writeState && stateFile) {
     writeCycleState(stateFile, {
-      version: 1,
+      version: 2,
       last_successful_run_at: generatedAt,
       last_run_id: runId,
       last_rows_read: rows.length,
       last_events_read: events.length,
       last_findings: dedupedFindings.length,
+      last_learning_themes: learningThemes.length,
+      last_work_packets: workPackets.length,
+      last_theme_keys: learningThemes.map((theme) => theme.stable_key),
+      last_packet_keys: workPackets.map((packet) => packet.stable_key),
+      last_finding_keys: dedupedFindings.map(findingStableKey),
       updated_at: new Date().toISOString(),
     })
   }
@@ -2176,6 +2355,7 @@ async function main() {
   console.log(`findings: ${dedupedFindings.length}`)
   console.log(`learning_themes: ${learningThemes.length}`)
   console.log(`work_packets: ${workPackets.length}`)
+  console.log(`cycle_memory: ${cycleMemory.available ? 'available' : 'no prior fingerprint'}`)
   if (args.cycle) console.log(`cycle_state: ${stateFile}${args.writeState ? '' : ' (not written)'}`)
   console.log(`json: ${args.json ? `${basePath}.json` : 'skipped'}`)
   console.log(`markdown: ${args.markdown ? `${basePath}.md` : 'skipped'}`)
