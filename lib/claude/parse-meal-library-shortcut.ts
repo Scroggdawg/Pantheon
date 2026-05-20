@@ -158,6 +158,15 @@ function foodFromLibraryTotal(args: {
   }
 }
 
+function liveSourceRefForResult(result: LibrarySearchResult): string | null {
+  const normalized = normalizeFoodSourceRef(result.source_ref)
+  if (normalized) return normalized
+  if (result.source === 'saved_meal' || result.source === 'product') {
+    return normalizeFoodSourceRef(result.library_id)
+  }
+  return null
+}
+
 export async function tryProteinShakeIngredientShortcut(
   supabase: SupabaseClient,
   userId: string,
@@ -194,7 +203,7 @@ async function resolveProteinShakeIngredientShortcut(
       qty: proteinScoops,
       unit: 'scoop',
       total: scaleTotal(protein.total, proteinScoops),
-      sourceRef: protein.source_ref ?? protein.library_id,
+      sourceRef: liveSourceRefForResult(protein),
       score: protein.match_confidence.score,
       unitAlternatives: protein.unit_alternatives,
     }),
@@ -219,7 +228,7 @@ async function resolveProteinShakeIngredientShortcut(
         qty: dextroseServings,
         unit: 'serving',
         total: scaleTotal(dextrose.total, dextroseServings),
-        sourceRef: dextrose.source_ref ?? dextrose.library_id,
+        sourceRef: liveSourceRefForResult(dextrose),
         score: dextrose.match_confidence.score,
         unitAlternatives: dextrose.unit_alternatives,
       }),
@@ -310,7 +319,7 @@ export async function tryLibraryShortcut(
     carbs_g: top.total.carbs_g,
     fat_g: top.total.fat_g,
     source: 'library',
-    source_ref: normalizeFoodSourceRef(top.source_ref ?? top.library_id),
+    source_ref: liveSourceRefForResult(top),
     unit_alternatives: top.unit_alternatives,
     match_confidence: {
       score: top.match_confidence.score,
@@ -403,7 +412,7 @@ export async function tryLibraryCandidates(
     carbs_g: total.carbs_g,
     fat_g: total.fat_g,
     source: 'library',
-    source_ref: normalizeFoodSourceRef(top.source_ref ?? top.library_id),
+    source_ref: liveSourceRefForResult(top),
     unit_alternatives: top.unit_alternatives,
     match_confidence: {
       score: top.match_confidence.score,
@@ -418,7 +427,7 @@ export async function tryLibraryCandidates(
   const candidates: DisambiguationCandidate[] = topN.map((r) => ({
     name: r.name,
     source: 'library' as const,
-    source_ref: normalizeFoodSourceRef(r.source_ref ?? r.library_id) ?? r.library_id,
+    source_ref: liveSourceRefForResult(r) ?? '',
     per_serving: {
       calories: r.total.kcal,
       protein_g: r.total.protein_g,
@@ -1255,7 +1264,7 @@ export async function tryLibrarySegmentedShortcut(
         carbs_g: total.carbs_g,
         fat_g: total.fat_g,
         source: 'library',
-        source_ref: normalizeFoodSourceRef(top.source_ref ?? top.library_id),
+        source_ref: liveSourceRefForResult(top),
         unit_alternatives: top.unit_alternatives,
         match_confidence: {
           score: topScore,

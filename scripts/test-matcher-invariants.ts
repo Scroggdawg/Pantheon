@@ -7,6 +7,7 @@
 import {
   dedupeAndSortLibraryResults,
   guardedLibraryNameSimilarity,
+  liveHistorySourceRef,
   type LibrarySearchResult,
 } from '../lib/claude/tools/search-user-library'
 import {
@@ -240,6 +241,28 @@ const tests: Array<[string, () => void]> = [
       assert(
         normalizeFoodSourceRef('lib:hourly_go_to:banana|lib:product:p1') === 'lib:product:p1',
         'expected product terminal ref',
+      )
+    },
+  ],
+  [
+    'stale saved_meal history refs are downgraded before live parse output',
+    () => {
+      const liveRefs = new Set(['lib:saved_meal:live'])
+      assert(
+        liveHistorySourceRef('lib:saved_meal:live', liveRefs) === 'lib:saved_meal:live',
+        'expected live saved_meal ref to survive',
+      )
+      assert(
+        liveHistorySourceRef('lib:saved_meal:deleted', liveRefs) === null,
+        'expected deleted saved_meal ref to be stripped',
+      )
+      assert(
+        liveHistorySourceRef('lib:hourly_go_to:shake|lib:saved_meal:deleted', liveRefs) === null,
+        'expected chained deleted saved_meal ref to be stripped',
+      )
+      assert(
+        liveHistorySourceRef('lib:product:p1', liveRefs) === 'lib:product:p1',
+        'expected product ref to survive',
       )
     },
   ],

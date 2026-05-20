@@ -583,6 +583,18 @@ function canonicalSourceRef(ref: string | null | undefined): string | null {
   return stripped.length > 0 ? stripped : ref
 }
 
+export function liveHistorySourceRef(
+  ref: string | null | undefined,
+  liveSavedMealRefs: Set<string>,
+): string | null {
+  const canonical = canonicalSourceRef(ref)
+  if (!canonical) return null
+  if (canonical.startsWith('lib:saved_meal:') && !liveSavedMealRefs.has(canonical)) {
+    return null
+  }
+  return canonical
+}
+
 function isMissingGovernanceTable(error: { code?: string; message?: string }): boolean {
   return (
     error.code === '42P01' ||
@@ -799,6 +811,7 @@ export async function searchUserLibrary(
   const meals = (mealsRes.data ?? []) as SavedMealRow[]
   const products = (productsRes.data ?? []) as ProductRow[]
   const hourlies = (hourlyRes.data ?? []) as HourlyGoToRow[]
+  const liveSavedMealRefs = new Set(meals.map((meal) => `lib:saved_meal:${meal.id}`))
   const aliasesByRef = aliasesRes.error
     ? new Map<string, string[]>()
     : buildAliasesByRef((aliasesRes.data ?? []) as IdentityAliasRow[])
@@ -858,10 +871,11 @@ export async function searchUserLibrary(
     matches.push(productToCandidate(p, score, aliases))
   }
   for (const h of hourlies) {
-    const aliases = aliasesByRef.get(canonicalSourceRef(h.source_ref) ?? '') ?? []
+    const sourceRef = liveHistorySourceRef(h.source_ref, liveSavedMealRefs)
+    const aliases = aliasesByRef.get(sourceRef ?? '') ?? []
     const score = guardedLibraryNameSimilarity(searchQuery, h.name, aliases)
     if (score < minScore) continue
-    const candidate = hourlyGoToCandidate(h, score, aliases)
+    const candidate = hourlyGoToCandidate({ ...h, source_ref: sourceRef }, score, aliases)
     // Backfill unit_alternatives from the product/saved_meal the hourly
     // entry's source_ref points at (when present).
     candidate.unit_alternatives = altsForRef(candidate.source_ref)
