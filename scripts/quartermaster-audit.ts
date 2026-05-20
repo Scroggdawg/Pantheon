@@ -2715,7 +2715,7 @@ function buildReadinessAssessment({
     risks.push('some products still have weak natural unit surfaces and should feed Pantry Forge later.')
   }
 
-  if (!eventTableAvailable || hasP0 || hasFixNow) {
+  if (!eventTableAvailable || hasP0 || hasFixNow || failCount > 0) {
     return {
       status: 'blocked',
       grade: 'C',
@@ -2726,14 +2726,11 @@ function buildReadinessAssessment({
     }
   }
 
-  if (failCount > 0 || workPackets.some((packet) => packet.priority === 'P1' || packet.priority === 'P2')) {
+  if (workPackets.some((packet) => packet.priority === 'P1' || packet.priority === 'P2')) {
     return {
       status: 'active_repair',
-      grade: failCount > 0 ? 'B-' : 'B',
-      plain_english:
-        failCount > 0
-          ? 'Quartermaster is stable enough to guide work, and it has non-emergency user-facing failures queued for repair.'
-          : 'Quartermaster is stable enough to work from, but it still has review or repair packets worth handling before a full pause.',
+      grade: 'B',
+      plain_english: 'Quartermaster is stable enough to work from, but it still has review or repair packets worth handling before a full pause.',
       stop_conditions_met: stopConditions,
       remaining_risks: risks,
       next_best_step: topPacket ? topPacket.title : 'Run the next cycle after real app usage.',
