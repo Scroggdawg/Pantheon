@@ -34,6 +34,7 @@ import type {
   DisambiguationCandidate,
   FoodItem,
   ParsedMealResponse,
+  UnitAlternative,
 } from '@/types/database'
 
 import { confidenceLabel } from './tools/constants'
@@ -135,6 +136,7 @@ function foodFromLibraryTotal(args: {
   total: LibraryTotal
   sourceRef: string | null | undefined
   score: number
+  unitAlternatives?: UnitAlternative[]
 }): FoodItem {
   return {
     name: args.name,
@@ -146,6 +148,7 @@ function foodFromLibraryTotal(args: {
     fat_g: args.total.fat_g,
     source: 'library',
     source_ref: normalizeFoodSourceRef(args.sourceRef),
+    unit_alternatives: args.unitAlternatives,
     match_confidence: {
       score: args.score,
       label: confidenceLabel(args.score),
@@ -193,6 +196,7 @@ async function resolveProteinShakeIngredientShortcut(
       total: scaleTotal(protein.total, proteinScoops),
       sourceRef: protein.source_ref ?? protein.library_id,
       score: protein.match_confidence.score,
+      unitAlternatives: protein.unit_alternatives,
     }),
   ]
 
@@ -217,6 +221,7 @@ async function resolveProteinShakeIngredientShortcut(
         total: scaleTotal(dextrose.total, dextroseServings),
         sourceRef: dextrose.source_ref ?? dextrose.library_id,
         score: dextrose.match_confidence.score,
+        unitAlternatives: dextrose.unit_alternatives,
       }),
     )
   }
