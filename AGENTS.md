@@ -41,3 +41,16 @@ Use `npm run build` when changing Next.js routing, middleware, server/runtime be
 ## Native/Web Contract
 
 Native is the canonical app. Web should remain reliable as the control room: API, admin, pantry, AI, Withings, and Vercel. Shared contracts must be updated deliberately across both repos.
+
+## Multi-Chat Coordination
+
+When more than one Codex/agent chat is active, read `docs/CODEX_MULTI_CHAT_PROTOCOL.md` before planning or editing. Treat it as the current coordination contract for branch/worktree ownership, OTA/native release boundaries, shared-file locks, and handoff expectations.
+
+If work may overlap with another chat, declare:
+
+- Branch/worktree in use.
+- Owned scope and files.
+- Files intentionally avoided.
+- Release lane: web deploy, native OTA, native EAS build, data/migration, or no release.
+
+Do not publish OTA, run EAS build/submit, deploy/promote/rollback Vercel, run migrations, or mutate production data unless Luke explicitly asks for that action in the current chat or the active handoff says it is already approved.
