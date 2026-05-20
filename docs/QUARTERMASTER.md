@@ -50,6 +50,7 @@ The script does not write production data.
 Cycle output includes:
 
 - a scoreboard for parse/save/edit signals;
+- a readiness assessment that says whether Quartermaster is blocked, in active repair, or checkpoint-ready;
 - interaction outcomes such as `clean_success`, `quantity_unit_failure`, and
   `save_path_failure`;
 - ranked work packets with priority, lane, owner, recommendation, and evidence.
@@ -141,6 +142,35 @@ Each theme execution plan now includes:
 Plain English: Quartermaster can think in big patterns, but repairs should start
 with the strongest evidence, replay Luke's real phrase, and ship as small tested
 changes.
+
+## Readiness
+
+Every run now includes a `Readiness` section.
+
+Readiness is Quartermaster's plain answer to: "Can we stop here for now?"
+
+Statuses:
+
+- `blocked`: missing telemetry, a P0 packet, or a `fix_now` theme means the
+  loop should keep working before pausing.
+- `active_repair`: the loop is stable, but non-emergency user-facing failures
+  or P1/P2 review or repair packets are still worth handling.
+- `checkpoint_ready`: no blocking failures are visible, cycle memory works, and
+  remaining work is queued as watch/review.
+
+Readiness also separates raw event success from visible/current success. If a
+save event points to a food log row that has since been deleted, Quartermaster
+keeps the event as evidence but does not count it as a current accepted food log.
+
+## User Quantity Corrections
+
+If parsed and saved rows have the same product identity, same unit, and cleanly
+scaled macros, and Luke did not speak an explicit quantity, Quartermaster treats
+the delta as likely user quantity correction instead of a parser emergency.
+
+Example: a Yasso bar parse defaults to `1 serving`, but the saved row is
+`2 serving` with exactly doubled macros. That should be review/watch evidence,
+not an automatic alias or pantry mutation.
 
 ## Luke-Facing Unit Rule
 
