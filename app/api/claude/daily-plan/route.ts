@@ -166,7 +166,7 @@ Return ONLY valid JSON:
 }`
 
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 1500,
       system: systemPrompt,
       messages: [{ role: 'user', content: 'Generate my meal plan for the rest of today.' }],

@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     console.log('[parse-workout-image] Parsing image...')
 
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 3000,
       system: WORKOUT_IMAGE_SYSTEM_PROMPT,
       messages: [

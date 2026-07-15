@@ -215,7 +215,7 @@ Return ONLY valid JSON:
     })
 
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 300,
       system: verdictPrompt,
       messages: [{ role: 'user', content: contextMsg }],

@@ -73,7 +73,7 @@ export async function parseWorkout(transcript: string): Promise<ParsedWorkoutRes
   }
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-5',
     max_tokens: 2000,
     system: WORKOUT_PARSER_SYSTEM_PROMPT,
     messages: [{ role: 'user', content: transcript }],
