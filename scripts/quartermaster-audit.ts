@@ -862,10 +862,15 @@ function inspectFoodSources(
     if (kind.kind === 'saved_meal' && kind.id && !savedMealIds.has(kind.id)) {
       pushFinding(findings, row, {
         type: 'source_ref_stale',
-        severity: 'high',
+        severity: 'medium',
         action_lane: 'saved_meal_repair',
-        summary: `Saved-meal source ref no longer exists for "${food.name ?? '(unnamed food)'}".`,
-        evidence: { source_ref: ref, food: displayFood(food) },
+        summary: `Historical saved-meal source ref no longer exists for "${food.name ?? '(unnamed food)'}".`,
+        evidence: {
+          source_ref: ref,
+          food: displayFood(food),
+          historical_reference_only: true,
+          live_surfaces_hardened: true,
+        },
       })
     }
     if (kind.kind === 'product' && kind.id && !productIds.has(kind.id)) {
@@ -1461,6 +1466,13 @@ function highestSeverity(findings: Finding[]): Severity {
   return 'low'
 }
 
+function isHistoricalStaleSourceRef(finding: Finding): boolean {
+  return (
+    finding.type === 'source_ref_stale' &&
+    finding.evidence.historical_reference_only === true
+  )
+}
+
 function gradeForOutcome(outcome: OutcomeType): InteractionOutcome['grade'] {
   if (outcome === 'clean_success') return 'pass'
   if (outcome === 'ambiguous_review') return 'unknown'
@@ -1499,6 +1511,7 @@ function outcomeFromFindings(row: FoodLogRow, relatedFindings: Finding[]): Outco
   const materialFindings = relatedFindings.filter(
     (finding) =>
       finding.type !== 'telemetry_gap' &&
+      !isHistoricalStaleSourceRef(finding) &&
       !(finding.type === 'unit_missing_or_weak' && finding.severity === 'low'),
   )
   const types = new Set(materialFindings.map((finding) => finding.type))
@@ -1859,7 +1872,8 @@ function buildWorkPackets(findings: Finding[]): WorkPacket[] {
     const sorted = [...group].sort((a, b) => b.score - a.score)
     const lead = sorted[0]
     const severity = highestSeverity(sorted)
-    const score = Math.min(100, lead.score + Math.min(25, (sorted.length - 1) * 5))
+    const rawScore = Math.min(100, lead.score + Math.min(25, (sorted.length - 1) * 5))
+    const score = lead.action_lane === 'manual_review' ? Math.min(85, rawScore) : rawScore
     const confidence: Confidence = sorted.length >= 2 || severity === 'high' ? 'high' : lead.action_lane === 'manual_review' ? 'low' : 'medium'
     const exampleTranscripts = [
       ...new Set(sorted.map((finding) => finding.raw_input_text).filter((value): value is string => Boolean(value))),
@@ -2053,14 +2067,16 @@ function themeLukeSummary(kind: ThemeKind): string {
 }
 
 function themeUrgency(kind: ThemeKind, findings: Finding[]): ThemeUrgency {
-  const hasHigh = findings.some((finding) => finding.severity === 'high')
+  const liveFindings = findings.filter((finding) => !isHistoricalStaleSourceRef(finding))
+  const hasHigh = liveFindings.some((finding) => finding.severity === 'high')
   const hasSaveFailure = findings.some((finding) => finding.type === 'save_failed_event' || finding.type === 'parse_failed_event')
   if (hasSaveFailure) return 'fix_now'
   switch (kind) {
+    case 'stale_library_identity':
+      return liveFindings.length === 0 ? 'watch' : hasHigh ? 'fix_now' : 'fix_next'
     case 'protein_shake_composition':
     case 'quantity_display_trust':
     case 'duplicate_food_rows':
-    case 'stale_library_identity':
     case 'identity_fracture':
       return hasHigh ? 'fix_now' : 'fix_next'
     case 'slow_parse_missing_knowledge':
@@ -2679,8 +2695,16 @@ function buildReadinessAssessment({
 }): QuartermasterReadiness {
   const stopConditions: string[] = []
   const risks: string[] = []
+  const blockingP0Packets = workPackets.filter(
+    (packet) =>
+      packet.priority === 'P0' &&
+      packet.action_lane !== 'manual_review' &&
+      packet.action_lane !== 'native_ui_or_telemetry',
+  )
   const hasP0 = workPackets.some((packet) => packet.priority === 'P0')
+  const hasBlockingP0 = blockingP0Packets.length > 0
   const hasFixNow = themes.some((theme) => theme.urgency === 'fix_now')
+  const hasSavePathFixNow = themes.some((theme) => theme.kind === 'save_path_reliability' && theme.urgency === 'fix_now')
   const failCount = interactionOutcomes.filter((outcome) => outcome.grade === 'fail').length
   const topPacket = workPackets[0] ?? null
 
@@ -2691,10 +2715,12 @@ function buildReadinessAssessment({
   else risks.push('cycle memory is not established yet; trend judgment is limited.')
 
   if (!hasP0) stopConditions.push('no P0 work packet is currently blocking the loop.')
-  else risks.push('at least one P0 work packet needs immediate repair before pausing.')
+  else if (!hasBlockingP0) stopConditions.push('P0 packets are review/UI routed, not backend or save-path blockers.')
+  else risks.push('at least one backend/parser/library P0 work packet needs immediate repair before pausing.')
 
   if (!hasFixNow) stopConditions.push('no theme is currently marked fix_now.')
-  else risks.push('at least one theme is marked fix_now.')
+  else if (!hasSavePathFixNow) risks.push('at least one theme is marked fix_now, but it is not a save-path blocker.')
+  else risks.push('at least one save-path theme is marked fix_now.')
 
   if (failCount === 0) stopConditions.push('no current interaction outcome is graded fail.')
   else risks.push(`${failCount} current interaction outcome${failCount === 1 ? '' : 's'} graded fail.`)
@@ -2715,11 +2741,11 @@ function buildReadinessAssessment({
     risks.push('some products still have weak natural unit surfaces and should feed Pantry Forge later.')
   }
 
-  if (!eventTableAvailable || hasP0 || hasFixNow || failCount > 0) {
+  if (!eventTableAvailable || hasBlockingP0 || hasSavePathFixNow) {
     return {
       status: 'blocked',
       grade: 'C',
-      plain_english: 'Quartermaster is seeing a current blocking condition and should not be considered parked.',
+      plain_english: 'Quartermaster is seeing a current backend, parser, or save-path blocker and should not be considered parked.',
       stop_conditions_met: stopConditions,
       remaining_risks: risks,
       next_best_step: topPacket ? topPacket.title : 'Fix the blocking telemetry or save-path issue, then rerun the cycle.',

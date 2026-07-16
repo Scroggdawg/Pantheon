@@ -16,6 +16,7 @@
 // utterances ("yea, so bar").
 
 export const BRAND_VOICE_ALIASES: Record<string, string[]> = {
+  nutricost: ['nutri cost', 'nutri-cost', 'nutri cust', 'nutri-cust'],
   yasso: ['yes so', 'yeah so', 'yea so'],
   // Future entries to consider as voice-mangle patterns are
   // discovered in real transcripts:
