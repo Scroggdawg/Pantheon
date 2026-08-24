@@ -31,6 +31,10 @@ interface MealsLogBody {
   claude_parse_json: unknown
   user_id: string
   library_source_ref: string | null
+  // Optional historical timestamp for backfill/sync writers (e.g. the
+  // Ambrosia voice-log bridge). Must parse as a date and must not be in
+  // the future; omitted -> DB default now() as before.
+  logged_at?: string | null
 }
 
 type SavedMealAction = 'incremented' | 'none'
@@ -65,6 +69,14 @@ export async function POST(request: Request) {
   if (!body.day_type) return bad(400, 'day_type required')
   if (!body.log_method) return bad(400, 'log_method required')
   if (!body.meal_label) return bad(400, 'meal_label required')
+
+  let loggedAt: string | null = null
+  if (body.logged_at != null) {
+    const parsed = new Date(body.logged_at)
+    if (Number.isNaN(parsed.getTime())) return bad(400, 'logged_at must be a valid timestamp')
+    if (parsed.getTime() > Date.now() + 60_000) return bad(400, 'logged_at cannot be in the future')
+    loggedAt = parsed.toISOString()
+  }
 
   const supabase = await createClient()
   let userId: string
@@ -128,6 +140,7 @@ export async function POST(request: Request) {
       raw_input_text: body.raw_input_text,
       claude_parse_json: body.claude_parse_json,
       saved_meal_id: savedMealId,
+      ...(loggedAt ? { logged_at: loggedAt } : {}),
     })
     .select('id')
     .single()
