@@ -1044,7 +1044,7 @@
       h += chip(fg.stepId, (byId[fg.stepId].timer && byId[fg.stepId].timer.label) || byId[fg.stepId].title, fg.endsAt, false);
     }
     safe(function () { return E.waitsView(PLAN, s, t); }, []).sort(function (a, b) { return (a.elapsed ? 1 : 0) - (b.elapsed ? 1 : 0); }).forEach(function (w) {
-      h += chip(w.gatedStepId || w.by, w.label, w.endsAt, w.elapsed);
+      h += chip(w.gatedStepId || w.by, (waitDef[w.id] || {}).chip || w.label, w.endsAt, w.elapsed);
     });
     $('chips').hidden = !h;
     setHTML($('chips-in'), h);
@@ -1220,7 +1220,7 @@
     if (u && byId[u.stepId]) {
       var nx = byId[u.stepId];
       var why = u.reason === 'wait' ? ((waitDef[nx.afterWait] || {}).label || 'A timer is running') + '.'
-        : u.reason === 'time' ? 'The next step is timed so the food is hot at dinner.' : 'Everything for this kitchen is done.';
+        : u.reason === 'time' ? 'The next step is timed so the food is at its best at dinner.' : 'Everything for this kitchen is done.';
       h += '<h1 class="title">Free until ' + esc(clock(u.at)) + '</h1>' +
         '<div class="count" role="timer">' + cd(u.at, '0:00') + '</div>' +
         '<p class="lead">' + esc(why) + '</p>' +

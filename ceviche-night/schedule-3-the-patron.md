@@ -66,7 +66,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - **Warning:** Raw pork. Wash your hands, the scissors and the plate with hot soapy water.
 4. **7:11 AM — Fill the bean pot** (**3 min**)
     - Into the big pot: the drained beans, 3½ cups of water, ½ cup of beer, and the pork.
-    - Cap the rest of the beer or drink it.
+    - Put the rest of the beer in the fridge.
     - You need:
         - Drained beans
         - Measuring cup
@@ -129,7 +129,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Cut a thin slice off both ends of one onion. Stand it on a cut end. Cut it in half from top to bottom.
     - Lay each half flat side down and cut it in half again. Peel the 4 wedges.
     - Dice one wedge into small pieces, about ¼ inch.
-    - Wrap the other three wedges. One is for the rice purée. One goes to her place for the ceviche.
+    - Wrap the other three wedges and put them in the fridge. One is for the rice purée. One goes to her place for the ceviche. One is a spare.
     - You need:
         - 1 white onion
         - Cutting board
@@ -148,7 +148,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Rub the black skin off with your fingers or a paper towel.
     - Do not rinse it. Water washes away the smoky flavor.
     - Pull off the stem. Tear the chile open and scrape out the seeds.
-    - Chop it into ½-inch pieces.
+    - Chop it into ½-inch pieces. Then wash your hands with soap. Chile on your fingers stings your eyes.
     - Goes into: The small bowl with the diced white onion
     - Look for: A few black flecks left on it are fine.
 13. **7:56 AM — Take the bacon out** (**3 min**)
@@ -158,13 +158,14 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - The skillet handle is hot. Touch it only with an oven mitt or a folded dry towel.
     - Do not pour. Do not lift or tilt the hot skillet. Spoon the hot fat out of it into the mug.
     - Spoon 1 tablespoon of the fat back into the skillet.
+    - Never pour fat down the drain. Let it harden in the mug, then put it in the trash.
     - You need:
         - Slotted spoon
         - Spoon
         - Plate with a paper towel
         - Heatproof mug
         - Oven mitt or dry towel
-    - **Warning:** Hot fat burns. Keep it away from the flame. Never pour it down the drain. Let it harden in the mug, then bin it.
+    - **Warning:** Hot fat burns. Keep it away from the flame.
 14. **7:59 AM — Fry the onion and poblano** (**9 min**)
     - Burner on medium under the skillet with the bacon fat.
     - Add the diced white onion and the chopped poblano.
@@ -212,7 +213,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 ### Her kitchen
 
 20. **6:38 PM — Warm the beans** (**2 min**)
-    - Pour the beans into a pot. Already in a pot on the stove? Leave them there.
+    - Take the bean tub out of the fridge. Tip the beans and all their liquid into the pot you set out for them. Scrape the tub out with a spoon. Already in a pot on the stove? Leave them there.
     - Lid on. Burner on medium-low.
     - Stir them each time you are at the stove, so the bottom does not stick.
     - Too thick? Add a splash of water.
@@ -224,10 +225,10 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Look for: By dinner they are steaming hot, with bubbles all over.
 21. **7:26 PM — Last touches** (**2 min**; shared step, it also covers other dishes)
     - The beans must be steaming and bubbling. Not yet? Turn the burner up to medium. Stir until they are.
-    - Stir the bowl of chopped cilantro into the beans.
+    - Take the small bowl of chopped cilantro out of the fridge. Stir it into the beans.
     - Pull the 2 serranos out of the rice.
     - Check that every burner and the oven are off.
-    - Beans, rice, corn and shrimp to the table.
+    - Beans, rice, corn and shrimp to the table. Never put a hot pot or pan on the bare table. Put a folded dry towel or a wooden board under it.
     - Not before 7:25 PM.
 
 ## If you did not soak the beans
@@ -266,6 +267,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - **Timer: 1 hour.** Beans resting in hot water. Keep working. It ends about 8:16 AM.
     - When it ends: Drain the rested beans.
 5. **8:18 AM — Drain the rested beans** (**2 min**; extra step)
+    - Tomatoes sitting in the strainer? Tip them into a small bowl first.
     - Pour the beans into the strainer in the sink.
     - Rinse out the pot.
 6. **8:20 AM — Fill the bean pot** (was 7:11 AM)
@@ -308,7 +310,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 3. **Turn the beans down again** (Her kitchen; extra step; **1 min**)
     - Look in the bean pot. Steady bubbles? Turn the burner down to medium-low.
     - Put the lid on, slightly open.
-    - Tap Done. The guide asks you to test the beans in **30 minutes**.
+    - Tap Done. The guide tells you when to come back to the beans.
     - **Timer: 30 minutes.** Beans simmering. Keep working.
     - After **15 minutes**: Stir the beans. Add water if they poke out.
     - When it ends: Are the beans tender?

@@ -206,7 +206,7 @@
 - [ ] Tongs
 - [ ] Wooden spoon
 - [ ] Measuring spoons and all your measuring cups
-- [ ] Paper towels and 2 kitchen towels
+- [ ] Paper towels and 3 kitchen towels: keep one clean for the tortillas
 - [ ] Oven mitt
 - [ ] Phone charger
 
@@ -236,7 +236,8 @@
 Only if a step did not get done:
 
 - [ ] Rice and chicken broth. Only if “Pack the rice kit” is not done.
-- [ ] Sriracha. Only if “Make the pink sauce” is not done.
+- [ ] Sriracha and an empty small tub: for the pink sauce. Only if “Make the pink sauce” is not done.
+- [ ] An empty 2-cup tub: for the corn sauce. Only if “Stir the corn sauce” is not done.
 - [ ] Sugar, ground cumin and an empty 2-cup jar: for the slaw dressing. Only if “Shake up the slaw dressing” is not done.
 - [ ] All 15 limes, the lime squeezer, the fine grater or peeler, and 2 small jars for the juice. Only if “Zest half a lime, then juice eleven” is not done.
 - [ ] Garlic and the marinade jar: the jar may already hold the lime zest. Only if “Make the shrimp marinade” is not done.

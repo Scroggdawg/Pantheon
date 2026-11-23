@@ -556,7 +556,7 @@
     if (u && ix.byId[u.stepId]) {
       var nx = ix.byId[u.stepId];
       var why = u.reason === 'wait' ? ((ix.waitDef[nx.afterWait] || {}).label || 'A timer is running') + '.'
-        : u.reason === 'time' ? 'The next step is timed so the food is hot at dinner.' : 'Everything for this kitchen is done.';
+        : u.reason === 'time' ? 'The next step is timed so the food is at its best at dinner.' : 'Everything for this kitchen is done.';
       h += '<h1 class="bd-title">Free until ' + esc(clock(u.at)) + '</h1><div class="bd-count" role="timer">' + cd(u.at, '0:00') + '</div>' +
         '<p class="bd-lead">' + esc(why) + '</p><div class="bd-block"><span class="bd-label">Next</span><p class="bd-lead"><b>' + esc(nx.title) + '</b></p></div>';
       if (v.preview) h += noteRow('', '', 'In a preview, skip ahead from the phone guide.');

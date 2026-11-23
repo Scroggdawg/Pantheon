@@ -66,7 +66,7 @@
           'Mix the fish with the tomatoes no more than 2 hours before dinner.',
           'Avocado goes in at the last minute.',
           'Throw away any ceviche that sat out for more than 2 hours.',
-          'Tell your date the fish is raw and was never frozen, so she can choose.'
+          'Tell your date the fish is raw and may never have been frozen, so she can choose. Freezing is what kills parasites in raw fish.'
         ]
       },
       {
@@ -285,7 +285,7 @@
       'heat': { term: 'Heat levels', text: 'On a dial marked 1 to 10:\nLow is 2.\nMedium-low is 3 to 4.\nMedium is 5.\nMedium-high is 7.\nHigh is 9 to 10.\nOther numbers on the dial? Medium is the middle number.\nOnly Lo, Med and Hi? Medium-low is halfway between Lo and Med. Medium-high is halfway between Med and Hi.\nGas with no marks? Look at the flame. Low is the smallest steady flame. High is the biggest flame that stays under the pan. Medium is halfway between.\nIf the food bubbles or browns too fast, turn the burner down.' },
       'lid-ajar': { term: 'Lid slightly open', text: 'Put the lid on, then slide it a little to one side.\nLeave a gap about as wide as a finger so steam can escape.' },
       'blanch': { term: 'Blanch', text: 'Dunk food in very hot water for a short time, then drain it.\nHere it takes the harsh bite off the raw onion and helps it turn pink.' },
-      'toast': { term: 'Toast a spice', text: 'Heat a dry pan with no oil.\nAdd the spice and keep it moving until you can smell it, about 30 seconds.\nTip it out right away. It burns fast.' },
+      'toast': { term: 'Toast a spice', text: 'Heat a dry pan with no oil.\nAdd the spice and keep it moving until you can smell it, about 30 seconds.\nSpoon it out right away. It burns fast.' },
       'char': { term: 'Char', text: 'Burn the skin on purpose until it is black and blistered.\nThe skin gets peeled off. The flesh underneath turns soft and smoky.' },
       'seed': { term: 'Seed a chile', text: 'Cut off the stem. Slice the chile in half the long way.\nScrape out the seeds and the pale ribs with the tip of a spoon.\nThat is where most of the heat is.\nWash your hands with soap after. Do not touch your eyes.' },
       'bacon-fat': { term: 'Bacon fat', text: 'The melted fat left in the pan after frying bacon.\nIt is the cooking oil for the next step.' },
@@ -435,7 +435,7 @@
           'The guide calls you back when the beans should be bubbling.'
         ],
         need: ['Bean tub', 'Pot with a lid'],
-        wait: { id: 'beans-reboil', mins: 12, label: 'Beans heating up', attended: true, urgent: true },
+        wait: { id: 'beans-reboil', chip: 'Beans', mins: 12, label: 'Beans heating up', attended: true, urgent: true },
         mins: 3
       },
       {
@@ -444,13 +444,13 @@
         body: [
           'Look in the bean pot. Steady bubbles? Turn the burner down to [[heat|medium-low]].',
           'Put the lid on, [[lid-ajar|slightly open]].',
-          'Tap Done. The guide asks you to test the beans in 30 minutes.'
+          'Tap Done. The guide tells you when to come back to the beans.'
         ],
         look: 'A [[simmer]]: a few lazy bubbles every second.',
         tip: 'Not bubbling yet? Turn the heat up a notch and give it 3 more minutes.',
         after: ['beans-resume'],
         afterWait: 'beans-reboil',
-        wait: { id: 'simmer', mins: 30, label: 'Beans simmering', attended: true, urgent: false, laps: [15], lapLabel: 'Stir the beans. Add water if they poke out' },
+        wait: { id: 'simmer', chip: 'Beans', mins: 30, label: 'Beans simmering', attended: true, urgent: false, laps: [15], lapLabel: 'Stir the beans. Add water if they poke out' },
         mins: 1
       },
       {
@@ -473,7 +473,7 @@
           'Tongs, wooden spoon, fork',
           'Measuring spoons and measuring cups',
           'Oven mitt',
-          'Paper towels, foil, 2 kitchen towels',
+          'Paper towels, foil, 3 kitchen towels. Keep one clean for the tortillas.',
           'Oven: open it and take out anything stored inside',
           'Oven: find the Broil setting. Look for the broiler at the top, inside the oven. Nothing there? It is the drawer under the oven, and the corn pan goes in that drawer.',
           'Oven: move a rack to about 6 inches below the top now, while it is cold'
@@ -530,7 +530,7 @@
         need: ['Big pot with a lid', 'Measuring cup'],
         tip: 'If foam lifts the lid, turn the burner down a little and leave the lid [[lid-ajar|slightly open]].',
         after: ['beans-sort'],
-        wait: { id: 'qs-boil', mins: 9, label: 'Beans coming to a boil', attended: true, urgent: true },
+        wait: { id: 'qs-boil', chip: 'Beans', mins: 9, label: 'Beans coming to a boil', attended: true, urgent: true },
         mins: 2
       },
       {
@@ -590,13 +590,14 @@
         after: ['beans-qs-heat'],
         afterWait: 'qs-boil',
         timer: { secs: 120, label: 'Beans boiling' },
-        wait: { id: 'qs-stand', mins: 60, label: 'Beans resting in hot water', attended: false, urgent: true },
+        wait: { id: 'qs-stand', chip: 'Beans rest', mins: 60, label: 'Beans resting in hot water', attended: false, urgent: true },
         mins: 0.5
       },
       {
         id: 'beans-qs-drain', dish: 'patron', block: 'am', where: 'either', when: { soaked: false },
         title: 'Drain the rested beans',
         body: [
+          'Tomatoes sitting in the strainer? Tip them into a small bowl first.',
           'Pour the beans into the [[strainer]] in the sink.',
           'Rinse out the pot.'
         ],
@@ -609,7 +610,7 @@
         title: 'Fill the bean pot',
         body: [
           'Into the big pot: the drained beans, 3½ cups of water, ½ cup of beer, and the pork.',
-          'Cap the rest of the beer or drink it.'
+          'Put the rest of the beer in the fridge.'
         ],
         need: ['Drained beans', 'Measuring cup', 'Beer', 'Pork (in the fridge if you cut it earlier)'],
         into: 'Big pot',
@@ -625,7 +626,7 @@
           'Go on to the next step while it heats. The guide calls you back.'
         ],
         after: ['beans-pot'],
-        wait: { id: 'beans-boil', mins: 12, label: 'Beans coming to a boil', attended: true, urgent: true },
+        wait: { id: 'beans-boil', chip: 'Beans', mins: 12, label: 'Beans coming to a boil', attended: true, urgent: true },
         mins: 1
       },
       {
@@ -636,7 +637,7 @@
           'Lid on. Burner on high.'
         ],
         need: ['Medium pot with a lid'],
-        wait: { id: 'onion-water', mins: 8, label: 'Onion water heating', attended: true, urgent: false },
+        wait: { id: 'onion-water', chip: 'Onion water', mins: 8, label: 'Onion water heating', attended: true, urgent: false },
         mins: 1
       },
       {
@@ -658,11 +659,10 @@
         id: 'oregano-toast', dish: 'blanch', block: 'am', where: 'either',
         title: 'Toast the oregano',
         body: [
-          'Put the dry skillet on [[heat|medium-high]]. No oil.',
-          'Let it heat until a drop of water sizzles in it. That takes a minute or two.',
-          'Add 1 [[spoons|teaspoon]] of dried Mexican oregano. Start the timer. Keep it moving: shake the pan or stir with a spoon.',
-          'When the timer ends or it smells strong, tip or spoon it straight into the quart jar. [[toast|It burns fast.]]',
-          'Burner off.'
+          'Dry skillet on [[heat|medium-high]]. No oil. Wait until a drop of water sizzles in it, a minute or two.',
+          'Add 1 [[spoons|teaspoon]] of dried Mexican oregano. Start the timer. Stir it with a spoon the whole time.',
+          'When the timer ends or it smells strong: burner off. Spoon it straight into the quart jar. [[toast|It burns fast.]]',
+          'Do not lift or tip the skillet. It is heavy and the handle is hot.'
         ],
         need: ['Skillet', 'Spoon', 'Mexican oregano', 'Quart jar'],
         into: 'Onion jar',
@@ -684,24 +684,24 @@
         tip: 'Not bubbling yet? Turn the heat up a notch and give it 3 more minutes.',
         after: ['beans-heat'],
         afterWait: 'beans-boil',
-        wait: { id: 'simmer', mins: 60, label: 'Beans simmering', attended: true, urgent: false, laps: [20, 40], lapLabel: 'Stir the beans. Add water if they poke out' },
+        wait: { id: 'simmer', chip: 'Beans', mins: 60, label: 'Beans simmering', attended: true, urgent: false, laps: [20, 40], lapLabel: 'Stir the beans. Add water if they poke out' },
         mins: 1
       },
       {
         id: 'onion-blanch', dish: 'blanch', block: 'am', where: 'either',
         title: 'Dunk the onions in hot water',
         body: [
-          'The water should be at a [[boil|full boil]].',
+          'Lift the lid with the oven mitt. Tilt it away from you. The water should be at a [[boil|full boil]].',
           'Not boiling? Lid on, burner on high, and wait. No pot of water on the stove? Fill a medium pot with 5 cups of water and boil it first.',
-          'Slide all the sliced onions in. Turn the burner off.',
+          'Slide all the sliced onions in from the cutting board. Go gently so the water does not splash. Turn the burner off.',
           'Start the timer. You like strong onion flavor, so 30 seconds is enough.',
-          'When it ends, pour everything through the [[strainer]] in the sink.',
+          'When it ends, carry the pot to the sink with both hands. Hot handles? Hold one with the oven mitt and the other with a folded dry towel. Pour everything slowly through the [[strainer]], away from you.',
           '[[blanch|This is called blanching.]]'
         ],
         need: ['Sliced onions', 'Strainer in the sink'],
         look: 'The onions bend but still have a little crunch.',
         tip: 'For milder onions next time, leave them in for 2 minutes.',
-        warn: 'Boiling water and steam. Lower the onions in gently. Carry the pot with both hands. Pour slowly, away from you. Keep your face back.',
+        warn: 'Boiling water and steam. Keep your face back.',
         after: ['onion-slice', 'onion-water'],
         afterWait: 'onion-water',
         timer: { secs: 30, label: 'Onions in hot water' },
@@ -711,7 +711,7 @@
         id: 'onion-jar', dish: 'blanch', block: 'am', where: 'either',
         title: 'Fill the onion jar',
         body: [
-          'Into the quart jar with the oregano: the drained onions, ½ cup of white vinegar and ½ cup of water.',
+          'Lift the drained onions into the quart jar with the oregano. Use tongs: the onions are hot. Add ½ cup of white vinegar and ½ cup of water.',
           'Add 2 allspice berries, 3 black peppercorns, 1 bay leaf and ½ teaspoon of salt.',
           'Lid on. Shake. Into the fridge.'
         ],
@@ -737,7 +737,7 @@
         look: 'Black on every side. No big green patches.',
         tip: 'The skin may pop or catch small flames. That is normal. Keep turning.',
         warn: 'Open flame. Keep sleeves, towels and paper away from it. Turn on the fan over the stove.',
-        wait: { id: 'poblano-steam', mins: 5, label: 'Poblano steaming', attended: false, urgent: false },
+        wait: { id: 'poblano-steam', chip: 'Poblano', mins: 5, label: 'Poblano steaming', attended: false, urgent: false },
         mins: 8
       },
       {
@@ -762,7 +762,7 @@
           'Stir the bacon now and then while you do the next steps. The guide will remind you.'
         ],
         after: ['bacon-cut'],
-        wait: { id: 'bacon', mins: 10, label: 'Bacon frying', attended: true, urgent: true, laps: [4, 7], lapLabel: 'Stir the bacon' },
+        wait: { id: 'bacon', chip: 'Bacon', mins: 10, label: 'Bacon frying', attended: true, urgent: true, laps: [4, 7], lapLabel: 'Stir the bacon' },
         mins: 1
       },
       {
@@ -773,7 +773,7 @@
           'Cut a thin slice off both ends of one onion. Stand it on a cut end. Cut it in half from top to bottom.',
           'Lay each half flat side down and cut it in half again. Peel the 4 wedges.',
           '[[dice|Dice]] one wedge into small pieces, about ¼ inch.',
-          'Wrap the other three wedges. One is for the rice purée. One goes to her place for the ceviche.'
+          'Wrap the other three wedges and put them in the fridge. One is for the rice purée. One goes to her place for the ceviche. One is a spare.'
         ],
         need: ['1 white onion', 'Cutting board', 'Knife'],
         into: 'Small bowl. The chopped poblano joins it later.',
@@ -798,7 +798,7 @@
           'Rub the black skin off with your fingers or a paper towel.',
           'Do not rinse it. Water washes away the smoky flavor.',
           'Pull off the stem. Tear the chile open and scrape out the seeds.',
-          'Chop it into ½-inch pieces.'
+          'Chop it into ½-inch pieces. Then wash your hands with soap. Chile on your fingers stings your eyes.'
         ],
         into: 'The small bowl with the diced white onion',
         look: 'A few black flecks left on it are fine.',
@@ -815,10 +815,11 @@
           'Lift the bacon out with the slotted spoon onto a plate lined with a paper towel.',
           'The skillet handle is hot. Touch it only with an oven mitt or a folded dry towel.',
           'Do not pour. Do not lift or tilt the hot skillet. Spoon the hot [[bacon-fat|fat]] out of it into the mug.',
-          'Spoon 1 tablespoon of the fat back into the skillet.'
+          'Spoon 1 tablespoon of the fat back into the skillet.',
+          'Never pour fat down the drain. Let it harden in the mug, then put it in the trash.'
         ],
         need: ['Slotted spoon', 'Spoon', 'Plate with a paper towel', 'Heatproof mug', 'Oven mitt or dry towel'],
-        warn: 'Hot fat burns. Keep it away from the flame. Never pour it down the drain. Let it harden in the mug, then bin it.',
+        warn: 'Hot fat burns. Keep it away from the flame.',
         after: ['bacon-fry'],
         afterWait: 'bacon',
         mins: 3
@@ -891,7 +892,7 @@
           'Keep it at a [[simmer]] with the lid [[lid-ajar|slightly open]].'
         ],
         after: ['beans-check', 'sofrito-tomato', 'bacon-out', 'beans-resume-low'],
-        wait: { id: 'beans-final', mins: 25, label: 'Beans: last simmer', attended: true, urgent: false, laps: [12], lapLabel: 'Stir the beans' },
+        wait: { id: 'beans-final', chip: 'Beans', mins: 25, label: 'Beans: last simmer', attended: true, urgent: false, laps: [12], lapLabel: 'Stir the beans' },
         mins: 2
       },
       {
@@ -907,7 +908,7 @@
         tip: 'Optional, for a creamier broth: scoop 1 cup of the beans with a little liquid into a bowl. Mash them with a fork. Stir them back in.',
         after: ['beans-add', 'beans-resume-low'],
         afterWait: 'beans-final',
-        wait: { id: 'beans-cool', mins: 25, label: 'Beans cooling', attended: false, urgent: false },
+        wait: { id: 'beans-cool', chip: 'Beans cool', mins: 25, label: 'Beans cooling', attended: false, urgent: false },
         mins: 3
       },
       {
@@ -958,7 +959,7 @@
           'Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.',
           'Squeeze each half in the squeezer, cut side facing down, over a medium bowl.',
           'Juice 11 limes. The zested lime is one of them. Pick out any seeds.',
-          'Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.',
+          'Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.',
           'Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.',
           'The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.'
         ],
@@ -971,7 +972,7 @@
         id: 'slaw-dressing', dish: 'cream', block: 'am', where: 'either',
         title: 'Shake up the slaw dressing',
         body: [
-          'Into one of the 2-cup jars: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice.',
+          'Into one of the 2-cup jars: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice from the sauce lime jar.',
           'Add 2 tablespoons of sugar, 1 teaspoon of ground cumin and 1 teaspoon of chipotle powder.',
           'Lid on tight. Shake until smooth. Fridge.'
         ],
@@ -984,7 +985,7 @@
         id: 'corn-sauce', dish: 'elote', block: 'am', where: 'either',
         title: 'Stir the corn sauce',
         body: [
-          'In one of the 2-cup tubs: ½ cup of sour cream, ¼ cup of mayonnaise and 1 tablespoon of lime juice.',
+          'In one of the 2-cup tubs: ½ cup of sour cream, ¼ cup of mayonnaise and 1 tablespoon of lime juice from the sauce lime jar.',
           'Stir until smooth. Lid on. Fridge.'
         ],
         need: ['Sour cream', 'Mayonnaise', 'Sauce lime jar'],
@@ -996,7 +997,7 @@
         id: 'marinade', dish: 'pink', block: 'am', where: 'either',
         title: 'Make the shrimp marinade',
         body: [
-          'The marinade jar already holds the lime zest. Add 2 tablespoons of lime juice.',
+          'The marinade jar already holds the lime zest. Add 2 tablespoons of lime juice from the sauce lime jar.',
           'Peel 1 [[clove|garlic clove]]. [[mince|Mince]] it and add it.',
           'Rinse a small handful of [[cilantro]] and shake it dry. Chop the leaves fine until you have 1 tablespoon. Add it.',
           'Add 2 tablespoons of olive oil.',
@@ -1028,9 +1029,9 @@
         id: 'rice-kit', dish: 'milky', block: 'am', where: 'home',
         title: 'Pack the rice kit',
         body: [
-          'Measure ¾ cup of white rice into the zip bag. Do not rinse it.',
-          'Measure ¾ cup plus 2 tablespoons of chicken broth into the broth jar. Use one of the 2-cup jars.',
-          'Add ¼ teaspoon of salt plus a [[pinch]] to that jar. Use ¾ teaspoon if your broth says unsalted.',
+          'Measure ¾ cup of white rice into the zip bag. That is one ½ cup plus one ¼ cup. Do not rinse it.',
+          'Measure ¾ cup plus 2 tablespoons of chicken broth into the broth jar. That is one ½ cup, one ¼ cup, then 2 tablespoons. Use one of the 2-cup jars.',
+          'Add ¼ teaspoon of salt plus a [[pinch]] to that jar. Use ¾ teaspoon if your broth says unsalted. That is one ½ teaspoon plus one ¼ teaspoon.',
           'Lid on. Broth jar in the fridge. Rice bag by the door.'
         ],
         need: ['White rice', 'Chicken broth', 'Salt', 'Measuring cup'],
@@ -1152,7 +1153,7 @@
         id: 'chop-onion', dish: 'scoop', block: 'hers', where: 'hers',
         title: 'Dice the white onion',
         body: [
-          'Take one of the white onion wedges you brought.',
+          'Take the wrapped white onion wedge out of the fridge.',
           '[[dice|Dice]] it into small pieces, about ¼ inch.',
           'Put it in a medium bowl made of glass or stainless steel. Not aluminum: lime juice reacts with it.'
         ],
@@ -1212,7 +1213,7 @@
         body: [
           'Take 2 serranos. Leave them whole, but cut a [[slit]] down one side of each.',
           'Chop [[cilantro|parsley]] leaves until you have 2 tablespoons.',
-          'Both go in one small bowl.'
+          'Both go in one small bowl. Leave it on the counter. Wash your hands with soap after the serranos.'
         ],
         into: 'Small bowl (rice add-ins)',
         mins: 3
@@ -1237,7 +1238,7 @@
         id: 'chop-slaw-rest', dish: 'cream', block: 'hers', where: 'hers',
         title: 'Finish the slaw vegetables',
         body: [
-          'Slice the half red onion as thin as you can.',
+          'Take the wrapped half red onion and the bag of carrots out of the fridge. Slice the onion as thin as you can.',
           'Trim the roots off 3 [[scallions]]. Slice them thin, white and green parts.',
           '[[seed|Seed]] the jalapeño and [[mince]] it.',
           'Add 1 cup of shredded carrots from the bag.',
@@ -1280,7 +1281,8 @@
           'Cut off the extra third. Wrap it. Leave it at the edge of the board for now.'
         ],
         need: ['Halibut', 'Ceviche lime jar, lid off', 'Foil', 'Paper towels'],
-        warn: 'Sour or strongly fishy? Stop. Do not make ceviche with it.',
+        tip: 'Bad fish? Throw it away. Wash your hands, the knife and the board with hot soapy water. Tap Done on each fish step without doing it, so the guide moves on. When it asks if the fish is ready, tap White all the way. When you mix the ceviche, leave the fish out. The tomato bowl is then a salsa for the chips.',
+        warn: 'Sour or strongly fishy? Stop. Do not make ceviche with it. Read the tip below.',
         after: ['chop-onion'],
         mins: 2
       },
@@ -1291,9 +1293,10 @@
           '[[pat-dry|Pat the fish dry]] with paper towels.',
           'Skin on one side? Lay the fish skin-side down. At one end, cut down through the flesh until the knife touches the skin.',
           'Turn the blade flat. Hold the end of the skin with your other hand. Slide the knife along on top of the skin to the far end. Throw the skin away.',
-          'Cut the fish into strips as wide as your little finger. That is ½ inch. Then cut across the strips every ½ inch.',
+          'Cut the fish into strips as wide as your little finger. That is ½ inch. Is a strip taller than it is wide? Lay it on its side and cut it in half the long way. Then cut across the strips every ½ inch.',
           'Look at each piece as you cut. A thin curled thread in the flesh is a fish worm. Cut that piece out and throw it away.',
-          'Put the cubes in the fish bowl on top of the onion.'
+          'Put the cubes in the fish bowl on top of the onion.',
+          'Wash your hands with soap.'
         ],
         into: 'Fish bowl',
         after: ['fish-trim'],
@@ -1306,22 +1309,22 @@
           'Pour the whole ceviche lime jar (¾ cup) over the fish and onion. Stir with a spoon.',
           'The fish should [[float|float freely]] in the juice.',
           'Cover the bowl with the foil.',
-          'Wash your hands with soap.',
-          'Now the bowl goes into the fridge. So does the wrapped leftover fish. Cook that tomorrow.',
+          'The bowl goes into the fridge now. So does the wrapped leftover fish. Cook that tomorrow.',
+          'Then wash your hands with soap.',
           'The lime juice now [[cure|cures]] the fish. The first check is in 20 minutes. Thick cubes often need longer.'
         ],
         need: ['Ceviche lime jar', 'Spoon', 'Foil'],
         tip: 'Fish not covered by the juice? Move it all into a smaller, deeper bowl made of glass or stainless steel.',
         warn: 'Lime juice does not kill germs or parasites. The fish is still raw. Keep it in the fridge until it goes to the table.',
         after: ['fish-cube', 'limes'],
-        wait: { id: 'cure', mins: 20, label: 'Fish curing', attended: false, urgent: true },
+        wait: { id: 'cure', chip: 'Fish', mins: 20, label: 'Fish curing', attended: false, urgent: true },
         mins: 2
       },
       {
         id: 'wash-up', dish: 'day', block: 'hers', where: 'hers',
         title: 'Wash up after the raw fish',
         body: [
-          'Wash the cutting board, the knife and your hands with hot soapy water.',
+          'Wash the cutting board, the knife, the spoon and your hands with hot soapy water.',
           'Wipe the counter where the fish was. Wipe the fridge handle, the faucet and your phone screen too.'
         ],
         warn: 'Do this before you touch anything else.',
@@ -1349,7 +1352,7 @@
         body: [
           'Pour the fish and onion into the [[strainer]] in the sink. Let the juice run away.',
           'Tip the fish and onion back into the bowl. Cover. Fridge.',
-          'Wash the strainer, the fork and your hands with hot soapy water.'
+          'Wash the strainer, the fork, the plate and your hands with hot soapy water.'
         ],
         warn: 'Do not leave fish sitting in lime juice for hours. It turns mushy.',
         after: ['fish-check'],
@@ -1361,7 +1364,7 @@
         body: [
           'Take the ceviche bowl and the fish out of the fridge.',
           'Add the fish and onion to the ceviche bowl.',
-          'Add 2¼ teaspoons of olive oil and ¼ teaspoon of salt plus a [[pinch]].',
+          'Add 2¼ teaspoons of olive oil. That is 2 teaspoons plus one ¼ teaspoon. Add ¼ teaspoon of salt plus a [[pinch]].',
           'Cut the orange in half. Squeeze one half into a cup. Measure 1 tablespoon plus 1½ teaspoons of the juice into the bowl.',
           'Stir gently. Taste it on a chip. Flat or only sour? Add a [[pinch]] of salt, stir, and taste again. It can take 3 or 4 pinches.',
           'Cover. Back in the fridge. The avocado goes in at the very end.'
@@ -1375,7 +1378,7 @@
         id: 'slaw-toss', dish: 'cream', block: 'hers', where: 'hers',
         title: 'Dress the slaw',
         body: [
-          'Shake the slaw dressing jar. Pour all of it over the vegetables in the slaw bowl.',
+          'Take the slaw bowl and the slaw dressing jar out of the fridge. Shake the jar. Pour all of it over the vegetables.',
           'Toss with tongs or two spoons until everything is coated.',
           'Add ½ teaspoon of salt and ¼ teaspoon of black pepper. Toss. Taste a forkful. Flat? Add a [[pinch]] more salt and toss again.',
           'Cover. Fridge.'
@@ -1418,7 +1421,7 @@
         id: 'rice-toast', dish: 'milky', block: 'final', where: 'hers',
         title: 'Toast the rice',
         body: [
-          'Saucepan on the smallest burner, on [[heat|medium]]. Add 2¼ teaspoons of vegetable oil. Let it heat for 1 minute.',
+          'Saucepan on the smallest burner, on [[heat|medium]]. Add 2¼ teaspoons of vegetable oil. That is 2 teaspoons plus one ¼ teaspoon. Let it heat for 1 minute.',
           'Pour in the rice from the bag. Start the timer.',
           'Stir almost the whole time.'
         ],
@@ -1469,7 +1472,7 @@
         ],
         tip: 'Lid loose? Lay a sheet of foil over the pan and press the lid down on top.',
         after: ['rice-boil'],
-        wait: { id: 'rice', mins: 20, label: 'Rice cooking', attended: true, urgent: true },
+        wait: { id: 'rice', chip: 'Rice', mins: 20, label: 'Rice cooking', attended: true, urgent: true },
         mins: 1
       },
       {
@@ -1491,7 +1494,7 @@
         id: 'beans-reheat', dish: 'patron', block: 'final', where: 'hers',
         title: 'Warm the beans',
         body: [
-          'Pour the beans into a pot. Already in a pot on the stove? Leave them there.',
+          'Take the bean tub out of the fridge. Tip the beans and all their liquid into the pot you set out for them. Scrape the tub out with a spoon. Already in a pot on the stove? Leave them there.',
           'Lid on. Burner on [[heat|medium-low]].',
           'Stir them each time you are at the stove, so the bottom does not stick.',
           'Too thick? Add a splash of water.'
@@ -1533,13 +1536,14 @@
         warn: 'Do not reach in under the broiler. Pull the rack out to you.',
         after: ['corn-oil'],
         notBefore: { anchor: 'dinner', mins: -40 },
-        wait: { id: 'corn', mins: 12, label: 'Corn broiling', attended: true, urgent: true, laps: [3, 6, 9], lapLabel: 'Turn the corn' },
+        wait: { id: 'corn', chip: 'Corn', mins: 12, label: 'Corn broiling', attended: true, urgent: true, laps: [3, 6, 9], lapLabel: 'Turn the corn' },
         mins: 1
       },
       {
         id: 'set-out', dish: 'day', block: 'final', where: 'hers',
         title: 'Put the snacks and sauces out',
         body: [
+          'Take the onion jar, the pink sauce tub, the corn sauce tub and the plate of cotija out of the fridge.',
           'Chips, tostadas and saltines on the table.',
           'Put the jar of pickled onions on the table with a clean fork.',
           'Pink sauce on the table with a spoon.',
@@ -1554,7 +1558,7 @@
         title: 'Fluff the rice',
         body: [
           'Burner off.',
-          'Lift the lid. [[fluff|Drag a fork through the rice]] to separate the grains.',
+          'Lift the lid. Tilt it away from you: hot steam comes out. [[fluff|Drag a fork through the rice]] to separate the grains.',
           'Lid back on. Leave it.',
           'Stir the beans while you are at the stove. Bubbling all over? Turn them down to [[heat|low]].'
         ],
@@ -1570,14 +1574,14 @@
         body: [
           'Look first. Dark brown and black spots on every side? Then it is ready.',
           'No dark spots yet? Leave it in. Turn it every 2 minutes, for up to 6 more minutes.',
-          'Take the pan out with the oven mitt. Turn the broiler off.',
+          'Turn the broiler off. Pull the rack part-way out with the oven mitt. Lift the pan out with both hands: the oven mitt on one, a thick folded dry towel on the other.',
           'Set the pan on a free part of the stovetop or on a folded dry towel. Never on a bare counter.',
-          'Spoon the corn sauce over each hot ear and spread it around.',
-          'Sprinkle the cotija all over and press it on.',
+          'The pan stays very hot. Do not touch it. Spoon the corn sauce over each ear and spread it with the back of the spoon.',
+          'Sprinkle the cotija all over. It sticks to the sauce. Do not press it on with your fingers.',
           'Dust lightly with chipotle powder if you like.',
           '[[tent|Tent the pan loosely with foil]] to keep it warm.'
         ],
-        need: ['Corn sauce tub', 'Plate of cotija', 'Foil', 'Oven mitt'],
+        need: ['Corn sauce tub', 'Plate of cotija', 'Foil', 'Oven mitt', 'Folded dry kitchen towel'],
         look: 'Plump, shiny kernels with dark brown and black spots on every side. Your corn is white, so it will not turn yellow.',
         after: ['corn-in'],
         afterWait: 'corn',
@@ -1591,12 +1595,13 @@
           'Shake the marinade jar hard. Pour it over the shrimp. Scrape out what sticks with a spoon.',
           'Stir with the spoon until every shrimp is coated. The spoon goes in the sink.',
           'Leave the bowl on the counter.',
-          'They sit while the skillet heats, about 10 minutes in all. Never more than 20: the lime starts to cook them.'
+          'They sit while the skillet heats, about 10 minutes in all. Never more than 20: the lime starts to cook them.',
+          'While they sit, warm the clean serving bowl for the cooked shrimp. Fill it with hot tap water. Pour the water out and dry the bowl. Put it next to the stove with a sheet of foil and a clean fork.'
         ],
-        need: ['Bowl of shrimp', 'Marinade jar', 'Spoon'],
+        need: ['Bowl of shrimp', 'Marinade jar', 'Spoon', 'Clean serving bowl, foil and a clean fork'],
         after: ['shrimp-dry', 'marinade', 'corn-out'],
         notBefore: { anchor: 'dinner', mins: -21 },
-        wait: { id: 'marinade', mins: 5, label: 'Shrimp marinating', attended: false, urgent: false, max: 20 },
+        wait: { id: 'marinade', chip: 'Shrimp', mins: 5, label: 'Shrimp marinating', attended: false, urgent: false, max: 20 },
         mins: 1
       },
       {
@@ -1620,7 +1625,8 @@
           '[[avocado|Cut into it the long way until the knife hits the pit. Roll it so the cut goes all the way around.]] Twist the two halves apart.',
           'Take the half with no pit. Lay it on the board, skin side down. With a table knife, cut lines through the flesh one way, then the other way. Stop at the skin.',
           'Scoop the cubes out with a spoon. [[fold|Fold]] them gently into the ceviche.',
-          'Put the cilantro leaves on top. Take it to the table.'
+          'Put the cilantro leaves on top. They are in the fridge, in the damp paper towel. Take the ceviche to the table.',
+          'Tell her the fish is raw and may never have been frozen, so she can choose.'
         ],
         need: ['Avocado', 'Cutting board and knife', 'Table knife', 'Spoon'],
         tip: 'Brown or stringy inside? Use the second avocado.',
@@ -1633,16 +1639,16 @@
         id: 'skillet-hot', dish: 'pink', block: 'final', where: 'hers',
         title: 'Get the skillet very hot',
         body: [
-          'First warm the shrimp serving bowl. Fill it with hot tap water. Pour the water out and dry the bowl. Put it next to the stove with a sheet of foil.',
           'Turn on the fan over the stove. Open a window if you can.',
           'Cast-iron skillet on high heat. Add 1½ teaspoons of olive oil.',
           'Start the timer. Stay at the stove and watch the oil.',
-          'If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.'
+          'If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.',
+          'If the oil catches fire: burner off. Step back. Never use water. Do not move the skillet. There is very little oil, so the flames die out fast.'
         ],
         need: ['Cast-iron skillet', 'Olive oil', 'Tongs', 'Bowl of shrimp', 'Serving bowl and foil', 'Oven mitt'],
         look: 'The oil [[shimmer|shimmers]] and moves like water.',
         tip: 'Thick smoke before the shrimp go in? Slide the pan off the burner for 30 seconds. Use the oven mitt.',
-        warn: 'The handle gets as hot as the pan. Touch it only with the oven mitt, even after the burner is off.',
+        warn: 'The handle gets as hot as the pan. Touch it only with the oven mitt.',
         after: ['shrimp-marinate'],
         afterWait: 'marinade',
         timer: { secs: 180, label: 'Skillet heating' },
@@ -1669,12 +1675,12 @@
         body: [
           'Turn every shrimp over with the tongs, in the order you laid them down.',
           'Start the timer.',
-          'When it ends, lift out the thickest shrimp and cut it in half.',
-          'White all the way through? Burner off. Move them all to the warm serving bowl. Cover it with foil.',
+          'When it ends, lift out the thickest shrimp with the clean fork and cut it in half.',
+          'White all the way through? Burner off. Move them all to the warm serving bowl with the fork. Not with the tongs: they touched raw shrimp. Cover the bowl with foil.',
           'Gray or see-through in the middle? Give them 30 seconds more, then check again.',
           'Leave the skillet on the stove. It stays hot for a long time.'
         ],
-        need: ['Tongs', 'Knife', 'Warm serving bowl and foil'],
+        need: ['Tongs', 'Knife', 'Clean fork', 'Warm serving bowl and foil'],
         look: 'Pink outside, [[opaque|white inside]], curled into a [[c-shape|loose C]].',
         warn: 'Cooked shrimp go into a clean bowl. Never the bowl the raw shrimp were in.',
         after: ['shrimp-sear-1'],
@@ -1700,10 +1706,10 @@
         title: 'Last touches',
         body: [
           'The beans must be steaming and bubbling. Not yet? Turn the burner up to [[heat|medium]]. Stir until they are.',
-          'Stir the bowl of chopped cilantro into the beans.',
+          'Take the small bowl of chopped cilantro out of the fridge. Stir it into the beans.',
           'Pull the 2 serranos out of the rice.',
           'Check that every burner and the oven are off.',
-          'Beans, rice, corn and shrimp to the table.'
+          'Beans, rice, corn and shrimp to the table. Never put a hot pot or pan on the bare table. Put a folded dry towel or a wooden board under it.'
         ],
         after: ['beans-reheat', 'rice-fluff', 'corn-out', 'shrimp-sear-2'],
         notBefore: { anchor: 'dinner', mins: -5 },
@@ -1716,7 +1722,8 @@
           'Build each taco: shrimp, a pile of slaw, a drizzle of pink sauce, a squeeze of lime.',
           'Scoop the ceviche with tostadas, chips or saltines.',
           'Pickled onions go on everything.',
-          'Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than 2 hours.'
+          'Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than 2 hours.',
+          'All other leftovers go in the fridge within 2 hours.'
         ],
         after: ['finish-ceviche', 'finish-hot', 'tortillas', 'shrimp-sear-2', 'corn-out', 'set-out', 'slaw-drain'],
         notBefore: { anchor: 'dinner', mins: 0 },
@@ -1776,7 +1783,8 @@
         { id: 'b-salt', label: 'Salt' },
         { id: 'b-pepper', label: 'Black pepper' },
         { id: 'b-chipotle', label: 'Chipotle powder' },
-        { id: 'b-sriracha', label: 'Sriracha', ifNotDone: 'pink-sauce' },
+        { id: 'b-sriracha', label: 'Sriracha and an empty small tub', note: 'for the pink sauce', ifNotDone: 'pink-sauce' },
+        { id: 'b-corn-tub', label: 'An empty 2-cup tub', note: 'for the corn sauce', ifNotDone: 'corn-sauce' },
         { id: 'b-sugar', label: 'Sugar, ground cumin and an empty 2-cup jar', note: 'for the slaw dressing', ifNotDone: 'slaw-dressing' },
         { id: 'b-limes-all', label: 'All 15 limes, the lime squeezer, the fine grater or peeler', note: 'and 2 small jars for the juice', ifNotDone: 'limes' },
         { id: 'b-garlic', label: 'Garlic and the marinade jar', note: 'the jar may already hold the lime zest', ifNotDone: 'marinade' },
@@ -1799,7 +1807,7 @@
         { id: 'g-tongs', label: 'Tongs' },
         { id: 'g-spoon', label: 'Wooden spoon' },
         { id: 'g-measure', label: 'Measuring spoons and all your measuring cups' },
-        { id: 'g-towels', label: 'Paper towels and 2 kitchen towels' },
+        { id: 'g-towels', label: 'Paper towels and 3 kitchen towels', note: 'keep one clean for the tortillas' },
         { id: 'g-mitt', label: 'Oven mitt' },
         { id: 'g-charger', label: 'Phone charger' }
       ]

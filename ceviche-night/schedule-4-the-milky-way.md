@@ -48,9 +48,9 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Goes into: Purée jar
     - Tip: Blender just spinning? Stop it first. Push the tomatoes down with a spoon. Add 1 tablespoon of the juice from the can. Blend again.
 2. **9:03 AM — Pack the rice kit** (**3 min**)
-    - Measure ¾ cup of white rice into the zip bag. Do not rinse it.
-    - Measure ¾ cup plus 2 tablespoons of chicken broth into the broth jar. Use one of the 2-cup jars.
-    - Add ¼ teaspoon of salt plus a pinch to that jar. Use ¾ teaspoon if your broth says unsalted.
+    - Measure ¾ cup of white rice into the zip bag. That is one ½ cup plus one ¼ cup. Do not rinse it.
+    - Measure ¾ cup plus 2 tablespoons of chicken broth into the broth jar. That is one ½ cup, one ¼ cup, then 2 tablespoons. Use one of the 2-cup jars.
+    - Add ¼ teaspoon of salt plus a pinch to that jar. Use ¾ teaspoon if your broth says unsalted. That is one ½ teaspoon plus one ¼ teaspoon.
     - Lid on. Broth jar in the fridge. Rice bag by the door.
     - You need:
         - White rice
@@ -64,7 +64,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 3. **3:40 PM — Get the rice add-ins ready** (**3 min**)
     - Take 2 serranos. Leave them whole, but cut a slit down one side of each.
     - Chop parsley leaves until you have 2 tablespoons.
-    - Both go in one small bowl.
+    - Both go in one small bowl. Leave it on the counter. Wash your hands with soap after the serranos.
     - Goes into: Small bowl (rice add-ins)
 4. **6:22 PM — Line up everything for the rice** (**2 min**)
     - Put these next to the stove. Once the rice starts you cannot leave the pan for **10 minutes**.
@@ -77,7 +77,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - [ ] Bowl of serranos and parsley
     - Not before 6:22 PM.
 5. **6:25 PM — Toast the rice** (**7 min**)
-    - Saucepan on the smallest burner, on medium. Add 2¼ teaspoons of vegetable oil. Let it heat for **1 minute**.
+    - Saucepan on the smallest burner, on medium. Add 2¼ teaspoons of vegetable oil. That is 2 teaspoons plus one ¼ teaspoon. Let it heat for **1 minute**.
     - Pour in the rice from the bag. Start the timer.
     - Stir almost the whole time.
     - You need:
@@ -117,17 +117,17 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Tip: Lid loose? Lay a sheet of foil over the pan and press the lid down on top.
 9. **6:58 PM — Fluff the rice** (**1 min**)
     - Burner off.
-    - Lift the lid. Drag a fork through the rice to separate the grains.
+    - Lift the lid. Tilt it away from you: hot steam comes out. Drag a fork through the rice to separate the grains.
     - Lid back on. Leave it.
     - Stir the beans while you are at the stove. Bubbling all over? Turn them down to low.
     - Look for: No liquid left. The grains are tender.
     - Tip: Still wet at the bottom, or hard when you bite a grain? Lid back on. Lowest heat. **5 more minutes**. Pan dry and grains still hard? Sprinkle on a splash of water first.
 10. **7:26 PM — Last touches** (**2 min**; shared step, it also covers other dishes)
     - The beans must be steaming and bubbling. Not yet? Turn the burner up to medium. Stir until they are.
-    - Stir the bowl of chopped cilantro into the beans.
+    - Take the small bowl of chopped cilantro out of the fridge. Stir it into the beans.
     - Pull the 2 serranos out of the rice.
     - Check that every burner and the oven are off.
-    - Beans, rice, corn and shrimp to the table.
+    - Beans, rice, corn and shrimp to the table. Never put a hot pot or pan on the bare table. Put a folded dry towel or a wooden board under it.
     - Not before 7:25 PM.
 
 ## If you did not soak the beans

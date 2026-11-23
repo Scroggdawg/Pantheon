@@ -52,11 +52,10 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
         - Knife
     - Look for: Slices about as thick as a coin.
 3. **7:22 AM — Toast the oregano** (**4 min**)
-    - Put the dry skillet on medium-high. No oil.
-    - Let it heat until a drop of water sizzles in it. That takes **a minute or two**.
-    - Add 1 teaspoon of dried Mexican oregano. Start the timer. Keep it moving: shake the pan or stir with a spoon.
-    - When the timer ends or it smells strong, tip or spoon it straight into the quart jar. It burns fast.
-    - Burner off.
+    - Dry skillet on medium-high. No oil. Wait until a drop of water sizzles in it, **a minute or two**.
+    - Add 1 teaspoon of dried Mexican oregano. Start the timer. Stir it with a spoon the whole time.
+    - When the timer ends or it smells strong: burner off. Spoon it straight into the quart jar. It burns fast.
+    - Do not lift or tip the skillet. It is heavy and the handle is hot.
     - You need:
         - Skillet
         - Spoon
@@ -66,11 +65,11 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - **Timer: 30 seconds.** Oregano toasting. Stay here.
     - Look for: You can smell it from a step away. No smoke.
 4. **7:25 AM — Dunk the onions in hot water** (**3 min**)
-    - The water should be at a full boil.
+    - Lift the lid with the oven mitt. Tilt it away from you. The water should be at a full boil.
     - Not boiling? Lid on, burner on high, and wait. No pot of water on the stove? Fill a medium pot with 5 cups of water and boil it first.
-    - Slide all the sliced onions in. Turn the burner off.
+    - Slide all the sliced onions in from the cutting board. Go gently so the water does not splash. Turn the burner off.
     - Start the timer. You like strong onion flavor, so **30 seconds** is enough.
-    - When it ends, pour everything through the strainer in the sink.
+    - When it ends, carry the pot to the sink with both hands. Hot handles? Hold one with the oven mitt and the other with a folded dry towel. Pour everything slowly through the strainer, away from you.
     - This is called blanching.
     - You need:
         - Sliced onions
@@ -78,9 +77,9 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - **Timer: 30 seconds.** Onions in hot water. Stay here.
     - Look for: The onions bend but still have a little crunch.
     - Tip: For milder onions next time, leave them in for **2 minutes**.
-    - **Warning:** Boiling water and steam. Lower the onions in gently. Carry the pot with both hands. Pour slowly, away from you. Keep your face back.
+    - **Warning:** Boiling water and steam. Keep your face back.
 5. **7:29 AM — Fill the onion jar** (**4 min**)
-    - Into the quart jar with the oregano: the drained onions, ½ cup of white vinegar and ½ cup of water.
+    - Lift the drained onions into the quart jar with the oregano. Use tongs: the onions are hot. Add ½ cup of white vinegar and ½ cup of water.
     - Add 2 allspice berries, 3 black peppercorns, 1 bay leaf and ½ teaspoon of salt.
     - Lid on. Shake. Into the fridge.
     - You need:

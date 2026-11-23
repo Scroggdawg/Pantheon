@@ -45,7 +45,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
@@ -58,7 +58,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 2. **8:40 AM — Shake up the slaw dressing** (**6 min**)
-    - Into one of the 2-cup jars: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice.
+    - Into one of the 2-cup jars: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice from the sauce lime jar.
     - Add 2 tablespoons of sugar, 1 teaspoon of ground cumin and 1 teaspoon of chipotle powder.
     - Lid on tight. Shake until smooth. Fridge.
     - You need:
@@ -86,7 +86,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Goes into: Slaw bowl (large)
     - Look for: Thin ribbons, like coleslaw.
 4. **3:53 PM — Finish the slaw vegetables** (**8 min**)
-    - Slice the half red onion as thin as you can.
+    - Take the wrapped half red onion and the bag of carrots out of the fridge. Slice the onion as thin as you can.
     - Trim the roots off 3 scallions. Slice them thin, white and green parts.
     - Seed the jalapeño and mince it.
     - Add 1 cup of shredded carrots from the bag.
@@ -94,7 +94,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Goes into: Slaw bowl
     - **Warning:** Wash your hands with soap after the jalapeño.
 5. **5:35 PM — Dress the slaw** (**4 min**)
-    - Shake the slaw dressing jar. Pour all of it over the vegetables in the slaw bowl.
+    - Take the slaw bowl and the slaw dressing jar out of the fridge. Shake the jar. Pour all of it over the vegetables.
     - Toss with tongs or two spoons until everything is coated.
     - Add ½ teaspoon of salt and ¼ teaspoon of black pepper. Toss. Taste a forkful. Flat? Add a pinch more salt and toss again.
     - Cover. Fridge.
@@ -113,6 +113,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Scoop the ceviche with tostadas, chips or saltines.
     - Pickled onions go on everything.
     - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
+    - All other leftovers go in the fridge within **2 hours**.
 
 ## If you did not soak the beans
 

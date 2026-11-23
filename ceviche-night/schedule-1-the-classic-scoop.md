@@ -42,7 +42,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
@@ -58,7 +58,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 ### Her kitchen
 
 2. **3:17 PM — Dice the white onion** (**5 min**)
-    - Take one of the white onion wedges you brought.
+    - Take the wrapped white onion wedge out of the fridge.
     - Dice it into small pieces, about ¼ inch.
     - Put it in a medium bowl made of glass or stainless steel. Not aluminum: lime juice reacts with it.
     - Goes into: Fish bowl (medium, glass or steel)
@@ -95,21 +95,23 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
         - Ceviche lime jar, lid off
         - Foil
         - Paper towels
-    - **Warning:** Sour or strongly fishy? Stop. Do not make ceviche with it.
+    - Tip: Bad fish? Throw it away. Wash your hands, the knife and the board with hot soapy water. Tap Done on each fish step without doing it, so the guide moves on. When it asks if the fish is ready, tap White all the way. When you mix the ceviche, leave the fish out. The tomato bowl is then a salsa for the chips.
+    - **Warning:** Sour or strongly fishy? Stop. Do not make ceviche with it. Read the tip below.
 8. **4:11 PM — Cut the fish into ½-inch cubes** (**4 min**)
     - Pat the fish dry with paper towels.
     - Skin on one side? Lay the fish skin-side down. At one end, cut down through the flesh until the knife touches the skin.
     - Turn the blade flat. Hold the end of the skin with your other hand. Slide the knife along on top of the skin to the far end. Throw the skin away.
-    - Cut the fish into strips as wide as your little finger. That is ½ inch. Then cut across the strips every ½ inch.
+    - Cut the fish into strips as wide as your little finger. That is ½ inch. Is a strip taller than it is wide? Lay it on its side and cut it in half the long way. Then cut across the strips every ½ inch.
     - Look at each piece as you cut. A thin curled thread in the flesh is a fish worm. Cut that piece out and throw it away.
     - Put the cubes in the fish bowl on top of the onion.
+    - Wash your hands with soap.
     - Goes into: Fish bowl
 9. **4:15 PM — Cover the fish with lime juice** (**2 min**)
     - Pour the whole ceviche lime jar (¾ cup) over the fish and onion. Stir with a spoon.
     - The fish should float freely in the juice.
     - Cover the bowl with the foil.
-    - Wash your hands with soap.
-    - Now the bowl goes into the fridge. So does the wrapped leftover fish. Cook that tomorrow.
+    - The bowl goes into the fridge now. So does the wrapped leftover fish. Cook that tomorrow.
+    - Then wash your hands with soap.
     - The lime juice now cures the fish. The first check is in **20 minutes**. Thick cubes often need longer.
     - You need:
         - Ceviche lime jar
@@ -120,7 +122,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Tip: Fish not covered by the juice? Move it all into a smaller, deeper bowl made of glass or stainless steel.
     - **Warning:** Lime juice does not kill germs or parasites. The fish is still raw. Keep it in the fridge until it goes to the table.
 10. **4:17 PM — Wash up after the raw fish** (**4 min**; shared step, it also covers other dishes)
-    - Wash the cutting board, the knife and your hands with hot soapy water.
+    - Wash the cutting board, the knife, the spoon and your hands with hot soapy water.
     - Wipe the counter where the fish was. Wipe the fridge handle, the faucet and your phone screen too.
     - **Warning:** Do this before you touch anything else.
 11. **4:37 PM — Is the fish ready?** (**1 min**)
@@ -134,12 +136,12 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 12. **4:38 PM — Drain the fish** (**2 min**)
     - Pour the fish and onion into the strainer in the sink. Let the juice run away.
     - Tip the fish and onion back into the bowl. Cover. Fridge.
-    - Wash the strainer, the fork and your hands with hot soapy water.
+    - Wash the strainer, the fork, the plate and your hands with hot soapy water.
     - **Warning:** Do not leave fish sitting in lime juice for hours. It turns mushy.
 13. **5:30 PM — Mix the ceviche** (**5 min**)
     - Take the ceviche bowl and the fish out of the fridge.
     - Add the fish and onion to the ceviche bowl.
-    - Add 2¼ teaspoons of olive oil and ¼ teaspoon of salt plus a pinch.
+    - Add 2¼ teaspoons of olive oil. That is 2 teaspoons plus one ¼ teaspoon. Add ¼ teaspoon of salt plus a pinch.
     - Cut the orange in half. Squeeze one half into a cup. Measure 1 tablespoon plus 1½ teaspoons of the juice into the bowl.
     - Stir gently. Taste it on a chip. Flat or only sour? Add a pinch of salt, stir, and taste again. It can take 3 or 4 pinches.
     - Cover. Back in the fridge. The avocado goes in at the very end.
@@ -155,7 +157,8 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Cut into it the long way until the knife hits the pit. Roll it so the cut goes all the way around. Twist the two halves apart.
     - Take the half with no pit. Lay it on the board, skin side down. With a table knife, cut lines through the flesh one way, then the other way. Stop at the skin.
     - Scoop the cubes out with a spoon. Fold them gently into the ceviche.
-    - Put the cilantro leaves on top. Take it to the table.
+    - Put the cilantro leaves on top. They are in the fridge, in the damp paper towel. Take the ceviche to the table.
+    - Tell her the fish is raw and may never have been frozen, so she can choose.
     - You need:
         - Avocado
         - Cutting board and knife
@@ -169,6 +172,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Scoop the ceviche with tostadas, chips or saltines.
     - Pickled onions go on everything.
     - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
+    - All other leftovers go in the fridge within **2 hours**.
 
 ## If you did not soak the beans
 
@@ -185,4 +189,4 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 - Mix the fish with the tomatoes no more than **2 hours** before dinner.
 - Avocado goes in at the last minute.
 - Throw away any ceviche that sat out for more than **2 hours**.
-- Tell your date the fish is raw and was never frozen, so she can choose.
+- Tell your date the fish is raw and may never have been frozen, so she can choose. Freezing is what kills parasites in raw fish.

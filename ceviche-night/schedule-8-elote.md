@@ -40,7 +40,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
@@ -53,7 +53,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 2. **8:46 AM — Stir the corn sauce** (**3 min**)
-    - In one of the 2-cup tubs: ½ cup of sour cream, ¼ cup of mayonnaise and 1 tablespoon of lime juice.
+    - In one of the 2-cup tubs: ½ cup of sour cream, ¼ cup of mayonnaise and 1 tablespoon of lime juice from the sauce lime jar.
     - Stir until smooth. Lid on. Fridge.
     - You need:
         - Sour cream
@@ -99,10 +99,10 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 6. **7:03 PM — Take the corn out and dress it** (**4 min**)
     - Look first. Dark brown and black spots on every side? Then it is ready.
     - No dark spots yet? Leave it in. Turn it every **2 minutes**, for up to **6 more minutes**.
-    - Take the pan out with the oven mitt. Turn the broiler off.
+    - Turn the broiler off. Pull the rack part-way out with the oven mitt. Lift the pan out with both hands: the oven mitt on one, a thick folded dry towel on the other.
     - Set the pan on a free part of the stovetop or on a folded dry towel. Never on a bare counter.
-    - Spoon the corn sauce over each hot ear and spread it around.
-    - Sprinkle the cotija all over and press it on.
+    - The pan stays very hot. Do not touch it. Spoon the corn sauce over each ear and spread it with the back of the spoon.
+    - Sprinkle the cotija all over. It sticks to the sauce. Do not press it on with your fingers.
     - Dust lightly with chipotle powder if you like.
     - Tent the pan loosely with foil to keep it warm.
     - You need:
@@ -110,19 +110,21 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
         - Plate of cotija
         - Foil
         - Oven mitt
+        - Folded dry kitchen towel
     - Look for: Plump, shiny kernels with dark brown and black spots on every side. Your corn is white, so it will not turn yellow.
 7. **7:26 PM — Last touches** (**2 min**; shared step, it also covers other dishes)
     - The beans must be steaming and bubbling. Not yet? Turn the burner up to medium. Stir until they are.
-    - Stir the bowl of chopped cilantro into the beans.
+    - Take the small bowl of chopped cilantro out of the fridge. Stir it into the beans.
     - Pull the 2 serranos out of the rice.
     - Check that every burner and the oven are off.
-    - Beans, rice, corn and shrimp to the table.
+    - Beans, rice, corn and shrimp to the table. Never put a hot pot or pan on the bare table. Put a folded dry towel or a wooden board under it.
     - Not before 7:25 PM.
 8. **7:30 PM — Dinner is served** (shared step, it also covers other dishes)
     - Build each taco: shrimp, a pile of slaw, a drizzle of pink sauce, a squeeze of lime.
     - Scoop the ceviche with tostadas, chips or saltines.
     - Pickled onions go on everything.
     - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
+    - All other leftovers go in the fridge within **2 hours**.
 
 ## If you did not soak the beans
 

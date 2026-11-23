@@ -65,7 +65,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
@@ -78,7 +78,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 3. **8:49 AM — Make the shrimp marinade** (**8 min**)
-    - The marinade jar already holds the lime zest. Add 2 tablespoons of lime juice.
+    - The marinade jar already holds the lime zest. Add 2 tablespoons of lime juice from the sauce lime jar.
     - Peel 1 garlic clove. Mince it and add it.
     - Rinse a small handful of cilantro and shake it dry. Chop the leaves fine until you have 1 tablespoon. Add it.
     - Add 2 tablespoons of olive oil.
@@ -121,20 +121,22 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Stir with the spoon until every shrimp is coated. The spoon goes in the sink.
     - Leave the bowl on the counter.
     - They sit while the skillet heats, about **10 minutes** in all. Never more than 20: the lime starts to cook them.
+    - While they sit, warm the clean serving bowl for the cooked shrimp. Fill it with hot tap water. Pour the water out and dry the bowl. Put it next to the stove with a sheet of foil and a clean fork.
     - You need:
         - Bowl of shrimp
         - Marinade jar
         - Spoon
+        - Clean serving bowl, foil and a clean fork
     - Not before 7:09 PM.
     - **Timer: 5 minutes.** Shrimp marinating. Keep working. It ends about 7:15 PM.
     - Never longer than **20 minutes**.
     - When it ends: Get the skillet very hot.
 7. **7:15 PM — Get the skillet very hot** (**4 min**)
-    - First warm the shrimp serving bowl. Fill it with hot tap water. Pour the water out and dry the bowl. Put it next to the stove with a sheet of foil.
     - Turn on the fan over the stove. Open a window if you can.
     - Cast-iron skillet on high heat. Add 1½ teaspoons of olive oil.
     - Start the timer. Stay at the stove and watch the oil.
     - If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.
+    - If the oil catches fire: burner off. Step back. Never use water. Do not move the skillet. There is very little oil, so the flames die out fast.
     - You need:
         - Cast-iron skillet
         - Olive oil
@@ -145,7 +147,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - **Timer: 3 minutes.** Skillet heating. Stay here.
     - Look for: The oil shimmers and moves like water.
     - Tip: Thick smoke before the shrimp go in? Slide the pan off the burner for **30 seconds**. Use the oven mitt.
-    - **Warning:** The handle gets as hot as the pan. Touch it only with the oven mitt, even after the burner is off.
+    - **Warning:** The handle gets as hot as the pan. Touch it only with the oven mitt.
 8. **7:19 PM — Sear the shrimp: side one** (**2 min**)
     - Lift the shrimp out of the marinade with tongs. Lay them in the skillet in one layer.
     - Start at one side and work around the pan.
@@ -158,13 +160,14 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 9. **7:20 PM — Flip the shrimp: side two** (**2 min**)
     - Turn every shrimp over with the tongs, in the order you laid them down.
     - Start the timer.
-    - When it ends, lift out the thickest shrimp and cut it in half.
-    - White all the way through? Burner off. Move them all to the warm serving bowl. Cover it with foil.
+    - When it ends, lift out the thickest shrimp with the clean fork and cut it in half.
+    - White all the way through? Burner off. Move them all to the warm serving bowl with the fork. Not with the tongs: they touched raw shrimp. Cover the bowl with foil.
     - Gray or see-through in the middle? Give them **30 seconds** more, then check again.
     - Leave the skillet on the stove. It stays hot for a long time.
     - You need:
         - Tongs
         - Knife
+        - Clean fork
         - Warm serving bowl and foil
     - **Timer: 1 minute.** Shrimp, side two. Stay here.
     - Look for: Pink outside, white inside, curled into a loose C.
@@ -178,16 +181,17 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Tip: No microwave? Warm each one in a dry skillet, about **30 seconds** per side.
 11. **7:26 PM — Last touches** (**2 min**; shared step, it also covers other dishes)
     - The beans must be steaming and bubbling. Not yet? Turn the burner up to medium. Stir until they are.
-    - Stir the bowl of chopped cilantro into the beans.
+    - Take the small bowl of chopped cilantro out of the fridge. Stir it into the beans.
     - Pull the 2 serranos out of the rice.
     - Check that every burner and the oven are off.
-    - Beans, rice, corn and shrimp to the table.
+    - Beans, rice, corn and shrimp to the table. Never put a hot pot or pan on the bare table. Put a folded dry towel or a wooden board under it.
     - Not before 7:25 PM.
 12. **7:30 PM — Dinner is served** (shared step, it also covers other dishes)
     - Build each taco: shrimp, a pile of slaw, a drizzle of pink sauce, a squeeze of lime.
     - Scoop the ceviche with tostadas, chips or saltines.
     - Pickled onions go on everything.
     - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
+    - All other leftovers go in the fridge within **2 hours**.
 
 ## If you did not soak the beans
 
