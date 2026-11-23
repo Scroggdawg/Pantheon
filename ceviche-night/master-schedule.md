@@ -322,7 +322,7 @@ Only if a step did not get done:
   - Timer: Beans coming to a boil, **9 minutes**. Ends about 7:14 AM.
 - [ ] 7:05 AM — Set out your gear · was 7:02 AM · **6 min**
 - [ ] 7:11 AM — Cut the pork small · was 7:08 AM · **3 min**
-- [ ] 7:14 AM — Boil the beans for 2 minutes · extra step · **3 min**
+- [ ] 7:14 AM — Boil the beans for **2 minutes** · extra step · **3 min**
   - Timer: Beans resting in hot water, **1 hour**. Ends about 8:16 AM.
 - [ ] 7:16 AM — Put the onion water on · was 7:15 AM · **1 min**
   - Timer: Onion water heating, **8 minutes**. Ends about 7:25 AM.

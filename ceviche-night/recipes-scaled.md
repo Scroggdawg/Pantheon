@@ -615,7 +615,7 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
         - Big pot with a lid
         - Measuring cup
     - **Timer: 9 minutes.** Beans coming to a boil. Keep working.
-    - When it ends: Boil the beans for 2 minutes.
+    - When it ends: Boil the beans for **2 minutes**.
     - Tip: If foam lifts the lid, turn the burner down a little and leave the lid slightly open.
 3. **Boil the beans for 2 minutes**
     - Lift the lid. The pot should be at a full boil. If not, wait until it is.

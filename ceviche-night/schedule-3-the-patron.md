@@ -254,7 +254,7 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
         - Big pot with a lid
         - Measuring cup
     - **Timer: 9 minutes.** Beans coming to a boil. Keep working. It ends about 7:14 AM.
-    - When it ends: Boil the beans for 2 minutes.
+    - When it ends: Boil the beans for **2 minutes**.
     - Tip: If foam lifts the lid, turn the burner down a little and leave the lid slightly open.
 3. **7:11 AM — Cut the pork small** (was 7:08 AM)
 4. **7:14 AM — Boil the beans for 2 minutes** (**3 min**; extra step)
