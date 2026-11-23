@@ -315,6 +315,8 @@ Only if a step did not get done:
 - Skip: Drain the beans.
 - From 11:00 AM on, the schedule above is right again.
 
+### Your kitchen · morning
+
 - [ ] 7:00 AM — Sort and rinse the beans · extra step · **3 min**
 - [ ] 7:03 AM — Quick soak: beans and water on high · extra step · **2 min**
   - Timer: Beans coming to a boil, **9 minutes**. Ends about 7:14 AM.

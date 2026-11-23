@@ -103,7 +103,7 @@ const SHOTS = [
   { name: '12c-setup-end', run: async p => { await tab(p, 'setup'); await p.locator('#view [data-act="reset-ask"]').click(); await p.evaluate(() => { const pg = document.getElementById('page'); pg.scrollTop = pg.scrollHeight; }); } },
   { name: '13-glossary', run: async p => { await p.evaluate(() => S.walk(st => st && /\[\[/.test(JSON.stringify(st.body)))); await p.locator('#view .term').first().click(); } },
   { name: '13b-help', run: async p => { await p.evaluate(() => S.walk(st => st && /\[\[/.test(JSON.stringify(st.body)))); await p.locator('#view [data-act="help"]').click(); } },
-  { name: '14-preview', time: '2026-11-22T22:00:00', run: async p => { await p.locator('#actions [data-act="preview-enter"]').click(); await p.locator('#actions [data-act="done"]').click(); } },
+  { name: '14-preview', time: '2026-11-22T22:00:00', run: async p => { await p.locator('#actions [data-act="preview-enter"]').click(); const c = p.locator('#actions [data-act="choose"]').first(); if (await c.count()) await c.click(); else await p.locator('#actions [data-act="done"]').click(); } },
   { name: '15-longest-step', run: async p => { await p.evaluate(() => { const best = __cook.plan.steps.slice().sort((a, b) => S.length(b) - S.length(a))[0]; S.walk(st => st && st.id === best.id); }); } },
   { name: '15b-longest-step-end', run: async p => { await p.evaluate(() => { const best = __cook.plan.steps.slice().sort((a, b) => S.length(b) - S.length(a))[0]; S.walk(st => st && st.id === best.id); const pg = document.getElementById('page'); pg.scrollTop = pg.scrollHeight; }); } },
   { name: '16-done', run: async p => { await p.evaluate(() => { S.walk((st, c) => c.mode === 'done'); }); } },

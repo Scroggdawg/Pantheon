@@ -344,7 +344,7 @@ function planBs(base, alt) {
 }
 function whereLabel(step) { return step.where === 'hers' ? placeLabel('hers') : placeLabel('home-am').split(' · ')[0]; }
 
-// The steps a dish file lists: its own, plus the shared "day" steps tied to them by an `after` link (juicing the limes, serving).
+// The steps a dish file lists: its own, plus the shared "day" steps tied to them by an `after` link (in either direction).
 function dishEntries(day, dish) {
   const own = day.entries.filter(function (e) { return e.step && e.step.dish === dish.id; });
   const ownIds = own.map(function (e) { return e.step.id; });
@@ -380,7 +380,7 @@ function conditionWords(it) {                               // when a pack item 
   if (it.when) bits.push('the plan changed');
   return bits.join(' and ');
 }
-function itemText(it) {                                    // "Ice packs: on the bottom"; a note that starts with "and" just carries on
+function itemText(it) {                                    // "label: note"; a note that starts with "and" just carries on
   if (!it.note) return it.label;
   return it.label + (/^(and|or|plus)\b/i.test(it.note) ? ', ' : ': ') + it.note;
 }
@@ -450,11 +450,6 @@ ul.ticks.c2 { column-count: 2; }
 ul.ticks.c3 { column-count: 3; }
 ul.ticks li { display: flex; gap: 6pt; align-items: flex-start; margin: 0 0 2.5pt; break-inside: avoid; }
 .m { margin: 2.5pt 0 0; }
-.need { margin: 2.5pt 0 0; }
-.need ul { margin: 0; padding-left: 13pt; column-gap: 18pt; }
-.need li { margin: 0; break-inside: avoid; }
-.bd.stack .need ul.c2 { column-count: 2; }
-.bd.stack .need ul.c3 { column-count: 3; }
 .timer { margin: 3pt 0 0; padding: 1.5pt 5pt; border: 1pt solid #000; border-radius: 2pt; }
 .warn { margin: 3pt 0 0; padding: 2pt 5pt; border: 1.5pt solid #000; border-left: 6pt solid #000; }
 .warn .lbl { letter-spacing: .04em; }
@@ -503,7 +498,7 @@ table.jars td.sz { width: 31%; }
 }
 @media screen and (max-width: 760px) {
   body { padding: 16px; }
-  .cols, .lines.c2, ul.ticks.c2, ul.ticks.c3, .bd.stack .need ul.c2, .bd.stack .need ul.c3 { column-count: 1; }
+  .cols, .lines.c2, ul.ticks.c2, ul.ticks.c3 { column-count: 1; }
   .bd { display: block; }
   .side { border-left: 0; padding-left: 0; margin-top: 2pt; }
   .head { flex-wrap: wrap; }
@@ -517,16 +512,8 @@ table.jars td.sz { width: 31%; }
 /* How wide to make the left side of a band. Rough text measuring is enough: it only picks one of a few widths. */
 const CHAR_PT = 6.2;            // about one character at the body size, with a little slack for line ends
 const BAND_PT = 528;            // inner width of a band
-function linesFor(items, width, stacked) {          // items: strings, or { t: text, list: [items under it], cols }
-  const fit = function (t, w) { return Math.max(1, Math.ceil(t.length * CHAR_PT / w)); };
-  return items.reduce(function (a, x) {
-    let n = fit(typeof x === 'string' ? x : x.t, width);
-    if (x && x.list) {
-      const cols = stacked ? x.cols : 1, colW = (width - 18 * (cols - 1)) / cols - 13;
-      n += Math.ceil(x.list.reduce(function (k, y) { return k + fit(y, colW); }, 0) / cols);
-    }
-    return a + n;
-  }, 0);
+function linesFor(texts, width) {
+  return texts.reduce(function (a, t) { return a + Math.max(1, Math.ceil(t.length * CHAR_PT / width)); }, 0);
 }
 function chooseSplit(left, right) {
   if (!right.length || !left.length) return { stack: true };
@@ -535,7 +522,7 @@ function chooseSplit(left, right) {
     const cost = Math.max(linesFor(left, (BAND_PT - 18) * r - 13), linesFor(right, (BAND_PT - 18) * (1 - r) - 5));
     if (!best || cost < best.cost || (cost === best.cost && Math.abs(r - 0.6) < Math.abs(best.r - 0.6))) best = { r: r, cost: cost };
   });
-  const stacked = linesFor(left, BAND_PT - 13) + linesFor(right, BAND_PT, true);
+  const stacked = linesFor(left, BAND_PT - 13) + linesFor(right, BAND_PT);
   return stacked <= best.cost ? { stack: true } : { r: best.r };
 }
 
@@ -579,12 +566,8 @@ function stepHtml(day, e, o) {
     }
   }
 
-  if ((s.need || []).length) {                             // a list, in columns when the band is not split in two
-    const longest = s.need.reduce(function (a, x) { return Math.max(a, x.length); }, 0);
-    const cols = s.need.length < 2 ? 1 : s.need.length >= 3 && longest <= 24 ? 3 : 2;
-    R.push({ h: '<div class="need"><b>You need:</b><ul class="c' + cols + '">' + s.need.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>',
-             t: 'You need:', list: s.need, cols: cols });
-  }
+  // On paper the things to have at hand stay on one run-on line: one bullet per thing adds 3 pages to the sheet.
+  if ((s.need || []).length) R.push({ h: '<p class="m"><b>You need:</b> ' + s.need.map(esc).join(' · ') + '</p>', t: 'You need: ' + s.need.join(' · ') });
   if (s.into) R.push({ h: '<p class="m"><b>Goes into:</b> ' + esc(plain(s.into)) + '</p>', t: 'Goes into: ' + plain(s.into) });
   const nb = notBeforeAt(day, s);
   if (nb != null) R.push({ h: '<p class="m">Not before <b>' + clock(nb) + '</b>.</p>', t: 'Not before ' + clock(nb) + '.' });
@@ -598,7 +581,7 @@ function stepHtml(day, e, o) {
     const t = ['Timer: ' + words(w.mins) + '. ' + sentence(w.label) + ' Keep working. It ends about ' + clock(w.end) + '.   '];
     if (w.lapTimes.length) { const x = 'At ' + listAnd(w.lapTimes.map(clock)) + ': ' + sentence(w.lapLabel); h += '<br>' + esc(x); t.push(x); }
     if (w.maxAt != null) { h += '<br>Never longer than <b>' + esc(words(w.maxMins)) + '</b> (' + clock(w.maxAt) + ').'; t.push('Never longer than ' + words(w.maxMins) + ' (' + clock(w.maxAt) + ').'); }
-    if (w.then) { const y = 'When it ends: ' + sentence(w.then.title); h += '<br>' + esc(y); t.push(y); }
+    if (w.then) { const y = 'When it ends: ' + sentence(w.then.title); h += '<br>' + richH(y); t.push(y); }
     R.push({ h: h + '</p>', t: t[0] });
     t.slice(1).forEach(function (x) { R.push({ h: '', t: x }); });
   }
@@ -611,7 +594,7 @@ function stepHtml(day, e, o) {
       t.push('After ' + listAnd(ow.lapMins.map(words)) + ': ' + sentence(ow.lapLabel));
     }
     if (ow.maxMins != null) { h += '<br>Never longer than <b>' + esc(words(ow.maxMins)) + '</b>.'; t.push('Never longer than ' + words(ow.maxMins) + '.'); }
-    if (ow.then) { const y = 'When it ends: ' + sentence(ow.then.title); h += '<br>' + esc(y); t.push(y); }
+    if (ow.then) { const y = 'When it ends: ' + sentence(ow.then.title); h += '<br>' + richH(y); t.push(y); }
     R.push({ h: h + '</p>', t: t[0] });
     t.slice(1).forEach(function (x) { R.push({ h: '', t: x }); });
   }
@@ -631,7 +614,7 @@ function stepHtml(day, e, o) {
                    (ticks.length ? '<ul class="ticks">' + ticks.map(function (x) { return x.h; }).join('') + '</ul>' : '');
   const rightHtml = R.map(function (x) { return x.h; }).join('');
   if (leftHtml || rightHtml) {
-    const sp = chooseSplit(L.map(function (x) { return x.t; }), R);
+    const sp = chooseSplit(L.map(function (x) { return x.t; }), R.map(function (x) { return x.t; }));
     if (sp.stack) h += '<div class="bd stack">' + (leftHtml ? '<div>' + leftHtml + '</div>' : '') + (rightHtml ? '<div class="side">' + rightHtml + '</div>' : '') + '</div>';
     else h += '<div class="bd" style="grid-template-columns:' + Math.round(sp.r * 100) + '% 1fr"><div>' + leftHtml + '</div><div class="side">' + rightHtml + '</div></div>';
   }
@@ -883,13 +866,13 @@ function mdStepBody(day, e, o) {
       L.push(pad + '- ' + (o.clock ? 'At ' + listAnd(w.lapTimes.map(clock)) : 'After ' + listAnd(w.lapMins.map(function (m) { return '**' + words(m) + '**'; }))) + ': ' + mdEsc(sentence(w.lapLabel)));
     }
     if (w.maxMins != null) L.push(pad + '- Never longer than **' + words(w.maxMins) + '**.');
-    if (w.then) L.push(pad + '- When it ends: ' + mdEsc(sentence(w.then.title)));
+    if (w.then) L.push(pad + '- When it ends: ' + richM(sentence(w.then.title)));
   } else if (s.wait) {                                     // a step outside the planned day
     const ow = offPlanWait(s, o.then);
     L.push(pad + '- **Timer: ' + words(ow.mins) + '.** ' + mdEsc(sentence(ow.label)) + ' Keep working.');
     if (ow.lapMins.length) L.push(pad + '- After ' + listAnd(ow.lapMins.map(function (m) { return '**' + words(m) + '**'; })) + ': ' + mdEsc(sentence(ow.lapLabel)));
     if (ow.maxMins != null) L.push(pad + '- Never longer than **' + words(ow.maxMins) + '**.');
-    if (ow.then) L.push(pad + '- When it ends: ' + mdEsc(sentence(ow.then.title)));
+    if (ow.then) L.push(pad + '- When it ends: ' + richM(sentence(ow.then.title)));
   }
   if (s.look) L.push(pad + '- Look for: ' + richM(s.look));
   if (s.tip) L.push(pad + '- Tip: ' + richM(s.tip));
@@ -936,7 +919,7 @@ function masterMd(base, alt, cmp) {
       if (e.type === 'free') { L.push('- ' + clock(e.start) + ' — Free until ' + clock(e.end) + ' · **' + E.fmtDur((e.end - e.start) / MIN) + '**'); return; }
       const s = e.step;
       if (e.type === 'move') { L.push('- [ ] **' + clock(e.start) + ' — ' + mdEsc(s.title) + '**'); return; }
-      L.push('- [ ] ' + clock(e.start) + ' — ' + mdEsc(s.title) + ' · ' + mdEsc(dishOf(s).nick) + (handsOn(s) ? ' · **' + handsOn(s) + '**' : ''));
+      L.push('- [ ] ' + clock(e.start) + ' — ' + richM(s.title) + ' · ' + mdEsc(dishOf(s).nick) + (handsOn(s) ? ' · **' + handsOn(s) + '**' : ''));
       const w = waitInfo(base, e);
       if (w) {
         L.push('  - Timer: ' + mdEsc(w.label) + ', **' + words(w.mins) + '**. Ends about ' + clock(w.end) + '.');
@@ -952,7 +935,7 @@ function masterMd(base, alt, cmp) {
     pl.items.forEach(function (it) { L.push('- [ ] ' + mdEsc(itemText(it))); });
     if (pl.hidden.length) {
       L.push('', 'Only if a step did not get done:', '');
-      pl.hidden.forEach(function (it) { L.push('- [ ] ' + mdEsc(itemText(it)) + '. Only if ' + mdEsc(conditionWords(it)) + '.'); });
+      pl.hidden.forEach(function (it) { L.push('- [ ] ' + mdEsc(itemText(it)) + '. Only if ' + richM(conditionWords(it)) + '.'); });
     }
     L.push('');
   });
@@ -966,14 +949,15 @@ function masterMd(base, alt, cmp) {
 
   L.push('## ' + NO_SOAK_TITLE, '');
   L.push('- The morning changes. Use this list in place of the morning above.');
-  cmp.removed.forEach(function (e) { L.push('- Skip: ' + mdEsc(e.step.title) + '.'); });
+  cmp.removed.forEach(function (e) { L.push('- Skip: ' + richM(e.step.title) + '.'); });
   if (cmp.sameFrom != null) L.push('- From ' + clock(cmp.sameFrom) + ' on, the schedule above is right again.');
-  L.push('');
   const flat = [];
   cmp.rows.forEach(function (r) { if (r.kind === 'run') r.part.forEach(function (e) { flat.push(e); }); else flat.push(r.e); });
+  let flatLoc = null;
   flat.forEach(function (e) {
     const s = e.step, w = waitInfo(alt, e);
-    L.push('- [ ] ' + clock(e.start) + ' — ' + mdEsc(s.title) + ' · ' + mdEsc(changeWords(e)) + (e.type !== 'move' && handsOn(s) ? ' · **' + handsOn(s) + '**' : ''));
+    if (e.loc !== flatLoc) { flatLoc = e.loc; L.push('', '### ' + mdEsc(placeLabel(e.loc)), ''); }   // a heading also keeps this list apart from the lines above
+    L.push('- [ ] ' + clock(e.start) + ' — ' + richM(s.title) + ' · ' + mdEsc(changeWords(e)) + (e.type !== 'move' && handsOn(s) ? ' · **' + handsOn(s) + '**' : ''));
     if (w) {
       L.push('  - Timer: ' + mdEsc(w.label) + ', **' + words(w.mins) + '**. Ends about ' + clock(w.end) + '.');
       if (w.lapTimes.length) L.push('  - At ' + listAnd(w.lapTimes.map(clock)) + ': ' + mdEsc(sentence(w.lapLabel)));
@@ -1013,7 +997,7 @@ function noSoakForDish(base, alt, cmp, d, clockOn) {
   if (!clockOn) {                                          // the recipe: only the steps that are different, no times
     if (!extra.length) return L;
     L.push('## ' + NO_SOAK_TITLE, '');
-    skip.forEach(function (e) { L.push('- Skip: ' + mdEsc(e.step.title) + '.'); });
+    skip.forEach(function (e) { L.push('- Skip: ' + richM(e.step.title) + '.'); });
     L.push('- Do these steps instead.', '');
     numbered(alt, extra.map(function (e) { return { e: e, shared: false }; }), { clock: false }).forEach(function (l) { L.push(l); });
     L.push('');
@@ -1023,9 +1007,11 @@ function noSoakForDish(base, alt, cmp, d, clockOn) {
   const list = dishEntries(alt, d).filter(function (x) { return x.e.change === 'new' || x.e.change === 'moved'; });
   if (!list.length && !skip.length) return L;
   L.push('## ' + NO_SOAK_TITLE, '');
-  skip.forEach(function (e) { L.push('- Skip: ' + mdEsc(e.step.title) + '.'); });
+  skip.forEach(function (e) { L.push('- Skip: ' + richM(e.step.title) + '.'); });
+  const anyMoved = list.some(function (x) { return x.e.change === 'moved'; });
   if (extra.length) L.push('- An extra step is new. Its full text is in this list.');
-  if (list.some(function (x) { return x.e.change === 'moved'; })) L.push('- The other steps are written out above. Here they only get a new time.');
+  if (extra.length && anyMoved) L.push('- The other steps are written out above. Here they only get a new time.');
+  if (!extra.length && anyMoved) L.push('- The steps stay the same. These get a new time.');
   let loc = null, n = 0;
   list.forEach(function (x) {
     const e = x.e, s = e.step;
@@ -1051,7 +1037,7 @@ function noSoakForDish(base, alt, cmp, d, clockOn) {
 function planBMd(base, alt, b, full, clockOn) {
   const L = ['## If you tick “' + mdEsc(b.label) + '”', ''];
   L.push('- That answer is in “' + mdEsc(b.check.title) + '”.' + (clockOn && b.from != null ? ' Not before ' + clock(b.from) + '.' : ''));
-  b.off.forEach(function (e) { L.push('- Skip: ' + mdEsc(sentence(e.step.title))); });
+  b.off.forEach(function (e) { L.push('- Skip: ' + richM(sentence(e.step.title))); });
   L.push('- Then go down this list.', '');
   let n = 0;
   b.order.forEach(function (s) {

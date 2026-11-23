@@ -126,7 +126,7 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
 
 ## If you did not soak the beans
 
-- The other steps are written out above. Here they only get a new time.
+- The steps stay the same. These get a new time.
 
 ### Your kitchen · morning
 
