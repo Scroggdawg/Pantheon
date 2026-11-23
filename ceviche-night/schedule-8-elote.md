@@ -36,15 +36,16 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 ### Your kitchen · morning
 
 1. **8:18 AM — Zest half a lime, then juice eleven** (**18 min**; shared step, it also covers other dishes)
-    - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
+    - Rinse one lime. Take one of the small jars. This is the marinade jar. First the zest: scrape the green skin off half the lime into it. Green only, not the white underneath.
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
-    - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into a second small jar. This is the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
+    - Pour the rest (about ½ cup) into a third small jar. This is the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
         - 11 limes (keep 4 whole)
+        - 3 small jars with lids
         - Lime squeezer
         - Medium bowl
         - Measuring cup

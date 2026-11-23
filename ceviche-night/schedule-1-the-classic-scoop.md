@@ -38,15 +38,16 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 ### Your kitchen · morning
 
 1. **8:18 AM — Zest half a lime, then juice eleven** (**18 min**; shared step, it also covers other dishes)
-    - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
+    - Rinse one lime. Take one of the small jars. This is the marinade jar. First the zest: scrape the green skin off half the lime into it. Green only, not the white underneath.
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
-    - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into a second small jar. This is the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
+    - Pour the rest (about ½ cup) into a third small jar. This is the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
         - 11 limes (keep 4 whole)
+        - 3 small jars with lids
         - Lime squeezer
         - Medium bowl
         - Measuring cup
@@ -87,7 +88,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Goes into: Ceviche bowl
 7. **4:09 PM — Smell the fish. Set one third aside.** (**2 min**)
     - With clean hands first: take the ceviche lime jar out of the fridge. Take its lid off. Tear off a sheet of foil for the fish bowl.
-    - Unwrap the halibut and smell it. Clean, like the sea, is right.
+    - Take the halibut out of the fridge. Unwrap it and smell it. Clean, like the sea, is right.
     - You need ½ pound. That is about two-thirds of your fillet. The label shows the weight.
     - Cut off the extra third. Wrap it. Leave it at the edge of the board for now.
     - You need:
@@ -96,7 +97,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
         - Foil
         - Paper towels
     - Tip: Bad fish? Throw it away. Wash your hands, the knife and the board with hot soapy water. Tap Done on each fish step without doing it, so the guide moves on. When it asks if the fish is ready, tap White all the way. When you mix the ceviche, leave the fish out. The tomato bowl is then a salsa for the chips.
-    - **Warning:** Sour or strongly fishy? Stop. Do not make ceviche with it. Read the tip below.
+    - **Warning:** Sour or strongly fishy? Stop. Do not make ceviche with it. Read the tip for this step.
 8. **4:11 PM — Cut the fish into ½-inch cubes** (**4 min**)
     - Pat the fish dry with paper towels.
     - Skin on one side? Lay the fish skin-side down. At one end, cut down through the flesh until the knife touches the skin.
@@ -110,7 +111,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Pour the whole ceviche lime jar (¾ cup) over the fish and onion. Stir with a spoon.
     - The fish should float freely in the juice.
     - Cover the bowl with the foil.
-    - The bowl goes into the fridge now. So does the wrapped leftover fish. Cook that tomorrow.
+    - The bowl goes into the fridge now. The fish is still raw. It stays in the fridge until it goes to the table. The wrapped leftover fish goes in the fridge too. Cook that tomorrow.
     - Then wash your hands with soap.
     - The lime juice now cures the fish. The first check is in **20 minutes**. Thick cubes often need longer.
     - You need:
@@ -120,7 +121,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - **Timer: 20 minutes.** Fish curing. Keep working. It ends about 4:37 PM.
     - When it ends: Is the fish ready?
     - Tip: Fish not covered by the juice? Move it all into a smaller, deeper bowl made of glass or stainless steel.
-    - **Warning:** Lime juice does not kill germs or parasites. The fish is still raw. Keep it in the fridge until it goes to the table.
+    - **Warning:** Lime juice does not kill germs or parasites. Keep the fish cold.
 10. **4:17 PM — Wash up after the raw fish** (**4 min**; shared step, it also covers other dishes)
     - Wash the cutting board, the knife, the spoon and your hands with hot soapy water.
     - Wipe the counter where the fish was. Wipe the fridge handle, the faucet and your phone screen too.
@@ -166,7 +167,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
         - Spoon
     - Not before 7:12 PM.
     - Tip: Brown or stringy inside? Use the second avocado.
-    - **Warning:** Keep the avocado on the cutting board while you cut. Never cut it in your hand.
+    - **Warning:** Never cut the avocado in your hand.
 15. **7:30 PM — Dinner is served** (shared step, it also covers other dishes)
     - Build each taco: shrimp, a pile of slaw, a drizzle of pink sauce, a squeeze of lime.
     - Scoop the ceviche with tostadas, chips or saltines.

@@ -44,15 +44,16 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
 ### Method
 
 1. **Zest half a lime, then juice eleven** (shared step, it also covers other dishes)
-    - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
+    - Rinse one lime. Take one of the small jars. This is the marinade jar. First the zest: scrape the green skin off half the lime into it. Green only, not the white underneath.
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
-    - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into a second small jar. This is the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
+    - Pour the rest (about ½ cup) into a third small jar. This is the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
         - 11 limes (keep 4 whole)
+        - 3 small jars with lids
         - Lime squeezer
         - Medium bowl
         - Measuring cup
@@ -90,7 +91,7 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
     - Goes into: Ceviche bowl
 7. **Smell the fish. Set one third aside.**
     - With clean hands first: take the ceviche lime jar out of the fridge. Take its lid off. Tear off a sheet of foil for the fish bowl.
-    - Unwrap the halibut and smell it. Clean, like the sea, is right.
+    - Take the halibut out of the fridge. Unwrap it and smell it. Clean, like the sea, is right.
     - You need ½ pound. That is about two-thirds of your fillet. The label shows the weight.
     - Cut off the extra third. Wrap it. Leave it at the edge of the board for now.
     - You need:
@@ -99,7 +100,7 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
         - Foil
         - Paper towels
     - Tip: Bad fish? Throw it away. Wash your hands, the knife and the board with hot soapy water. Tap Done on each fish step without doing it, so the guide moves on. When it asks if the fish is ready, tap White all the way. When you mix the ceviche, leave the fish out. The tomato bowl is then a salsa for the chips.
-    - **Warning:** Sour or strongly fishy? Stop. Do not make ceviche with it. Read the tip below.
+    - **Warning:** Sour or strongly fishy? Stop. Do not make ceviche with it. Read the tip for this step.
 8. **Cut the fish into ½-inch cubes**
     - Pat the fish dry with paper towels.
     - Skin on one side? Lay the fish skin-side down. At one end, cut down through the flesh until the knife touches the skin.
@@ -113,7 +114,7 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
     - Pour the whole ceviche lime jar (¾ cup) over the fish and onion. Stir with a spoon.
     - The fish should float freely in the juice.
     - Cover the bowl with the foil.
-    - The bowl goes into the fridge now. So does the wrapped leftover fish. Cook that tomorrow.
+    - The bowl goes into the fridge now. The fish is still raw. It stays in the fridge until it goes to the table. The wrapped leftover fish goes in the fridge too. Cook that tomorrow.
     - Then wash your hands with soap.
     - The lime juice now cures the fish. The first check is in **20 minutes**. Thick cubes often need longer.
     - You need:
@@ -123,7 +124,7 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
     - **Timer: 20 minutes.** Fish curing. Keep working.
     - When it ends: Is the fish ready?
     - Tip: Fish not covered by the juice? Move it all into a smaller, deeper bowl made of glass or stainless steel.
-    - **Warning:** Lime juice does not kill germs or parasites. The fish is still raw. Keep it in the fridge until it goes to the table.
+    - **Warning:** Lime juice does not kill germs or parasites. Keep the fish cold.
 10. **Wash up after the raw fish** (shared step, it also covers other dishes)
     - Wash the cutting board, the knife, the spoon and your hands with hot soapy water.
     - Wipe the counter where the fish was. Wipe the fridge handle, the faucet and your phone screen too.
@@ -169,7 +170,7 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
         - Spoon
     - Not earlier than **18 minutes** before dinner.
     - Tip: Brown or stringy inside? Use the second avocado.
-    - **Warning:** Keep the avocado on the cutting board while you cut. Never cut it in your hand.
+    - **Warning:** Never cut the avocado in your hand.
 15. **Dinner is served** (shared step, it also covers other dishes)
     - Build each taco: shrimp, a pile of slaw, a drizzle of pink sauce, a squeeze of lime.
     - Scoop the ceviche with tostadas, chips or saltines.
@@ -243,15 +244,16 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
         - Measuring spoons
     - Goes into: Pink sauce tub
 2. **Zest half a lime, then juice eleven** (shared step, it also covers other dishes)
-    - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
+    - Rinse one lime. Take one of the small jars. This is the marinade jar. First the zest: scrape the green skin off half the lime into it. Green only, not the white underneath.
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
-    - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into a second small jar. This is the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
+    - Pour the rest (about ½ cup) into a third small jar. This is the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
         - 11 limes (keep 4 whole)
+        - 3 small jars with lids
         - Lime squeezer
         - Medium bowl
         - Measuring cup
@@ -433,16 +435,16 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - You need 2 ounces of pork. That is 3 or 4 chunks of the stew meat, a small handful.
     - Snip each chunk into ½-inch pieces with kitchen scissors, into a small bowl. ½ inch is about the width of your little finger.
     - Doing the quick soak? Cover the bowl and put it in the fridge. The pork goes in the pot in about **an hour**.
-    - No scissors? Cut it on a dinner plate, not on your cutting board.
+    - No scissors? Cut it on a dinner plate, not on your cutting board. Wash the plate with hot soapy water after.
     - Wrap the rest of the pork and freeze it.
     - You need:
         - Stew pork
         - Kitchen scissors
         - Small bowl
-    - **Warning:** Raw pork. Wash your hands, the scissors and the plate with hot soapy water.
+    - **Warning:** Raw pork. Wash your hands and the scissors with hot soapy water.
 4. **Fill the bean pot**
     - Into the big pot: the drained beans, 3½ cups of water, ½ cup of beer, and the pork.
-    - Put the rest of the beer in the fridge.
+    - Put the rest of the beer in the fridge. Wash the empty pork bowl with hot soapy water.
     - You need:
         - Drained beans
         - Measuring cup
@@ -513,13 +515,14 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - Goes into: Small bowl. The chopped poblano joins it later.
 11. **Drain half the can of tomatoes**
     - Open the plain diced tomatoes. Not the fire-roasted can.
-    - Pour about half the can into the strainer over the sink. Let it drip.
+    - Pour about half the can into the strainer over the sink. Let it drip for **a minute**. Then set the strainer on a plate next to the stove.
     - They are already cut small, so no chopping.
     - You do not need the other half. Fridge it or toss it.
     - You need:
         - Plain diced tomatoes
         - Can opener
         - Strainer
+        - Plate
 12. **Peel and chop the poblano**
     - Rub the black skin off with your fingers or a paper towel.
     - Do not rinse it. Water washes away the smoky flavor.
@@ -582,7 +585,7 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - When it ends: Beans into the fridge.
     - Tip: Optional, for a creamier broth: scoop 1 cup of the beans with a little liquid into a bowl. Mash them with a fork. Stir them back in.
 19. **Beans into the fridge**
-    - Scoop the beans and all their liquid into the big bean tub with a ladle or a mug. The pot is heavy and hot, so do not pour from it.
+    - Scoop the beans and all their liquid into the big bean tub with a ladle or a clean mug. The pot is heavy and hot, so do not pour from it.
     - Lid on. Into the fridge, on a high shelf. Not next to the fish.
     - They taste even better tonight.
     - Goes into: Bean tub
@@ -649,10 +652,11 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
 
 1. **Stop the beans for now** (Your kitchen; extra step)
     - Turn the burner off.
-    - Scoop the beans and all their liquid into the big bean tub with a ladle or a mug. They are boiling hot, so do not pour from the pot.
+    - Scoop the beans and all their liquid into the big bean tub with a ladle or a clean mug. They are boiling hot, so do not pour from the pot.
     - Lid on. Into the fridge, on a high shelf. Not next to the fish.
     - Tomato mix or bacon not in the beans yet? Put them in the spare tub. Lid on. Fridge. It comes with you.
     - You will finish the beans at her place.
+    - The red Beans timer at the top stays until you leave. Ignore it.
     - Goes into: Bean tub
 2. **Put the beans back on the stove** (Her kitchen; extra step)
     - Pour the beans and all their liquid into a pot.
@@ -677,7 +681,7 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
 5. **Add the good stuff to the beans** (Her kitchen; the step is listed above)
 6. **Taste the beans. They are done.** (Her kitchen; the step is listed above)
 7. **Beans into her fridge** (Her kitchen; extra step)
-    - Scoop the beans and their liquid back into the bean tub with a ladle or a mug.
+    - Scoop the beans and their liquid back into the bean tub with a ladle or a clean mug.
     - Lid on. Into her fridge.
     - You warm them up again just before dinner.
     - Less than **1 hour** until dinner? Skip this. Leave the pot on the stove with the lid on.
@@ -952,15 +956,16 @@ Goes inside the tacos and next to them.
 ### Method
 
 1. **Zest half a lime, then juice eleven** (shared step, it also covers other dishes)
-    - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
+    - Rinse one lime. Take one of the small jars. This is the marinade jar. First the zest: scrape the green skin off half the lime into it. Green only, not the white underneath.
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
-    - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into a second small jar. This is the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
+    - Pour the rest (about ½ cup) into a third small jar. This is the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
         - 11 limes (keep 4 whole)
+        - 3 small jars with lids
         - Lime squeezer
         - Medium bowl
         - Measuring cup
@@ -1061,15 +1066,16 @@ Broiled corn with crema, cotija and chile.
 ### Method
 
 1. **Zest half a lime, then juice eleven** (shared step, it also covers other dishes)
-    - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
+    - Rinse one lime. Take one of the small jars. This is the marinade jar. First the zest: scrape the green skin off half the lime into it. Green only, not the white underneath.
     - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
     - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
     - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
-    - Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
-    - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
+    - Measure ¾ cup of the juice into a second small jar. This is the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.
+    - Pour the rest (about ½ cup) into a third small jar. This is the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
     - You need:
         - 11 limes (keep 4 whole)
+        - 3 small jars with lids
         - Lime squeezer
         - Medium bowl
         - Measuring cup

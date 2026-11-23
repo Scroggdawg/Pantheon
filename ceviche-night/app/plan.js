@@ -536,7 +536,10 @@
       {
         id: 'am-setup', dish: 'day', block: 'am', where: 'home', kind: 'checklist',
         title: 'Set out your gear',
-        body: ['Get these out now, so you are not hunting for them with messy hands.'],
+        body: [
+          'Get these out now, so you are not hunting for them with messy hands.',
+          'A timer may call you away in the middle of a card. Do what it says. The card you left comes back.'
+        ],
         items: [
           'Your phone: plugged in. Settings, Display & Brightness, Auto-Lock, Never. Low Power Mode off. Ringer on, volume up. The timers cannot ring while the phone is locked.',
           'Big heavy pot with a lid (beans)',
@@ -556,8 +559,9 @@
           'A ceramic coffee mug (bacon fat)',
           'A bowl and a plate (poblano)',
           'A second plate, lined with a paper towel (bacon)',
+          'A third plate (the strainer of tomatoes sits on it)',
           '2 small bowls (pork; diced onion and poblano)',
-          'Oven mitt or a thick dry towel (hot handles)',
+          'Oven mitt and a thick dry towel (hot handles)',
           'Sheet pan and foil, only if your stove has no gas flame (poblano)',
           'Paper towels',
           'Jars and tubs with lids: 1 quart, 5 that hold 2 cups, 4 small. Plus the big bean tub and a zip bag.'
@@ -571,11 +575,11 @@
           'You need 2 ounces of pork. That is 3 or 4 chunks of the stew meat, a small handful.',
           'Snip each chunk into ½-inch pieces with kitchen scissors, into a small bowl. ½ inch is about the width of your little finger.',
           'Doing the quick soak? Cover the bowl and put it in the fridge. The pork goes in the pot in about an hour.',
-          'No scissors? Cut it on a dinner plate, not on your cutting board.',
+          'No scissors? Cut it on a dinner plate, not on your cutting board. Wash the plate with hot soapy water after.',
           'Wrap the rest of the pork and freeze it.'
         ],
         need: ['Stew pork', 'Kitchen scissors', 'Small bowl'],
-        warn: 'Raw pork. Wash your hands, the scissors and the plate with hot soapy water.',
+        warn: 'Raw pork. Wash your hands and the scissors with hot soapy water.',
         mins: 3
       },
       {
@@ -610,7 +614,7 @@
         title: 'Fill the bean pot',
         body: [
           'Into the big pot: the drained beans, 3½ cups of water, ½ cup of beer, and the pork.',
-          'Put the rest of the beer in the fridge.'
+          'Put the rest of the beer in the fridge. Wash the empty pork bowl with hot soapy water.'
         ],
         need: ['Drained beans', 'Measuring cup', 'Beer', 'Pork (in the fridge if you cut it earlier)'],
         into: 'Big pot',
@@ -784,11 +788,11 @@
         title: 'Drain half the can of tomatoes',
         body: [
           'Open the plain diced tomatoes. Not the fire-roasted can.',
-          'Pour about half the can into the [[strainer]] over the sink. Let it drip.',
+          'Pour about half the can into the [[strainer]] over the sink. Let it drip for a minute. Then set the strainer on a plate next to the stove.',
           'They are already cut small, so no chopping.',
           'You do not need the other half. Fridge it or toss it.'
         ],
-        need: ['Plain diced tomatoes', 'Can opener', 'Strainer'],
+        need: ['Plain diced tomatoes', 'Can opener', 'Strainer', 'Plate'],
         mins: 2
       },
       {
@@ -875,10 +879,11 @@
         title: 'Stop the beans for now',
         body: [
           'Turn the burner off.',
-          'Scoop the beans and all their liquid into the big bean tub with a ladle or a mug. They are boiling hot, so do not pour from the pot.',
+          'Scoop the beans and all their liquid into the big bean tub with a ladle or a clean mug. They are boiling hot, so do not pour from the pot.',
           'Lid on. Into the fridge, on a high shelf. Not next to the fish.',
           'Tomato mix or bacon not in the beans yet? Put them in the spare tub. Lid on. Fridge. It comes with you.',
-          'You will finish the beans at her place.'
+          'You will finish the beans at her place.',
+          'The red Beans timer at the top stays until you leave. Ignore it.'
         ],
         into: 'Bean tub',
         after: ['beans-heat'],
@@ -916,7 +921,7 @@
         id: 'beans-store', dish: 'patron', block: 'am', where: 'home', must: true, when: { beansLater: false, beansStored: false },
         title: 'Beans into the fridge',
         body: [
-          'Scoop the beans and all their liquid into the big bean tub with a ladle or a mug. The pot is heavy and hot, so do not pour from it.',
+          'Scoop the beans and all their liquid into the big bean tub with a ladle or a clean mug. The pot is heavy and hot, so do not pour from it.',
           'Lid on. Into the fridge, on a high shelf. Not next to the fish.',
           'They taste even better tonight.'
         ],
@@ -929,7 +934,7 @@
         id: 'beans-store-hers', dish: 'patron', block: 'hers', where: 'hers', when: { beansLater: true }, optional: true,
         title: 'Beans into her fridge',
         body: [
-          'Scoop the beans and their liquid back into the bean tub with a ladle or a mug.',
+          'Scoop the beans and their liquid back into the bean tub with a ladle or a clean mug.',
           'Lid on. Into her fridge.',
           'You warm them up again just before dinner.',
           'Less than 1 hour until dinner? Skip this. Leave the pot on the stove with the lid on.'
@@ -956,15 +961,15 @@
         id: 'limes', dish: 'day', block: 'am', where: 'either',
         title: 'Zest half a lime, then juice eleven',
         body: [
-          'Rinse one lime. First the [[zest]]: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.',
+          'Rinse one lime. Take one of the small jars. This is the marinade jar. First the [[zest]]: scrape the green skin off half the lime into it. Green only, not the white underneath.',
           'Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.',
           'Squeeze each half in the squeezer, cut side facing down, over a medium bowl.',
           'Juice 11 limes. The zested lime is one of them. Pick out any seeds.',
-          'Measure ¾ cup of the juice into the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.',
-          'Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.',
+          'Measure ¾ cup of the juice into a second small jar. This is the ceviche lime jar. That is one ½ cup plus one ¼ cup. Lid on. Put a strip of tape or a rubber band on this jar so you can tell the two lime jars apart. Fridge.',
+          'Pour the rest (about ½ cup) into a third small jar. This is the sauce lime jar. Lid on. Fridge.',
           'The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.'
         ],
-        need: ['11 limes (keep 4 whole)', 'Lime squeezer', 'Medium bowl', 'Measuring cup', 'Fine grater or vegetable peeler', 'Cutting board and knife'],
+        need: ['11 limes (keep 4 whole)', '3 small jars with lids', 'Lime squeezer', 'Medium bowl', 'Measuring cup', 'Fine grater or vegetable peeler', 'Cutting board and knife'],
         into: 'Ceviche lime jar, sauce lime jar and marinade jar',
         tip: 'Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.',
         mins: 18
@@ -1084,7 +1089,7 @@
         body: [
           'Before you walk out:',
           'Every burner is off. The oven is off.',
-          'Beans still in the pot? Scoop them and all their liquid into the big bean tub with a ladle or a mug. Lid on.',
+          'Beans still in the pot? Scoop them and all their liquid into the big bean tub with a ladle or a clean mug. Lid on.',
           'The bean tub goes in the fridge, on a high shelf. Not next to the fish. Hot is fine.',
           'Tomato mix or bacon not in the beans yet? Put them in the spare tub. Lid on. Fridge.',
           'Nothing that needs a fridge is on the counter or the stove: sour cream, yogurt, mayonnaise, broth, bacon, pork, every jar and tub you filled.',
@@ -1147,7 +1152,7 @@
         title: 'Wash your hands. Rinse the vegetables.',
         body: [
           'Wash your hands with soap.',
-          'Rinse under cold water: the tomatoes, the serranos, the jalapeño, the scallions, the cilantro and the parsley.',
+          'Take the scallions, the cilantro and the parsley out of the fridge. Rinse them under cold water. Rinse the tomatoes, the serranos and the jalapeño too.',
           'Shake them dry. Lay them on a clean kitchen towel.',
           'Peel the outer leaves off both cabbages and throw them away.'
         ],
@@ -1280,13 +1285,13 @@
         title: 'Smell the fish. Set one third aside.',
         body: [
           'With clean hands first: take the ceviche lime jar out of the fridge. Take its lid off. Tear off a sheet of foil for the fish bowl.',
-          'Unwrap the halibut and smell it. Clean, like the sea, is right.',
+          'Take the halibut out of the fridge. Unwrap it and smell it. Clean, like the sea, is right.',
           'You need ½ pound. That is about two-thirds of your fillet. The label shows the weight.',
           'Cut off the extra third. Wrap it. Leave it at the edge of the board for now.'
         ],
         need: ['Halibut', 'Ceviche lime jar, lid off', 'Foil', 'Paper towels'],
         tip: 'Bad fish? Throw it away. Wash your hands, the knife and the board with hot soapy water. Tap Done on each fish step without doing it, so the guide moves on. When it asks if the fish is ready, tap White all the way. When you mix the ceviche, leave the fish out. The tomato bowl is then a salsa for the chips.',
-        warn: 'Sour or strongly fishy? Stop. Do not make ceviche with it. Read the tip below.',
+        warn: 'Sour or strongly fishy? Stop. Do not make ceviche with it. Read the tip for this step.',
         after: ['chop-onion'],
         mins: 2
       },
@@ -1313,13 +1318,13 @@
           'Pour the whole ceviche lime jar (¾ cup) over the fish and onion. Stir with a spoon.',
           'The fish should [[float|float freely]] in the juice.',
           'Cover the bowl with the foil.',
-          'The bowl goes into the fridge now. So does the wrapped leftover fish. Cook that tomorrow.',
+          'The bowl goes into the fridge now. The fish is still raw. It stays in the fridge until it goes to the table. The wrapped leftover fish goes in the fridge too. Cook that tomorrow.',
           'Then wash your hands with soap.',
           'The lime juice now [[cure|cures]] the fish. The first check is in 20 minutes. Thick cubes often need longer.'
         ],
         need: ['Ceviche lime jar', 'Spoon', 'Foil'],
         tip: 'Fish not covered by the juice? Move it all into a smaller, deeper bowl made of glass or stainless steel.',
-        warn: 'Lime juice does not kill germs or parasites. The fish is still raw. Keep it in the fridge until it goes to the table.',
+        warn: 'Lime juice does not kill germs or parasites. Keep the fish cold.',
         after: ['fish-cube', 'limes'],
         wait: { id: 'cure', chip: 'Fish', mins: 20, label: 'Fish curing', attended: false, urgent: true },
         mins: 2
@@ -1636,7 +1641,7 @@
         ],
         need: ['Avocado', 'Cutting board and knife', 'Table knife', 'Spoon'],
         tip: 'Brown or stringy inside? Use the second avocado.',
-        warn: 'Keep the avocado on the cutting board while you cut. Never cut it in your hand.',
+        warn: 'Never cut the avocado in your hand.',
         after: ['ceviche-mix', 'shrimp-marinate'],
         notBefore: { anchor: 'dinner', mins: -18 },
         mins: 3
@@ -1821,6 +1826,10 @@
     },
 
     /* -------------------------------------------------------------- containers */
+    containerSummary: {
+      home: '10 jars and tubs with lids (1 quart, five that hold 2 cups, four that hold 1 cup), the big bean tub, 3 zip bags, 2 small bowls and a mug.',
+      hers: '2 large bowls, 3 medium bowls, 3 small bowls and a dinner plate.'
+    },
     containers: {
       home: [
         { name: 'Onion jar', size: '1 quart (4 cups), with a lid', holds: 'Pickled onions' },

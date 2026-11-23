@@ -1178,6 +1178,7 @@ function staticChecks() {
       ok(await page.locator('#sheet-layer .gloss').count() === 1, 'a tap on a glossary term opens it');
       ok(await page.locator('#sheet-layer .scrim').evaluate(el => getComputedStyle(el).cursor) === 'pointer', 'so is the dimmed area behind a sheet');
       // the dimmed area above the sheet (a long explanation can fill the screen; then only the Close button is left)
+      await page.waitForTimeout(300);                         // let the sheet finish sliding in before measuring it
       const sheetTop = await page.locator('#sheet-layer .sheet').first().evaluate(el => el.getBoundingClientRect().top);
       if (sheetTop >= 28) {
         await page.touchscreen.tap(195, Math.round(sheetTop / 2));

@@ -57,16 +57,16 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - You need 2 ounces of pork. That is 3 or 4 chunks of the stew meat, a small handful.
     - Snip each chunk into ½-inch pieces with kitchen scissors, into a small bowl. ½ inch is about the width of your little finger.
     - Doing the quick soak? Cover the bowl and put it in the fridge. The pork goes in the pot in about **an hour**.
-    - No scissors? Cut it on a dinner plate, not on your cutting board.
+    - No scissors? Cut it on a dinner plate, not on your cutting board. Wash the plate with hot soapy water after.
     - Wrap the rest of the pork and freeze it.
     - You need:
         - Stew pork
         - Kitchen scissors
         - Small bowl
-    - **Warning:** Raw pork. Wash your hands, the scissors and the plate with hot soapy water.
+    - **Warning:** Raw pork. Wash your hands and the scissors with hot soapy water.
 4. **7:11 AM — Fill the bean pot** (**3 min**)
     - Into the big pot: the drained beans, 3½ cups of water, ½ cup of beer, and the pork.
-    - Put the rest of the beer in the fridge.
+    - Put the rest of the beer in the fridge. Wash the empty pork bowl with hot soapy water.
     - You need:
         - Drained beans
         - Measuring cup
@@ -137,13 +137,14 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Goes into: Small bowl. The chopped poblano joins it later.
 11. **7:50 AM — Drain half the can of tomatoes** (**2 min**)
     - Open the plain diced tomatoes. Not the fire-roasted can.
-    - Pour about half the can into the strainer over the sink. Let it drip.
+    - Pour about half the can into the strainer over the sink. Let it drip for **a minute**. Then set the strainer on a plate next to the stove.
     - They are already cut small, so no chopping.
     - You do not need the other half. Fridge it or toss it.
     - You need:
         - Plain diced tomatoes
         - Can opener
         - Strainer
+        - Plate
 12. **7:52 AM — Peel and chop the poblano** (**4 min**)
     - Rub the black skin off with your fingers or a paper towel.
     - Do not rinse it. Water washes away the smoky flavor.
@@ -206,7 +207,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - When it ends: Beans into the fridge.
     - Tip: Optional, for a creamier broth: scoop 1 cup of the beans with a little liquid into a bowl. Mash them with a fork. Stir them back in.
 19. **9:36 AM — Beans into the fridge** (**3 min**)
-    - Scoop the beans and all their liquid into the big bean tub with a ladle or a mug. The pot is heavy and hot, so do not pour from it.
+    - Scoop the beans and all their liquid into the big bean tub with a ladle or a clean mug. The pot is heavy and hot, so do not pour from it.
     - Lid on. Into the fridge, on a high shelf. Not next to the fish.
     - They taste even better tonight.
     - Goes into: Bean tub
@@ -295,10 +296,11 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 
 1. **Stop the beans for now** (Your kitchen; extra step; **3 min**)
     - Turn the burner off.
-    - Scoop the beans and all their liquid into the big bean tub with a ladle or a mug. They are boiling hot, so do not pour from the pot.
+    - Scoop the beans and all their liquid into the big bean tub with a ladle or a clean mug. They are boiling hot, so do not pour from the pot.
     - Lid on. Into the fridge, on a high shelf. Not next to the fish.
     - Tomato mix or bacon not in the beans yet? Put them in the spare tub. Lid on. Fridge. It comes with you.
     - You will finish the beans at her place.
+    - The red Beans timer at the top stays until you leave. Ignore it.
     - Goes into: Bean tub
 2. **Put the beans back on the stove** (Her kitchen; extra step; **3 min**)
     - Pour the beans and all their liquid into a pot.
@@ -323,7 +325,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 5. **Add the good stuff to the beans** (Her kitchen; the step is listed above, ignore its time)
 6. **Taste the beans. They are done.** (Her kitchen; the step is listed above, ignore its time)
 7. **Beans into her fridge** (Her kitchen; extra step; **3 min**)
-    - Scoop the beans and their liquid back into the bean tub with a ladle or a mug.
+    - Scoop the beans and their liquid back into the bean tub with a ladle or a clean mug.
     - Lid on. Into her fridge.
     - You warm them up again just before dinner.
     - Less than **1 hour** until dinner? Skip this. Leave the pot on the stove with the lid on.

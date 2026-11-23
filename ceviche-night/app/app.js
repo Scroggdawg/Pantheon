@@ -517,6 +517,9 @@
     return apply(function (s, t) { return E.setAnchor(PLAN, s, name, minutes, t); });
   }
   function setDay(day) {
+    // A cook day that is already over is thrown away at the next load (see dayOver): never move the day there,
+    // or one slip on "− day" and a reload would erase the morning.
+    if (dayOver({ day: day })) return false;
     return apply(function (s, t) { return E.setDay(PLAN, s, day, t); });
   }
   // show a step on the Now tab
@@ -974,7 +977,7 @@
     var p = projection(), text, cls = '';
     if (dinnerDone()) text = 'Dinner is served';
     else if (p.dinnerAt == null) { text = 'Dinner ' + shortClock(p.dinnerAnchor); cls = 'plain'; }
-    else if (p.lateMin > 0) { text = 'Dinner about ' + shortClock(p.dinnerAt); cls = 'late'; }
+    else if (p.lateMin > 0 && shortClock(p.dinnerAt) !== shortClock(p.dinnerAnchor)) { text = 'Dinner about ' + shortClock(p.dinnerAt); cls = 'late'; }
     else text = 'Dinner ' + shortClock(p.dinnerAnchor) + ' · on time';
     if (text + cls !== lastPill) {
       lastPill = text + cls;
@@ -1386,7 +1389,7 @@
     [['home', 'At your place'], ['hers', 'At her place']].forEach(function (x) {
       var items = c[x[0]] || [];
       if (!items.length) return;
-      jars += '<p class="label">' + x[1] + '</p><p class="sub">' + esc(countSummary(items)) + '</p><ul class="list">' + items.map(function (it) {
+      jars += '<p class="label">' + x[1] + '</p><p class="sub">' + esc((PLAN.containerSummary || {})[x[0]] || countSummary(items)) + '</p><ul class="list">' + items.map(function (it) {
         return '<li><b>' + esc(it.name) + '</b><small>' + esc(it.size) + '</small>' + esc(it.holds) + '</li>';
       }).join('') + '</ul>';
     });
@@ -1402,7 +1405,7 @@
     });
     h += sect('What to bring', '<div class="tn">' + packs + '</div>');
 
-    var times = '<div class="card"><div class="stepper">' + btn('day-shift', at('d', -1), '− day', 'fill') +
+    var times = '<div class="card"><div class="stepper">' + btn('day-shift', at('d', -1) + (dayOver({ day: shiftedDay(-1) }) ? ' disabled' : ''), '− day', 'fill') +
       '<div class="val"><small>Cook day</small>' + esc(dayLabel(E.dayMs(s))) + '</div>' + btn('day-shift', at('d', 1), '+ day', 'fill') + '</div></div>';
     Object.keys(s.anchors || {}).forEach(function (name) {
       var v = s.anchors[name];
