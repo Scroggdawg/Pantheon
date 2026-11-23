@@ -2,8 +2,8 @@
 
 Dinner: Tue Nov 24, 7:30 PM, 2 people.
 Two Instacart orders, tonight (Mon Nov 23):
-- **Ralphs:** everything for The Patrón (pinto beans, bacon, pork, poblano, 1 white onion, plain canned tomatoes, beer), plus street taco tortillas and tostadas.
-- **Lazy Acres:** everything else, including the fish.
+- **Lazy Acres:** where quality matters — halibut, shrimp, limes, tomatoes, chiles, cilantro, avocados, corn, olives, tortilla chips.
+- **Ralphs:** everything else — all of The Patrón, onions, cabbage, dairy, canned goods, mayo, allspice, tortillas, tostadas, saltines, citrus squeezer.
 
 What actually went in each cart: `cart-report.md`.
 
