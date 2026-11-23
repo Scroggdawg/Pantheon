@@ -3,10 +3,10 @@
 Source: RecipeTin Eats, Prawn Tacos.
 
 - **Pink sauce:** Tue 8:50 AM (your kitchen)
-- **Marinade whisked:** 4:55 PM
-- **Shrimp in marinade:** 6:05 PM
-- **Sear:** 6:20 PM
-- **Done:** 6:26 PM
+- **Marinade whisked:** 5:55 PM
+- **Shrimp in marinade:** 7:05 PM
+- **Sear:** 7:20 PM
+- **Done:** 7:26 PM
 
 ## Equipment
 
@@ -49,12 +49,12 @@ Source: RecipeTin Eats, Prawn Tacos.
 ## Steps
 
 1. 8:50 AM — Stir sour cream and sriracha together. Start with 1 Tbsp sriracha, taste, add more if you want. Refrigerate.
-2. 4:55 PM — Whisk all the marinade ingredients in a medium bowl. Leave the shrimp out of it.
-3. 6:05 PM — Toss the shrimp in the marinade. Marinate **5–20 minutes, no longer**. The lime starts curing the shrimp.
+2. 5:55 PM — Whisk all the marinade ingredients in a medium bowl. Leave the shrimp out of it.
+3. 7:05 PM — Toss the shrimp in the marinade. Marinate **5–20 minutes, no longer**. The lime starts curing the shrimp.
 4. Warm a serving bowl (fill with hot tap water, then dry it).
-5. 6:15 PM — Heat the 1½ tsp oil in the cast iron over high heat until it shimmers.
-6. 6:20 PM — Lift the shrimp out of the marinade and lay them in one layer. Sear about **60 seconds per side**. Move to the warm bowl and cover with foil. Half a pound fits in one batch.
-7. 6:24 PM — Wrap the tortillas in a damp towel and microwave **30–45 seconds**.
+5. 7:15 PM — Heat the 1½ tsp oil in the cast iron over high heat until it shimmers.
+6. 7:20 PM — Lift the shrimp out of the marinade and lay them in one layer. Sear about **60 seconds per side**. Move to the warm bowl and cover with foil. Half a pound fits in one batch.
+7. 7:24 PM — Wrap the tortillas in a damp towel and microwave **30–45 seconds**.
 8. Build each taco: shrimp → a pile of slaw → drizzle of pink sauce → lime wedge.
 
 ## How you know it's done

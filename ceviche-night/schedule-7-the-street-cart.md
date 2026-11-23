@@ -42,7 +42,7 @@ Source: Pati Jinich.
 - About 6 cups vegetable oil (1½ inches deep in the pot)
 - About ½ cup cajeta
 
-## Prep checklist (do at 3:20 PM with the rest)
+## Prep checklist (do at 4:20 PM with the rest)
 
 - [ ] Mix the coating sugar and cinnamon on a large plate
 - [ ] Measure the flour into a bowl

@@ -3,9 +3,9 @@
 Source: Rick Bayless, Red Tomato Rice.
 
 - **Purée:** Tue 9:50 AM (your kitchen, so the blender stays home)
-- **Start:** 5:25 PM (her kitchen)
-- **Off heat:** 6:02 PM
-- **Holds covered until:** 6:30 PM
+- **Start:** 6:25 PM (her kitchen)
+- **Off heat:** 7:02 PM
+- **Holds covered until:** 7:30 PM
 
 ## Equipment
 
@@ -39,12 +39,12 @@ Source: Rick Bayless, Red Tomato Rice.
 ## Steps
 
 1. 9:50 AM — Blend the tomatoes, onion and garlic until smooth. Jar and refrigerate.
-2. 5:25 PM — Heat the oil in the saucepan over medium. Add the rice and stir often **5–6 minutes**, until the grains turn from see-through to milky white.
+2. 6:25 PM — Heat the oil in the saucepan over medium. Add the rice and stir often **5–6 minutes**, until the grains turn from see-through to milky white.
 3. Add the purée. Cook **2–3 minutes**, stirring, until reduced and fairly dry.
 4. Add the broth and bring to a full boil. Stir in the serranos, parsley, salt and carrot. Scrape down the sides.
-5. 5:42 PM — Cover. Cook on the lowest heat **20 minutes**. Don't lift the lid.
-6. 6:02 PM — Fluff with a fork, re-cover, and let stand off the heat.
-7. 6:26 PM — Remove the serranos. Serve.
+5. 6:42 PM — Cover. Cook on the lowest heat **20 minutes**. Don't lift the lid.
+6. 7:02 PM — Fluff with a fork, re-cover, and let stand off the heat.
+7. 7:26 PM — Remove the serranos. Serve.
 
 ## How you know it's done
 

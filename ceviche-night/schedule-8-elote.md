@@ -3,10 +3,10 @@
 Quantities: Tasting Table's 4-ear elote recipe, halved.
 Method: broiler adaptation, because there is no grill. The broil time is an estimate. Watch the corn, not the clock.
 
-- **Sauce:** Tue 4:55 PM
-- **Broiler on:** 5:50 PM
-- **Corn in:** 5:55 PM
-- **Done:** about 6:08 PM
+- **Sauce:** Tue 5:55 PM
+- **Broiler on:** 6:50 PM
+- **Corn in:** 6:55 PM
+- **Done:** about 7:08 PM
 
 ## Equipment
 
@@ -36,10 +36,10 @@ Method: broiler adaptation, because there is no grill. The broil time is an esti
 
 ## Steps
 
-1. 4:55 PM — Stir the sour cream, mayonnaise and lime juice together. Refrigerate.
-2. 5:50 PM — Move an oven rack to about 6 inches below the broiler. Broiler on high.
+1. 5:55 PM — Stir the sour cream, mayonnaise and lime juice together. Refrigerate.
+2. 6:50 PM — Move an oven rack to about 6 inches below the broiler. Broiler on high.
 3. Rub the corn with the oil, salt and pepper. Set on the foil-lined pan.
-4. 5:55 PM — Broil about **10–12 minutes**, turning with tongs every **3 minutes**, until charred in spots all around.
+4. 6:55 PM — Broil about **10–12 minutes**, turning with tongs every **3 minutes**, until charred in spots all around.
 5. Spread the sauce over the hot corn. Sprinkle with cotija, pressing it on. Dust with chipotle powder.
 6. Tent with foil until dinner. Serve with lime wedges.
 

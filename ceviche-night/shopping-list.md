@@ -1,6 +1,7 @@
 # Shopping List — Operation Ceviche Night
 
-Dinner: Tue Nov 24, 6:30 PM, 2 people.
+Dinner: Tue Nov 24, 7:30 PM, 2 people.
+Store: Lazy Acres, via Instacart.
 Order tonight (Mon Nov 23).
 
 Dish key:
@@ -11,10 +12,6 @@ Dish key:
 - Blanch = The Blanch (pickled onions)
 - Cream = The Smoky Cream (slaw)
 - Elote = oven elote
-
-## NOT on Instacart
-
-- [ ] **Fish, ½ lb** — skinless snapper, sea bass or halibut. Buy in person Tue morning at a fish counter. Ask: "Is this sushi-grade or previously frozen? I'm making ceviche." If the answer is no or unsure, don't buy it. (Scoop)
 
 ## Produce
 
@@ -39,6 +36,9 @@ Dish key:
 
 ## Meat & Seafood
 
+- [ ] **Fish, ½ lb** — skinless snapper, sea bass or halibut fillet, labeled sushi-grade or previously frozen — Scoop
+  - Substitution setting: **Don't replace**
+  - Shopper note: "For ceviche. Please confirm with the seafood counter that it is sushi-grade or previously frozen. If not, leave it out."
 - [ ] Shrimp, raw, peeled & deveined, medium (31/40 or 26/30), frozen — **1 lb bag** (need ½ lb) — S&P
   - Substitution setting: **Don't replace**
 - [ ] Thick-cut bacon — **1 pack** (need 4 slices) — Patrón

@@ -2,9 +2,9 @@
 
 Source: Leite's Culinaria, adapted from Daphne Oz.
 
-- **Chop:** Tue 3:20 PM
-- **Mix:** 4:40 PM
-- **Drain and serve:** 6:15 PM
+- **Chop:** Tue 4:20 PM
+- **Mix:** 5:40 PM
+- **Drain and serve:** 7:15 PM
 
 ## Equipment
 
@@ -43,7 +43,7 @@ Source: Leite's Culinaria, adapted from Daphne Oz.
 2. Whisk the dressing until smooth.
 3. Toss. Season with salt and pepper. Taste.
 4. Cover and chill at least **20 minutes**.
-5. 6:15 PM — Pour off the liquid that has collected. Toss once more.
+5. 7:15 PM — Pour off the liquid that has collected. Toss once more.
 
 ## How you know it's done
 

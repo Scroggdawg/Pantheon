@@ -6,7 +6,7 @@ Source: Rick Bayless, *Authentic Mexican*.
 - **Start cooking:** Tue 7:30 AM (your kitchen)
 - **Done:** about 10:00 AM
 - **Must be in the fridge by:** 10:45 AM (you leave at 11:00)
-- **Reheat:** 5:45 PM (her kitchen)
+- **Reheat:** 6:45 PM (her kitchen)
 
 ## Equipment
 
@@ -50,9 +50,9 @@ Source: Rick Bayless, *Authentic Mexican*.
 6. When the beans are tender: stir in the tomato mixture, bacon and salt. Simmer **20–30 minutes**.
 7. Adjust. Too thin: simmer uncovered on higher heat. For a creamier broth: blend 1 cup of beans with their liquid and stir it back in.
 8. Off the heat by 10:00 AM. Cool uncovered, move to a shallow lidded container, and refrigerate by 10:45 AM. Transport cold.
-   - Not tender by 10:15 AM: stop, refrigerate, and finish steps 2 and 6 at her place from 3:05 PM.
-9. 5:45 PM — Reheat slowly on low, stirring often. Add a splash of water if thick.
-10. 6:26 PM — Stir in the cilantro.
+   - Not tender by 10:15 AM: stop, refrigerate, and finish steps 2 and 6 at her place from 3:15 PM.
+9. 6:45 PM — Reheat slowly on low, stirring often. Add a splash of water if thick.
+10. 7:26 PM — Stir in the cilantro.
 
 ## How you know it's done
 
