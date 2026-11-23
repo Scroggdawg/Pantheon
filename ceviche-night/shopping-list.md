@@ -1,8 +1,11 @@
 # Shopping List — Operation Ceviche Night
 
 Dinner: Tue Nov 24, 7:30 PM, 2 people.
-Store: Lazy Acres, via Instacart.
-Order tonight (Mon Nov 23).
+Two Instacart orders, tonight (Mon Nov 23):
+- **Ralphs:** everything for The Patrón (pinto beans, bacon, pork, poblano, 1 white onion, plain canned tomatoes, beer), plus street taco tortillas and tostadas.
+- **Lazy Acres:** everything else, including the fish.
+
+What actually went in each cart: `cart-report.md`.
 
 Dish key:
 - Scoop = The Classic Scoop (ceviche)
