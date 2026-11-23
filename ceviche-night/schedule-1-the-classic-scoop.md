@@ -2,8 +2,10 @@
 
 Source: Rick Bayless, Classic Ceviche.
 
-- **Start:** Tue 12:30 PM (your kitchen)
-- **Cure done:** 1:15 PM
+- **Lime juice:** Tue 9:30 AM (your kitchen)
+- **Buy fish:** about 1:10 PM, west side, straight onto ice
+- **Cure:** 3:10 PM (her kitchen)
+- **Cure done:** 3:35 PM
 - **Mix:** 4:30 PM (her kitchen)
 - **Serve:** 6:30 PM (or 6:00 as a starter)
 
@@ -11,7 +13,7 @@ Source: Rick Bayless, Classic Ceviche.
 
 - Lime juice does **not** kill parasites or bacteria.
 - Use only **sushi-grade or previously frozen** fish from a fish counter you trust.
-- Buy it the same morning. Keep it on ice from the store to the fridge.
+- Buy it the same day. It rides in a cooler on ice from the fish counter until it reaches her fridge.
 - Keep the ceviche cold until the moment it goes out. Throw away leftovers that sat out over 2 hours.
 
 ## Equipment
@@ -20,7 +22,7 @@ Source: Rick Bayless, Classic Ceviche.
 - Sharp knife and board
 - Lime squeezer
 - Strainer or colander
-- Sealed container for transport
+- Cooler with ice packs (in the car from 11:00 AM)
 
 ## Ingredients
 
@@ -39,8 +41,10 @@ Source: Rick Bayless, Classic Ceviche.
 
 ## Prep checklist
 
-At 12:30 PM:
-- [ ] Juice the limes (¾ cup for this dish)
+At 9:30 AM:
+- [ ] Juice the limes (¾ cup for this dish). Jar and refrigerate.
+
+At 3:10 PM:
 - [ ] Dice ½ white onion
 - [ ] Cut fish into ½-inch cubes
 
@@ -52,9 +56,9 @@ At 3:20 PM:
 
 ## Steps
 
-1. 12:50 PM — In the glass bowl, combine fish, lime juice and onion. The fish should float freely. Cover. Refrigerate **20 minutes**.
-2. 1:15 PM — Break a cube open. If it is opaque all the way through, it is done. If the center is still glassy, give it **5 more minutes**.
-3. Drain and discard the lime juice. Put the fish and onion in a sealed container in the fridge. Transport on ice.
+1. 3:10 PM — In the glass bowl, combine fish, lime juice and onion. The fish should float freely. Cover. Refrigerate **20 minutes**.
+2. 3:35 PM — Break a cube open. If it is opaque all the way through, it is done. If the center is still glassy, give it **5 more minutes**.
+3. Drain and discard the lime juice. Put the fish and onion back in the fridge, covered.
 4. 4:30 PM — In a large bowl, mix tomatoes, serrano, cilantro, olives and olive oil. Add the drained fish.
 5. Season with the salt and orange juice. Taste on a chip. Cover and refrigerate.
 6. 6:26 PM — Dice the avocado and gently fold it in. Garnish with cilantro leaves. Serve with tostadas, chips and saltines.

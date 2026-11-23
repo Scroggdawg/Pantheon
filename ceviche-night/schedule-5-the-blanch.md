@@ -2,9 +2,9 @@
 
 Source: Mexico in My Kitchen.
 
-- **Start:** Tue 8:15 AM (your kitchen)
+- **Start:** Tue 7:45 AM (your kitchen)
 - **Hands-on:** 15 minutes
-- **Ready:** 10:30 AM or later (2 hours chilling)
+- **Ready:** 10:00 AM or later (2 hours chilling)
 
 ## Equipment
 

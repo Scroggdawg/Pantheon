@@ -10,7 +10,6 @@ Dish key:
 - Milky = The Milky Way (rice)
 - Blanch = The Blanch (pickled onions)
 - Cream = The Smoky Cream (slaw)
-- Cart = The Street Cart (churros) — dessert still undecided
 - Elote = oven elote
 
 ## NOT on Instacart
@@ -75,7 +74,7 @@ Dish key:
 
 ## International / Mexican aisle
 
-- [ ] Cajeta (Coronado) or canned dulce de leche (La Lechera) — **1** — Cart, or over ice cream if churros are dropped
+- [ ] Optional: cajeta (Coronado) or canned dulce de leche (La Lechera) — **1**, plus vanilla ice cream, if you want a no-cook dessert. Churros are dropped.
 
 ## Beverages
 
@@ -85,23 +84,19 @@ Dish key:
 ## Tools worth adding to the cart
 
 - [ ] Handheld lime squeezer — you have no juicer and there are about 10 limes to juice
-- [ ] Churro gear — only if churros stay on the menu. See `equipment.md`.
 
 ## From your pantry (you confirmed these — double-check tonight)
 
 - [ ] Kosher salt
 - [ ] Black pepper
 - [ ] Whole black peppercorns (3)
-- [ ] Sugar (2 Tbsp for slaw; ⅔ cup more if churros)
-- [ ] Ground cinnamon (churros only)
+- [ ] Sugar (2 Tbsp)
 - [ ] Ground cumin (1 tsp)
 - [ ] Chipotle powder (2½ tsp, plus a dusting for elote)
 - [ ] Dried Mexican oregano (1 tsp)
 - [ ] Bay leaf (1)
-- [ ] Vanilla extract (churros only)
-- [ ] All-purpose flour (churros only)
 - [ ] White vinegar (½ cup)
-- [ ] Vegetable oil (about 2 Tbsp; **6 more cups** if churros — check the bottle)
+- [ ] Vegetable oil (about 2 Tbsp)
 - [ ] Extra-virgin olive oil (about 3 Tbsp)
 - [ ] Sriracha (1–1½ Tbsp)
 - [ ] Chicken broth (⅞ cup)

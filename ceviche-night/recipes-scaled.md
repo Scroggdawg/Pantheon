@@ -8,7 +8,7 @@ Multipliers (people ÷ base, rounded up to the nearest 0.5):
 - The Milky Way: ×0.5
 - The Blanch: ×1
 - The Smoky Cream: ×1
-- The Street Cart: ×0.5 (8 churros) — undecided
+- The Street Cart: dropped for now
 - Elote: ×0.5 (2 ears)
 
 Steps and timers live in each `schedule-*.md` file.
@@ -106,7 +106,7 @@ Steps and timers live in each `schedule-*.md` file.
 
 This is the full batch. It covers 6 tacos with plenty left as a side.
 
-## 7. The Street Cart — ×0.5 (if churros stay)
+## 7. The Street Cart — ×0.5 (DROPPED for now)
 
 - Dough:
   - 1 cup water

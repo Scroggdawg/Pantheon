@@ -2,7 +2,7 @@
 
 Source: RecipeTin Eats, Prawn Tacos.
 
-- **Pink sauce:** Tue 9:20 AM (your kitchen)
+- **Pink sauce:** Tue 8:50 AM (your kitchen)
 - **Marinade whisked:** 4:55 PM
 - **Shrimp in marinade:** 6:05 PM
 - **Sear:** 6:20 PM
@@ -48,7 +48,7 @@ Source: RecipeTin Eats, Prawn Tacos.
 
 ## Steps
 
-1. 9:20 AM — Stir sour cream and sriracha together. Start with 1 Tbsp sriracha, taste, add more if you want. Refrigerate.
+1. 8:50 AM — Stir sour cream and sriracha together. Start with 1 Tbsp sriracha, taste, add more if you want. Refrigerate.
 2. 4:55 PM — Whisk all the marinade ingredients in a medium bowl. Leave the shrimp out of it.
 3. 6:05 PM — Toss the shrimp in the marinade. Marinate **5–20 minutes, no longer**. The lime starts curing the shrimp.
 4. Warm a serving bowl (fill with hot tap water, then dry it).

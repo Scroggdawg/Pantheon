@@ -6,7 +6,7 @@ Nothing here has been bought. Product links and prices are not included: this se
 
 - Box grater → solved: bagged shredded carrots are on the shopping list
 - Citrus juicer → add a **handheld lime squeezer** to the Instacart order (grocery stores and Target carry them)
-- Deep-fry gear for churros → see below
+- Deep-fry gear for churros → not needed; churros are dropped for now. The sections below only matter if they come back.
 
 ## Churros: what it takes
 
