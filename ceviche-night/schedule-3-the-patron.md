@@ -3,7 +3,7 @@
 Pinto beans simmered with pork, bacon, poblano, tomato and beer.
 
 - **Makes:** About 5 cups
-- **Source:** Rick Bayless, Authentic Mexican (frijoles charros)
+- **Source:** [Rick Bayless, Cowboy Beans (frijoles charros). Quantities here follow his book Authentic Mexican.](https://www.rickbayless.com/recipe/cowboy-beans)
 - **First step:** 7:00 AM · Your kitchen · morning
 - **Last step:** 7:26 PM · Her kitchen
 

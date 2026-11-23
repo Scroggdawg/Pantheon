@@ -387,7 +387,7 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
 Pinto beans simmered with pork, bacon, poblano, tomato and beer.
 
 - **Makes:** About 5 cups
-- **Source:** Rick Bayless, Authentic Mexican (frijoles charros)
+- **Source:** [Rick Bayless, Cowboy Beans (frijoles charros). Quantities here follow his book Authentic Mexican.](https://www.rickbayless.com/recipe/cowboy-beans)
 
 ### Ingredients
 
@@ -924,7 +924,7 @@ Pink, sharp, crunchy. They go on everything.
 Goes inside the tacos and next to them.
 
 - **Makes:** About 6 cups: enough for the tacos plus a side
-- **Source:** Leite's Culinaria, adapted from Daphne Oz
+- **Source:** [Leite's Culinaria, fish tacos with creamy chipotle slaw](https://leitesculinaria.com/?p=86546)
 
 ### Ingredients
 

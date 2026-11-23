@@ -1467,6 +1467,9 @@
     var p = projection(), isDay = d.id === 'day', seg = isDay ? 'steps' : ui.seg, h = '';
     h += '<div class="dish ' + colorClass(d) + '"><div class="block"><h1 class="h1">' + esc(d.nick) + '</h1><p class="lede">' + esc(d.name) + '</p>' +
       (d.blurb ? '<p class="sub">' + esc(d.blurb) + '</p>' : '') + dishTimeLine(d) + '</div>';
+    if (d.source && d.source.url) {
+      h += '<a class="linkrow" href="' + esc(d.source.url) + '" target="_blank" rel="noopener noreferrer"><span>Original recipe: ' + esc(d.source.label || d.name) + '</span>' + ico('out', 22) + '</a>';
+    }
     if (!isDay) {
       h += '<div class="segs" role="group" aria-label="What to show">' + [['steps', 'Steps'], ['ingredients', 'Ingredients'], ['gear', 'Gear']].map(function (x) {
         return '<button type="button" class="btn' + (seg === x[0] ? ' on' : '') + '" aria-pressed="' + (seg === x[0] ? 'true' : 'false') + '" data-act="seg"' + at('seg', x[0]) + '>' + x[1] + '</button>';
@@ -1490,10 +1493,7 @@
     }
     if (d.makes || (d.source && d.source.label)) {
       h += '<div class="block"><h2 class="h2">About this dish</h2>' + (d.makes ? '<p class="sub">Makes: ' + esc(lowerFirst(d.makes)) + '</p>' : '');
-      if (d.source && d.source.label) {
-        h += d.source.url ? '<a class="linkrow" href="' + esc(d.source.url) + '" target="_blank" rel="noopener noreferrer"><span>Recipe: ' + esc(d.source.label) + '</span>' + ico('out', 22) + '</a>'
-          : '<p class="sub">Recipe: ' + esc(d.source.label) + '</p>';
-      }
+      if (d.source && d.source.label && !d.source.url) h += '<p class="sub">Recipe: ' + esc(d.source.label) + '</p>';
       h += '</div>';
     }
     return h + '</div>';

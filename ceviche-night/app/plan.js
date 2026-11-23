@@ -114,7 +114,7 @@
         id: 'patron', nick: 'The Patrón', name: 'Charro beans', color: 'patron',
         blurb: 'Pinto beans simmered with pork, bacon, poblano, tomato and beer.',
         makes: 'About 5 cups',
-        source: { label: 'Rick Bayless, Authentic Mexican (frijoles charros)', url: null },
+        source: { label: 'Rick Bayless, Cowboy Beans (frijoles charros). Quantities here follow his book Authentic Mexican.', url: 'https://www.rickbayless.com/recipe/cowboy-beans' },
         ingredients: [
           { qty: '½ pound', item: 'dried pinto beans', note: 'about 1¼ cups, half the bag' },
           { qty: '4 cups', item: 'water', note: 'for soaking' },
@@ -211,7 +211,7 @@
         id: 'cream', nick: 'The Smoky Cream', name: 'Creamy chipotle slaw', color: 'cream',
         blurb: 'Goes inside the tacos and next to them.',
         makes: 'About 6 cups: enough for the tacos plus a side',
-        source: { label: 'Leite\'s Culinaria, adapted from Daphne Oz', url: null },
+        source: { label: 'Leite\'s Culinaria, fish tacos with creamy chipotle slaw', url: 'https://leitesculinaria.com/?p=86546' },
         ingredients: [
           { qty: '4 cups', item: 'shredded green cabbage', note: 'about a quarter of the head' },
           { qty: '1 cup', item: 'shredded purple cabbage' },

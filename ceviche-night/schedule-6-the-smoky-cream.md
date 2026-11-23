@@ -3,7 +3,7 @@
 Goes inside the tacos and next to them.
 
 - **Makes:** About 6 cups: enough for the tacos plus a side
-- **Source:** Leite's Culinaria, adapted from Daphne Oz
+- **Source:** [Leite's Culinaria, fish tacos with creamy chipotle slaw](https://leitesculinaria.com/?p=86546)
 - **First step:** 8:18 AM · Your kitchen · morning
 - **Last step:** 7:30 PM · Her kitchen
 
