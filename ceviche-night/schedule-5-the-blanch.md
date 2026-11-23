@@ -59,6 +59,7 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Look for: You can smell it from a step away. No smoke.
 4. **7:25 AM — Dunk the onions in hot water** (**3 min**)
     - The water should be at a full boil.
+    - Not boiling? Lid on, burner on high, and wait. No pot of water on the stove? Fill a medium pot with 5 cups of water and boil it first.
     - Slide all the sliced onions in. Turn the burner off.
     - Start the timer. You like strong onion flavor, so **30 seconds** is enough.
     - When it ends, pour everything through the strainer in the sink.

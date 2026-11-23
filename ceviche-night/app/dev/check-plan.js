@@ -4,7 +4,14 @@ const errs = [];
 const ids = new Set(); const idx = {};
 P.steps.forEach((s, i) => { if (ids.has(s.id)) errs.push('duplicate step id ' + s.id); ids.add(s.id); idx[s.id] = i; });
 const waits = {};
-P.steps.forEach(s => { if (s.wait) { if (waits[s.wait.id]) errs.push('duplicate wait id ' + s.wait.id); waits[s.wait.id] = s.id; } });
+// A second step may start the same timer again (the beans go back on the stove in her kitchen), but only with the same label.
+const waitLabel = {};
+P.steps.forEach(s => {
+  if (!s.wait) return;
+  if (waits[s.wait.id] && waitLabel[s.wait.id] !== s.wait.label) errs.push('wait id ' + s.wait.id + ' is used by two steps with different labels');
+  if (!waits[s.wait.id]) waits[s.wait.id] = s.id;
+  waitLabel[s.wait.id] = s.wait.label;
+});
 const dishes = new Set(P.dishes.map(d => d.id).concat(['day']));
 const gl = new Set(Object.keys(P.glossary));
 const used = new Set();

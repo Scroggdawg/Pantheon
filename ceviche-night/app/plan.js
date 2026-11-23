@@ -443,12 +443,14 @@
         title: 'Turn the beans down again',
         body: [
           'Look in the bean pot. Steady bubbles? Turn the burner down to [[heat|medium-low]].',
-          'Put the lid on, [[lid-ajar|slightly open]].'
+          'Put the lid on, [[lid-ajar|slightly open]].',
+          'Tap Done. The guide asks you to test the beans in 30 minutes.'
         ],
         look: 'A [[simmer]]: a few lazy bubbles every second.',
         tip: 'Not bubbling yet? Turn the heat up a notch and give it 3 more minutes.',
         after: ['beans-resume'],
         afterWait: 'beans-reboil',
+        wait: { id: 'simmer', mins: 30, label: 'Beans simmering', attended: true, urgent: false, laps: [15], lapLabel: 'Stir the beans. Add water if they poke out' },
         mins: 1
       },
       {
@@ -690,6 +692,7 @@
         title: 'Dunk the onions in hot water',
         body: [
           'The water should be at a [[boil|full boil]].',
+          'Not boiling? Lid on, burner on high, and wait. No pot of water on the stove? Fill a medium pot with 5 cups of water and boil it first.',
           'Slide all the sliced onions in. Turn the burner off.',
           'Start the timer. You like strong onion flavor, so 30 seconds is enough.',
           'When it ends, pour everything through the [[strainer]] in the sink.',

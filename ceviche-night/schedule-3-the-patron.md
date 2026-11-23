@@ -268,6 +268,8 @@ These steps of this dish move:
 3. **Turn the beans down again** (Her kitchen; extra step; **1 min**)
     - Look in the bean pot. Steady bubbles? Turn the burner down to medium-low.
     - Put the lid on, slightly open.
+    - Tap Done. The guide asks you to test the beans in **30 minutes**.
+    - **Timer: 30 minutes.** Beans simmering. Keep working.
     - Look for: A simmer: a few lazy bubbles every second.
     - Tip: Not bubbling yet? Turn the heat up a notch and give it **3 more minutes**.
 4. **Are the beans tender?** (Her kitchen; the step is listed above, ignore its time)

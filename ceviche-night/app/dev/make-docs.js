@@ -4,12 +4,21 @@
  *
  *   node ceviche-night/app/dev/make-docs.js          (no arguments)
  *
- * Reads   ../plan.js (all content) and ../engine.js (the schedule), plus the dish colours from ../index.html.
- * Writes  ceviche-night/run-sheet.html + run-sheet.pdf, master-schedule.md, schedule-*.md, recipes-scaled.md.
+ * Reads   ../plan.js (all content) and ../engine.js (the schedule). Dish colours come from ../index.html and
+ *         the place names from ../app.js, so the paper matches the app (built-in fallbacks if they cannot be read).
+ * Writes  into ceviche-night/ (overwriting):
+ *           run-sheet.html + run-sheet.pdf   the paper run sheet (Letter, portrait)
+ *           master-schedule.md               the whole day on one list
+ *           schedule-*.md                    one per dish (see DISH_FILES)
+ *           recipes-scaled.md                the recipes on their own, no clock times
+ *
+ * The day that gets printed: Engine.initialState + the option soaked = true, every anchor at its default,
+ * projected with Engine.project. A second projection with soaked = false feeds "If you did not soak the beans".
+ * Steps are always listed by projected time, never by their place in plan.steps.
  *
  * Nothing about the food is written in this file: every quantity, step, time and count is read from the
  * data when the script runs, so run it again after plan.js or engine.js changes.
- * Exits non-zero when something is missing (see the checks at the bottom).
+ * Prints one line per file. Exits non-zero when something is missing (see checkDay / checkText / main).
  */
 'use strict';
 
@@ -76,10 +85,16 @@ function readAppTables() {
   // place names and the name of the "day" pseudo-dish, as the app shows them
   try {
     const js = fs.readFileSync(path.join(APP_DIR, 'app.js'), 'utf8');
+    const pairs = function (literal) {                     // 'key': 'text' pairs of a flat object literal, read as text
+      const o = {}, re = /['"]?([\w-]+)['"]?\s*:\s*'((?:[^'\\]|\\.)*)'/g;
+      let m;
+      while ((m = re.exec(literal))) o[m[1]] = m[2].replace(/\\(.)/g, '$1');
+      return o;
+    };
     const loc = /LOC_TITLE\s*=\s*(\{[^}]*\})/.exec(js);
-    if (loc) { const o = new Function('return ' + loc[1])(); if (o && typeof o === 'object') PLACE_LABEL = Object.assign({}, PLACE_LABEL, o); }
+    if (loc) PLACE_LABEL = Object.assign({}, PLACE_LABEL, pairs(loc[1]));
     const day = /DAY_DISH\s*=\s*(\{[^}]*\})/.exec(js);
-    if (day) { const d = new Function('return ' + day[1])(); if (d && typeof d.nick === 'string') DAY_DISH = Object.assign({}, DAY_DISH, { nick: d.nick }); }
+    if (day && pairs(day[1]).nick) DAY_DISH = Object.assign({}, DAY_DISH, { nick: pairs(day[1]).nick });
   } catch (e) { /* keep the built-in labels */ }
   if (P.placeLabels && typeof P.placeLabels === 'object') PLACE_LABEL = Object.assign({}, PLACE_LABEL, P.placeLabels);
 }
@@ -380,6 +395,7 @@ body { margin: 0; background: #fff; color: #000;
   -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 b, strong { font-weight: 700; }
 p { margin: 0; }
+a { color: inherit; text-decoration: none; }
 h1 { font-size: 27pt; line-height: 1.05; margin: 0 0 3pt; }
 .contents { margin: 0 0 9pt; }
 .contents b { white-space: nowrap; }
@@ -463,6 +479,7 @@ table.jars td.sz { width: 31%; }
 .g .term { font-weight: 700; font-size: 13pt; }
 
 @media screen {
+  a { text-decoration: underline; }
   html { background: #e8e8ec; }
   body { max-width: 8.5in; margin: 0 auto; padding: 0.5in; }
   section.pb { margin-top: 0.45in; padding-top: 0.3in; border-top: 1px dashed #888; }
@@ -473,6 +490,10 @@ table.jars td.sz { width: 31%; }
   .bd { display: block; }
   .side { border-left: 0; padding-left: 0; margin-top: 2pt; }
   .head { flex-wrap: wrap; }
+  .head h3 { order: 2; flex: 1 1 100%; }
+  .dur { order: 1; margin-left: auto; }
+  h2 { flex-wrap: wrap; }
+  table.jars td.nm, table.jars td.sz { width: auto; }
 }
 `;
 
@@ -511,11 +532,12 @@ function stepHtml(day, e, o) {
   if (kind === 'choice' && s.choice) {
     (s.choice.options || []).forEach(function (op) {
       const mine = e.answered ? op.value === e.value : op.value === E.opt(P, day.st, s.choice.opt);
-      let what = mine ? 'This sheet is written for this answer. Go on.' : 'The steps change.';
+      let what = mine ? 'This sheet is written for this answer. Go on.' : 'The steps change.', whatH = esc(what);
       if (!mine && s.choice.opt === 'soaked' && op.value === false) {
-        what = 'Use “' + NO_SOAK_TITLE + '”' + (o.refs && o.refs.nosoak ? ', page ' + o.refs.nosoak : '') + '.';
+        what = 'Use “' + NO_SOAK_TITLE + '”, page 00.';
+        whatH = 'Use “' + esc(NO_SOAK_TITLE) + '”' + (o.refs && o.refs.nosoak ? ', <a href="#nosoak">page ' + o.refs.nosoak + '</a>' : '') + '.';
       }
-      L.push({ h: '<li><span class="sbox"></span><span><b>' + esc(sentence(op.label)) + '</b> ' + esc(what) + '</span></li>', t: op.label + ' ' + what, tick: true });
+      L.push({ h: '<li><span class="sbox"></span><span><b>' + esc(sentence(op.label)) + '</b> ' + whatH + '</span></li>', t: op.label + ' ' + what, tick: true });
     });
   }
   if (kind === 'check' && s.check) {
@@ -524,8 +546,10 @@ function stepHtml(day, e, o) {
     L.push({ h: '<li><span class="sbox"></span><span><b>' + esc(sentence(c.yes)) + '</b> ' + yes + '</span></li>', t: c.yes + ' ' + yes, tick: true });
     L.push({ h: '<li><span class="sbox"></span><span><b>' + esc(sentence(c.no)) + '</b> Wait <b>' + esc(words(c.retryMins || 0)) + '</b>. Then check again.</span></li>', t: c.no + ' ' + no, tick: true });
     if (c.giveUp) {
-      const tail = (from != null ? ' Only from ' + clock(from) + ' on.' : '') + (o.refs && o.refs['planb-' + s.id] ? ' Then see page ' + o.refs['planb-' + s.id] + '.' : '');
-      L.push({ h: '<li><span class="sbox"></span><span><b>' + esc(sentence(c.giveUp.label)) + '</b>' + tail + '</span></li>', t: c.giveUp.label + tail, tick: true });
+      const pg = o.refs && o.refs['planb-' + s.id];
+      const tail = (from != null ? ' Only from ' + clock(from) + ' on.' : '') + (pg ? ' Then see page ' + pg + '.' : '');
+      const tailH = (from != null ? ' Only from ' + clock(from) + ' on.' : '') + (pg ? ' Then see <a href="#planb-' + esc(s.id) + '">page ' + pg + '</a>.' : '');
+      L.push({ h: '<li><span class="sbox"></span><span><b>' + esc(sentence(c.giveUp.label)) + '</b>' + tailH + '</span></li>', t: c.giveUp.label + tail, tick: true });
     }
   }
 
@@ -583,7 +607,7 @@ function freeHtml(e) {
 
 function frontHtml(base, refs, toc) {
   let h = '<section><h1>' + esc(P.title) + ' run sheet</h1><p class="contents">' + toc.map(function (t) {
-    return esc(t.title) + ': <b>page ' + (refs[t.id] || '') + '</b>';
+    return '<a href="#' + esc(t.id) + '">' + esc(t.title) + ': <b>page ' + (refs[t.id] || '') + '</b></a>';
   }).join(' · ') + '</p>';
   h += '<h2>The night before</h2><div class="cols">';
   (P.tonight || []).forEach(function (t) {
