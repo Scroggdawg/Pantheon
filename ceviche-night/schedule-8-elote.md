@@ -1,6 +1,6 @@
-# Elote — Oven Street Corn (×0.5, 2 ears)
+# Elote — Oven Street Corn (×1, 4 ears)
 
-Quantities: Tasting Table's 4-ear elote recipe, halved.
+Quantities: Tasting Table's 4-ear elote recipe, at full size.
 Method: broiler adaptation, because there is no grill. The broil time is an estimate. Watch the corn, not the clock.
 
 - **Sauce:** Tue 5:55 PM
@@ -17,14 +17,14 @@ Method: broiler adaptation, because there is no grill. The broil time is an esti
 
 ## Ingredients
 
-- 2 ears corn, shucked
-- 1 Tbsp vegetable oil
-- ½ tsp salt
-- ½ tsp black pepper
-- ¼ cup sour cream (or Mexican crema)
-- 2 Tbsp mayonnaise
-- Juice of ¼ lime
-- ¼ cup crumbled cotija, plus extra on top
+- 4 ears corn, shucked
+- 2 Tbsp vegetable oil
+- 1 tsp salt
+- 1 tsp black pepper
+- ½ cup sour cream (or Mexican crema)
+- ¼ cup mayonnaise
+- Juice of ½ lime
+- ½ cup crumbled cotija, plus extra on top
 - Chipotle powder for dusting (optional)
 - Lime wedges
 

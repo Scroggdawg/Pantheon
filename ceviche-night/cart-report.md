@@ -34,7 +34,7 @@ Choices made:
 
 | Item | Qty | For |
 |---|---|---|
-| Fresh Halibut Fillet | 1 (listed per lb) | Classic Scoop — need ½ lb |
+| Fresh Halibut Fillet | 1 fillet, about 0.75 lb | Classic Scoop — need ½ lb |
 | Wild Extra Large P&D Shrimp | 1 lb | Smoke & Pink — need ½ lb |
 | Organic Limes | 15 | Scoop, S&P, Smoky Cream, Elote |
 | Organic White Onion | 1 | Scoop, Milky Way |
@@ -51,7 +51,7 @@ Choices made:
 | Taylor Farms Shredded Carrots, 8 oz | 1 | Smoky Cream |
 | Organic Hass Avocados | 2 | Scoop (need 1) |
 | Navel Orange, large | 1 | Scoop |
-| White Corn on the Cob | 2 | Elote |
+| White Corn on the Cob | 4 | Elote (Luke doubled it) |
 | Daisy Sour Cream, 14 oz | 1 | S&P pink sauce, Elote |
 | FAGE 5% Plain Greek Yogurt, 5.3 oz | 1 | Smoky Cream |
 | El Mexicano Cotija, 10 oz | 1 | Elote |
@@ -69,7 +69,19 @@ Choices made:
 - Greek yogurt: swapped the 32 oz tub the search picked for the 5.3 oz cup.
 - Garlic: swapped a 1 lb listing for a single head.
 
-## Check these in Instacart before you pay
+## Verified in Chrome, Mon Nov 23 about 9:30 PM
+
+Read and set directly in Luke's Chrome on the Mac mini.
+
+- Lazy Acres: 28 lines, item subtotal **$190.74**, delivery estimate 9:52–10:25 PM tonight.
+- Ralphs: 9 lines, item subtotal **$46.55**, delivery estimate 9:38–10:11 PM tonight.
+- Halibut: sold per fillet (about 0.75 lb, $40.87). Already set to "Refund, don't replace."
+- Shrimp: 1 lb at $14.99. Changed to "Refund, don't replace."
+- Serranos 4 ct, Roma tomatoes 3 ct, red onions 3 ct: all counts, not pounds.
+- Stew pork left at 1 lb ($8.99).
+- No shopper notes added (Luke's call). Nothing checked out.
+
+## Original pre-checkout checklist (now handled above)
 
 - [ ] **Halibut weight.** Set it to about ½ lb if the app allows. Set "Don't replace."
 - [ ] **Halibut shopper note:** "For ceviche. Please confirm with the seafood counter that it is sushi-grade or previously frozen. If not, leave it out."

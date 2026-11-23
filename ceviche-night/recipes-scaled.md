@@ -9,7 +9,7 @@ Multipliers (people ÷ base, rounded up to the nearest 0.5):
 - The Blanch: ×1
 - The Smoky Cream: ×1
 - The Street Cart: dropped for now
-- Elote: ×0.5 (2 ears)
+- Elote: ×1 (4 ears; Luke doubled the corn)
 
 Steps and timers live in each `schedule-*.md` file.
 
@@ -122,17 +122,17 @@ This is the full batch. It covers 6 tacos with plenty left as a side.
 - About 6 cups vegetable oil for frying (not scaled; depth stays 1½ inches)
 - About ½ cup cajeta
 
-## 8. Elote — ×0.5
+## 8. Elote — ×1
 
-Quantities are from Tasting Table's 4-ear elote recipe, halved. The broiler method is an adaptation because there is no grill; the broil time is an estimate to watch, not a tested number.
+Quantities are from Tasting Table's 4-ear elote recipe, at full size. The broiler method is an adaptation because there is no grill; the broil time is an estimate to watch, not a tested number.
 
-- 2 ears corn, shucked
-- 1 Tbsp vegetable oil
-- ½ tsp salt
-- ½ tsp black pepper
-- ¼ cup sour cream (or Mexican crema)
-- 2 Tbsp mayonnaise
-- Juice of ¼ lime
-- ¼ cup crumbled cotija, plus extra on top
+- 4 ears corn, shucked
+- 2 Tbsp vegetable oil
+- 1 tsp salt
+- 1 tsp black pepper
+- ½ cup sour cream (or Mexican crema)
+- ¼ cup mayonnaise
+- Juice of ½ lime
+- ½ cup crumbled cotija, plus extra on top
 - Chipotle powder for dusting (optional)
 - Lime wedges

@@ -34,7 +34,7 @@ Dish key:
 - [ ] Shredded carrots — **1 bag** (you have no box grater) — Cream, optional in Milky
 - [ ] Avocado, large, ripe — **2** (need 1; second is insurance) — Scoop
 - [ ] Orange — **1** — Scoop
-- [ ] Corn on the cob — **2 ears** — Elote
+- [ ] Corn on the cob — **4 ears** — Elote
   - November corn can be poor or missing. Backup: 1 bag frozen corn kernels, charred in the skillet instead.
 
 ## Meat & Seafood
@@ -110,7 +110,7 @@ Dish key:
 - Ceviche juice: ¾ cup = 6 limes
 - Taco marinade: 2 Tbsp = 1 lime
 - Slaw: ¼ cup = 2 limes
-- Elote: ¼ lime
+- Elote: ½ lime
 - Zest lime: 1
 - Wedges: 1
 - Subtotal: about 11¼, plus 25% = 14 → buy 15
