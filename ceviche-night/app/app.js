@@ -172,7 +172,8 @@
   }
 
   var state = readJSON(ls(), KEY);
-  var freshState = !validState(state);
+  function dayOver(s) { var d0 = E.dayMs(s); return isFinite(d0) && realNow() >= d0 + DAY + 4 * HOUR; }
+  var freshState = !validState(state) || dayOver(state);
   state = tidy(freshState ? E.initialState(PLAN, device, realNow()) : state);
 
   var ui = { focus: null, pinned: false, acked: {}, seg: 'steps' };     // survives a reload (this device only)
@@ -185,6 +186,7 @@
   })();
   var undoStack = freshState ? [] : readJSON(ss(), KEY_UNDO);
   if (!Array.isArray(undoStack)) undoStack = [];
+  var kept = null;                                        // the timer the last Back took away (see undo)
   var openMap = {};                                       // which disclosure rows are open (memory only)
   var confirmReset = false;
 
@@ -230,6 +232,9 @@
       done: e.done || {}, skipped: e.skipped || {}, waits: e.waits || {}, laps: e.laps || {}, fg: e.fg || null, opts: e.opts || {},
       rev: (s.rev || 0) + 1, updatedAt: now()
     }));
+    // Back to re-read a step must not restart the timer that step started: remember it for a Done that follows at once
+    var um = /^done:(.+)$/.exec(e.tag || ''), ust = um ? byId[um[1]] : null, wid = ust && ust.wait ? ust.wait.id : null, w0 = wid && s.waits ? s.waits[wid] : null;
+    kept = !preview && w0 && w0.by === ust.id && now() - w0.start > 60000 ? { id: ust.id, wid: wid, wait: w0, laps: (s.laps || {})[wid], after: S() } : null;
     focusSet(e.focus && byId[e.focus] ? e.focus : null, e.pinned);
     saveUndo();
     afterChange();
@@ -269,7 +274,7 @@
       if (!(freshState && cached)) sync.heard = true;     // a remembered copy is not the store's answer
       if (!snap || !snap.exists) return;
       var r = snap.data();
-      if (!validState(r)) return;
+      if (!validState(r) || dayOver(r)) return;
       var newer = (r.updatedAt || 0) > (state.updatedAt || 0) && r.device !== device;
       // This phone lost its storage and started from nothing: the day saved online wins over a tap or two made since.
       var rescue = first && freshState && (r.day === state.day || r.day === ymd(new Date(realNow()))) && countDone(r) > countDone(state);
@@ -428,6 +433,13 @@
     if (preview) { preview.now = previewTimeAfter(step, preview.now); }
     var s = S(), next = safe(function () { return E.complete(PLAN, s, id, now(), payload); }, s);
     if (!next || next === s) { dropUndo(); return false; }
+    var k = kept; kept = null;
+    if (k && k.id === id && k.after === s && next.waits && next.waits[k.wid]) {
+      var w2 = Object.assign({}, next.waits), l2 = Object.assign({}, next.laps);
+      w2[k.wid] = k.wait;
+      if (k.laps != null) l2[k.wid] = k.laps;
+      next = Object.assign({}, next, { waits: w2, laps: l2 });
+    }
     setState(next);
     if (wasFocus || step.kind === 'move') focusSet(null);     // settleFocus then asks the engine what is next (a move changes the place)
     afterChange();
@@ -523,8 +535,8 @@
     stopSpeech();
     preview = null;
     freshState = false;
-    var t = realNow();
-    state = tidy(Object.assign({}, E.initialState(PLAN, device, t), { rev: 1, updatedAt: t, device: device }));
+    var t = realNow(), nextRev = (state.rev || 0) + 1;
+    state = tidy(Object.assign({}, E.initialState(PLAN, device, t), { rev: nextRev, updatedAt: t, device: device }));
     undoStack = []; saveUndo();
     ui.focus = null; ui.pinned = false; ui.acked = {}; saveUi();
     confirmReset = false; alarm = {}; openMap = {};
@@ -719,7 +731,7 @@
     return !!caps.tts || !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
   }
   function speakText(step) {
-    var parts = [step.title].concat(step.body || []);
+    var parts = [step.title].concat(step.warn ? ['Careful. ' + step.warn] : [], step.body || []);
     if (step.look) parts.push("It's right when: " + step.look);
     return parts.map(function (p) { p = plain(p).trim(); return /[.!?:]$/.test(p) ? p : p + '.'; }).join(' ').slice(0, 1900);
   }
@@ -1006,7 +1018,7 @@
   function alertHTML(a) {
     var main = a.title || '', small = '', b = '', cls = 'banner', st = a.stepId ? byId[a.stepId] : null;
     var key = at('key', a.key);
-    if (a.kind === 'lap') b = btn('alert', key, /^turn/i.test(main) ? 'Turned' : 'Done');
+    if (a.kind === 'lap') b = btn('alert', key, /^turn/i.test(main) ? 'Turned' : /^stir/i.test(main) ? 'Stirred' : 'OK');
     else if (a.kind === 'leave') {
       if (a.minsLeft >= 1) cls += ' soon';
       else { main = 'Time to leave'; if (st && !viewingStep(st.id)) b = btn('alert', key, 'Go'); }   // Go opens the leave step: its walk-out checks come first
@@ -1031,7 +1043,7 @@
     if (fg && byId[fg.stepId] && t < fg.endsAt && !viewingStep(fg.stepId)) {
       h += chip(fg.stepId, (byId[fg.stepId].timer && byId[fg.stepId].timer.label) || byId[fg.stepId].title, fg.endsAt, false);
     }
-    safe(function () { return E.waitsView(PLAN, s, t); }, []).forEach(function (w) {
+    safe(function () { return E.waitsView(PLAN, s, t); }, []).sort(function (a, b) { return (a.elapsed ? 1 : 0) - (b.elapsed ? 1 : 0); }).forEach(function (w) {
       h += chip(w.gatedStepId || w.by, w.label, w.endsAt, w.elapsed);
     });
     $('chips').hidden = !h;
@@ -1110,6 +1122,7 @@
       (d.id !== 'day' && d.name ? '<span class="plain">' + esc(d.name) + '</span>' : '') + '</div>';
     h += '<h1 class="title"' + (o.sheet ? ' id="sheet-title"' : '') + '>' + esc(step.title) + '</h1>';
     h += statusNote(step, o);
+    if (step.warn) h += callout('warn', 'warn', '', rich(step.warn));
     if (step.body && step.body.length) h += '<div class="body">' + step.body.map(function (l) { return '<p>' + rich(l) + '</p>'; }).join('') + '</div>';
     if (step.kind === 'checklist') h += checklistHTML(step);
     if (step.need && step.need.length) {
@@ -1118,7 +1131,6 @@
     if (step.into) h += callout('into', 'jar', 'Put it in', esc(step.into));
     if (step.look) h += callout('look', 'ok', "It's right when", rich(step.look));
     if (step.tip) h += callout('tip', 'tip', 'Tip', rich(step.tip));
-    if (step.warn) h += callout('warn', 'warn', '', rich(step.warn));
     var m = stepMins(step), meta = '';
     if (m > 0) meta += '<span>About ' + esc(dur(m)) + '</span>';
     if (!o.sheet) meta += '<span data-role="next">' + esc(nextLine(step)) + '</span>';
@@ -1214,7 +1226,7 @@
         '<p class="lead">' + esc(why) + '</p>' +
         '<div class="block tight"><span class="label">Next</span><p class="lead"><b>' + esc(nx.title) + '</b></p></div>';
       if (preview) top = btn('skip-ahead', '', 'Skip ahead', 'go');
-      else if (u.reason === 'time') top = btn('do-now', at('step', u.stepId), 'Start it now', 'go');
+      else if (u.reason === 'time') top = btn('do-now', at('step', u.stepId), 'Start it now', 'big');
     } else {
       h += '<h1 class="title">Nothing to do right now</h1><p class="lead">Open the Day tab to see what is left.</p>';
     }
@@ -1278,7 +1290,8 @@
     var page = $('page'), el = page.querySelector('[data-next]');
     if (!el) return;
     var top = el.getBoundingClientRect().top - page.getBoundingClientRect().top + page.scrollTop;
-    page.scrollTop = Math.max(0, top - 12);
+    var head = el.closest('.group') ? el.closest('.group').querySelector('.group-title') : null;
+    page.scrollTop = Math.max(0, top - 12 - (head ? head.offsetHeight : 0));
   }
 
   /* ---- Dishes ---- */
@@ -1404,7 +1417,7 @@
     });
 
     h += sect('Practice run', '<p class="sub">Walk through the day without changing anything real.</p>' +
-      (preview ? btn('preview-exit', '', 'Exit preview', 'on') : btn('preview-enter', '', esc(previewLabel()))));
+      (preview ? btn('preview-exit', '', 'Exit preview', 'on') : canPreview() ? btn('preview-enter', '', esc(previewLabel())) : '<p class="sub">The day has started. The Day tab shows what is ahead.</p>'));
 
     h += sect('Sound', '<p class="sub">Timers beep through this phone. Turn the ringer on and the volume up. If your music stops when you tap the guide, play music from another device.</p>' + btn('test-alarm', '', 'Test the alarm'));
 
@@ -1415,8 +1428,8 @@
 
     h += sect('Other layouts', '<a class="linkrow" href="#board"><span>Open the big-screen board</span>' + ico('right', 22) + '</a>');
 
-    h += sect('Start over', '<p class="sub">Erases your progress, your ticks and your time changes.</p>' +
-      (confirmReset ? '<div class="pair">' + btn('reset-no', '', 'Keep my progress') + btn('reset-yes', '', 'Yes, erase it', 'danger') + '</div>' : btn('reset-ask', '', 'Start over')));
+    h += sect('Start over', '<p class="sub">' + (preview ? 'Starts the practice run again. Your real day is not touched.' : 'Erases your progress, your ticks and your time changes.') + '</p>' +
+      (confirmReset ? '<div class="pair">' + btn('reset-no', '', preview ? 'Keep going' : 'Keep my progress') + btn('reset-yes', '', preview ? 'Yes, start again' : 'Yes, erase it', 'danger') + '</div>' : btn('reset-ask', '', 'Start over')));
 
     var about = '<div class="card"><p>' + (sync.status === 'on' ? 'Your progress is saved online too. Open the guide on another device and it picks up where you are.'
       : sync.status === 'checking' ? 'Your progress is saved on this phone.' : 'Saved on this phone only.') + '</p></div>';
@@ -1475,13 +1488,13 @@
   }
   function helpHTML(step, top) {
     var h = '<div class="help"><div class="block"><h2 class="term-h" id="sheet-title">Help</h2><p class="sub">' + esc(step.title) + '</p></div>';
-    var keys = termsIn(step);
+    var keys = termsIn(step), words;
     if (keys.length) {
-      h += '<div class="block"><p class="label">Words in this step</p>' + keys.map(function (k) {
+      words = '<div class="block"><p class="label">Words in this step</p>' + keys.map(function (k) {
         var g = PLAN.glossary[k];
         return '<div class="card"><div class="kv"><b>' + esc(g.term) + '</b></div>' + glossLines(g) + '</div>';
       }).join('') + '</div>';
-    } else h += '<p class="sub">This step uses no special words. In other steps, tap any underlined word to see what it means.</p>';
+    } else words = '<p class="sub">This step uses no special words. In other steps, tap any underlined word to see what it means.</p>';
     if (caps.sample) {
       h += '<div class="block"><p class="label">Ask about this step</p>';
       if (top.q) {
@@ -1497,7 +1510,7 @@
         '<form class="ask-form" id="ask-form" autocomplete="off"><input class="field" id="ask-input" name="q" type="text" maxlength="300" enterkeyhint="send" placeholder="Type a question" aria-label="Your question">' +
         '<button type="submit" class="btn on">Send</button></form></div>';
     }
-    return h + '</div>';
+    return h + words + '</div>';
   }
   function renderSheet() {
     var layer = $('sheet-layer');
@@ -1527,8 +1540,9 @@
 
   /* ================================================================== 12. preview mode */
 
+  function canPreview() { return !Object.keys(state.done || {}).length && !state.fg; }
   function enterPreview() {
-    if (preview) return;
+    if (preview || !canPreview()) return;
     stopSpeech();
     var t = realNow(), start = E.anchorMs(state, 'start'), d0 = E.dayMs(state);
     var sim = isFinite(start) ? (t > start && t < d0 + DAY ? t : start) : t;
@@ -1612,19 +1626,25 @@
     'test-alarm': function () { initAudio(); ring('alarm'); },
     'reset-ask': function () { confirmReset = true; render(); },
     'reset-no': function () { confirmReset = false; render(); },
-    'reset-yes': function () { startOver(); },
+    'reset-yes': function () { if (preview) { confirmReset = false; exitPreview(); enterPreview(); } else startOver(); },
     'ask-preset': function (el) { ask(PRESETS[Number(el.getAttribute('data-i'))]); }
   };
   function onClick(ev) {
     var el = ev.target && ev.target.closest ? ev.target.closest('[data-act]') : null;
+    // a second slippery tap must not follow the link that takes a button's place ("See the day" where Done was)
+    var link = !el && ev.target && ev.target.closest ? ev.target.closest('#actions a[href]') : null;
+    if (link && ev.timeStamp - lastActionAt < guardMs) { ev.preventDefault(); return; }
     if (!el || el.disabled) return;
     var fn = HANDLERS[el.getAttribute('data-act')];
     if (!fn) return;
     var inBar = !!el.closest('#actions');
     var guarded = inBar || !!el.closest('.sheet-actions, .banner');
-    if (guarded && ev.timeStamp - lastActionAt < guardMs) { ev.preventDefault(); return; }
+    if (guarded) {
+      var quick = ev.timeStamp - lastActionAt < guardMs;
+      lastActionAt = ev.timeStamp;
+      if (quick) { ev.preventDefault(); return; }
+    }
     if (inBar && guardMs && realNow() - swapAt < 700) { ev.preventDefault(); return; }
-    if (guarded) lastActionAt = ev.timeStamp;
     var before = sheets.length + '|' + viewKey();
     if (inBar) {
       var f = focusGet();
@@ -1648,8 +1668,10 @@
   }
 
   /* ---- the 1-second tick ---- */
-  var tickN = 0, downTicks = 0;
+  var tickN = 0, downTicks = 0, lastTickAt = realNow();
+  function wokeUp() { var t = realNow(), gap = t - lastTickAt; lastTickAt = t; if (preview && gap > 10 * MIN) exitPreview(); }
   function tick() {
+    wokeUp();
     tickN++;
     downTicks = pointerDown ? downTicks + 1 : 0;
     if (downTicks > 5) { pointerDown = false; downTicks = 0; }      // a finger-up event that never arrived must not freeze the page
@@ -1692,6 +1714,7 @@
     emit();
   }
   function refreshAll() {
+    wokeUp();
     proj = null; lastClock = ''; lastPill = '';
     settleFocus();
     render();

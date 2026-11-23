@@ -35,7 +35,8 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
 1. **7:15 AM — Put the onion water on** (**1 min**)
     - Fill a medium pot with 5 cups of water.
     - Lid on. Burner on high.
-    - You need: Medium pot with a lid
+    - You need:
+        - Medium pot with a lid
     - **Timer: 8 minutes.** Onion water heating. Keep working. It ends about 7:24 AM.
     - When it ends: Dunk the onions in hot water.
 2. **7:16 AM — Slice 1½ red onions** (**6 min**)
@@ -45,15 +46,22 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Wrap 1 half and put it in the fridge. It is for the slaw. Your onions are large, so the other 3 halves are enough.
     - Lay each of those 3 halves flat side down. Slice across it into thin half-moons.
     - Leave the slices on the board.
-    - You need: 2 red onions · Cutting board · Knife
+    - You need:
+        - 2 red onions
+        - Cutting board
+        - Knife
     - Look for: Slices about as thick as a coin.
 3. **7:22 AM — Toast the oregano** (**4 min**)
     - Put the dry skillet on medium-high. No oil.
-    - Let it heat until a drop of water sizzles in it. That takes a minute or two.
+    - Let it heat until a drop of water sizzles in it. That takes **a minute or two**.
     - Add 1 teaspoon of dried Mexican oregano. Start the timer. Keep it moving: shake the pan or stir with a spoon.
     - When the timer ends or it smells strong, tip or spoon it straight into the quart jar. It burns fast.
     - Burner off.
-    - You need: Skillet · Spoon · Mexican oregano · Quart jar
+    - You need:
+        - Skillet
+        - Spoon
+        - Mexican oregano
+        - Quart jar
     - Goes into: Onion jar
     - **Timer: 30 seconds.** Oregano toasting. Stay here.
     - Look for: You can smell it from a step away. No smoke.
@@ -64,7 +72,9 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Start the timer. You like strong onion flavor, so **30 seconds** is enough.
     - When it ends, pour everything through the strainer in the sink.
     - This is called blanching.
-    - You need: Sliced onions · Strainer in the sink
+    - You need:
+        - Sliced onions
+        - Strainer in the sink
     - **Timer: 30 seconds.** Onions in hot water. Stay here.
     - Look for: The onions bend but still have a little crunch.
     - Tip: For milder onions next time, leave them in for **2 minutes**.
@@ -73,13 +83,30 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Into the quart jar with the oregano: the drained onions, ½ cup of white vinegar and ½ cup of water.
     - Add 2 allspice berries, 3 black peppercorns, 1 bay leaf and ½ teaspoon of salt.
     - Lid on. Shake. Into the fridge.
-    - You need: White vinegar · Allspice berries · Peppercorns · Bay leaf · Salt
+    - You need:
+        - White vinegar
+        - Allspice berries
+        - Peppercorns
+        - Bay leaf
+        - Salt
     - Goes into: Onion jar
     - Look for: They turn bright pink over the next **2 hours**.
     - Tip: The liquid does not cover the onions at first. Press them down with a spoon. Shake the jar again each time you open the fridge.
+
+## If you did not soak the beans
+
+- The other steps are written out above. Here they only get a new time.
+
+### Your kitchen · morning
+
+1. **7:16 AM — Put the onion water on** (was 7:15 AM)
+    - **Timer: 8 minutes.** Onion water heating. Keep working. It ends about 7:25 AM.
+2. **7:17 AM — Slice 1½ red onions** (was 7:16 AM)
+3. **7:23 AM — Toast the oregano** (was 7:22 AM)
+4. **7:27 AM — Dunk the onions in hot water** (was 7:25 AM)
 
 ## Good to know
 
 - You like strong onion flavor, so the hot dunk is **30 seconds**. For milder onions use **2 minutes**.
 - Ready after about **2 hours** in the fridge. Better by dinner.
-- They keep up to 2 weeks in the fridge in their liquid. Take them out with a clean fork.
+- They keep up to **2 weeks** in the fridge in their liquid. Take them out with a clean fork.

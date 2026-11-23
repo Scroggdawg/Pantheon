@@ -48,14 +48,26 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
-    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - You need:
+        - 11 limes (keep 4 whole)
+        - Lime squeezer
+        - Medium bowl
+        - Measuring cup
+        - Fine grater or vegetable peeler
+        - Cutting board and knife
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 2. **8:40 AM — Shake up the slaw dressing** (**6 min**)
     - Into one of the 2-cup jars: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice.
     - Add 2 tablespoons of sugar, 1 teaspoon of ground cumin and 1 teaspoon of chipotle powder.
     - Lid on tight. Shake until smooth. Fridge.
-    - You need: Mayonnaise · Greek yogurt · Sauce lime jar · Sugar · Cumin · Chipotle powder
+    - You need:
+        - Mayonnaise
+        - Greek yogurt
+        - Sauce lime jar
+        - Sugar
+        - Cumin
+        - Chipotle powder
     - Goes into: Slaw dressing jar
 
 ### Her kitchen
@@ -67,7 +79,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Slice that wedge across as thin as you can.
     - Keep going until you have 4 cups, loosely packed. That is about a quarter of the head.
     - Do the same with the purple cabbage until you have 1 cup.
-    - You need: Green cabbage · Purple cabbage · 1-cup measure
+    - You need:
+        - Green cabbage
+        - Purple cabbage
+        - 1-cup measure
     - Goes into: Slaw bowl (large)
     - Look for: Thin ribbons, like coleslaw.
 4. **3:53 PM — Finish the slaw vegetables** (**8 min**)
@@ -83,7 +98,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Toss with tongs or two spoons until everything is coated.
     - Add ½ teaspoon of salt and ¼ teaspoon of black pepper. Toss. Taste a forkful. Flat? Add a pinch more salt and toss again.
     - Cover. Fridge.
-    - You need: Slaw dressing jar · Salt · Pepper
+    - You need:
+        - Slaw dressing jar
+        - Salt
+        - Pepper
     - Not before 5:30 PM.
 6. **7:10 PM — Drain the slaw** (**2 min**)
     - Take the slaw out of the fridge.
@@ -96,8 +114,17 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Pickled onions go on everything.
     - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
 
+## If you did not soak the beans
+
+- The other steps are written out above. Here they only get a new time.
+
+### Your kitchen · morning
+
+1. **8:24 AM — Zest half a lime, then juice eleven** (was 8:18 AM; shared step)
+2. **8:43 AM — Shake up the slaw dressing** (was 8:40 AM)
+
 ## Good to know
 
 - Best dressed **1 to 4 hours** before dinner.
 - Pour off the liquid that collects before you serve it.
-- Keeps 2 days but gets wetter.
+- Keeps **2 days** but gets wetter.

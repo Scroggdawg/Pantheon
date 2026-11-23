@@ -40,7 +40,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Add 1 peeled garlic clove, cut in half.
     - Blend until completely smooth.
     - Pour it into the purée jar. Use one of the 2-cup jars. Lid on. Fridge. Rinse the blender right away.
-    - You need: Fire-roasted tomatoes · White onion wedge · Garlic · Blender
+    - You need:
+        - Fire-roasted tomatoes
+        - White onion wedge
+        - Garlic
+        - Blender
     - Goes into: Purée jar
     - Tip: Blender just spinning? Stop it first. Push the tomatoes down with a spoon. Add 1 tablespoon of the juice from the can. Blend again.
 2. **9:03 AM — Pack the rice kit** (**3 min**)
@@ -48,7 +52,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Measure ¾ cup plus 2 tablespoons of chicken broth into the broth jar. Use one of the 2-cup jars.
     - Add ¼ teaspoon of salt plus a pinch to that jar. Use ¾ teaspoon if your broth says unsalted.
     - Lid on. Broth jar in the fridge. Rice bag by the door.
-    - You need: White rice · Chicken broth · Salt · Measuring cup
+    - You need:
+        - White rice
+        - Chicken broth
+        - Salt
+        - Measuring cup
     - Goes into: Zip bag and broth jar
 
 ### Her kitchen
@@ -72,7 +80,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Saucepan on the smallest burner, on medium. Add 2¼ teaspoons of vegetable oil. Let it heat for **1 minute**.
     - Pour in the rice from the bag. Start the timer.
     - Stir almost the whole time.
-    - You need: Saucepan · Vegetable oil · Rice bag · Wooden spoon
+    - You need:
+        - Saucepan
+        - Vegetable oil
+        - Rice bag
+        - Wooden spoon
     - Not before 6:25 PM.
     - **Timer: 5 minutes 30 seconds.** Rice toasting. Stay here.
     - Look for: The grains turn from see-through to chalky white.
@@ -80,7 +92,8 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
 6. **6:32 PM — Add the tomato purée** (**3 min**)
     - Pour in the purée jar. It will spit, so stand back.
     - Start the timer. Keep stirring.
-    - You need: Purée jar
+    - You need:
+        - Purée jar
     - **Timer: 2 minutes 30 seconds.** Purée cooking down. Stay here.
     - Look for: Thick and fairly dry, like wet sand.
 7. **6:35 PM — Add the broth and bring it to a boil** (**2 min**)
@@ -88,7 +101,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - When it reaches a full boil, stir in the serranos and parsley from the small bowl.
     - Scrape down any rice stuck to the sides of the pan.
     - Go straight to the next step.
-    - You need: Broth jar · Bowl of serranos and parsley · Lid
+    - You need:
+        - Broth jar
+        - Bowl of serranos and parsley
+        - Lid
     - Tip: Optional: stir in a handful of shredded carrots too.
 8. **6:37 PM — Lid on. Lowest heat.** (**1 min**)
     - Put the lid on tight.
@@ -113,6 +129,15 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Check that every burner and the oven are off.
     - Beans, rice, corn and shrimp to the table.
     - Not before 7:25 PM.
+
+## If you did not soak the beans
+
+- The other steps are written out above. Here they only get a new time.
+
+### Your kitchen · morning
+
+1. **9:00 AM — Blend the rice purée** (was 8:57 AM)
+2. **9:06 AM — Pack the rice kit** (was 9:03 AM)
 
 ## Good to know
 

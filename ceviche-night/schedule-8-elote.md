@@ -43,13 +43,22 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
-    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - You need:
+        - 11 limes (keep 4 whole)
+        - Lime squeezer
+        - Medium bowl
+        - Measuring cup
+        - Fine grater or vegetable peeler
+        - Cutting board and knife
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 2. **8:46 AM — Stir the corn sauce** (**3 min**)
     - In one of the 2-cup tubs: ½ cup of sour cream, ¼ cup of mayonnaise and 1 tablespoon of lime juice.
     - Stir until smooth. Lid on. Fridge.
-    - You need: Sour cream · Mayonnaise · Sauce lime jar
+    - You need:
+        - Sour cream
+        - Mayonnaise
+        - Sauce lime jar
     - Goes into: Corn sauce tub
 
 ### Her kitchen
@@ -67,8 +76,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Drizzle 2 tablespoons of vegetable oil over the 4 ears on the pan.
     - Sprinkle on 1 teaspoon of salt and 1 teaspoon of black pepper.
     - Roll the ears around so they are coated.
-    - The broiler needs a few minutes to get hot. The guide tells you when the corn goes in.
-    - You need: Vegetable oil · Salt · Pepper
+    - The broiler needs **a few minutes** to get hot. The guide tells you when the corn goes in.
+    - You need:
+        - Vegetable oil
+        - Salt
+        - Pepper
     - Not before 6:43 PM.
 5. **6:50 PM — Corn under the broiler** (**1 min**)
     - Slide the pan under the broiler.
@@ -76,7 +88,9 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Every **3 minutes** the guide tells you to turn the corn.
     - To turn it: pull the rack part-way out with the oven mitt. Give each ear a quarter turn with tongs. Slide it back.
     - The time is an estimate. You want dark brown and black spots on every side.
-    - You need: Tongs · Oven mitt
+    - You need:
+        - Tongs
+        - Oven mitt
     - Not before 6:50 PM.
     - **Timer: 12 minutes.** Corn broiling. Keep working. It ends about 7:03 PM.
     - At 6:54 PM, 6:57 PM and 7:00 PM: Turn the corn.
@@ -91,7 +105,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Sprinkle the cotija all over and press it on.
     - Dust lightly with chipotle powder if you like.
     - Tent the pan loosely with foil to keep it warm.
-    - You need: Corn sauce tub · Plate of cotija · Foil · Oven mitt
+    - You need:
+        - Corn sauce tub
+        - Plate of cotija
+        - Foil
+        - Oven mitt
     - Look for: Plump, shiny kernels with dark brown and black spots on every side. Your corn is white, so it will not turn yellow.
 7. **7:26 PM — Last touches** (**2 min**; shared step, it also covers other dishes)
     - The beans must be steaming and bubbling. Not yet? Turn the burner up to medium. Stir until they are.
@@ -105,6 +123,15 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Scoop the ceviche with tostadas, chips or saltines.
     - Pickled onions go on everything.
     - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
+
+## If you did not soak the beans
+
+- The other steps are written out above. Here they only get a new time.
+
+### Your kitchen · morning
+
+1. **8:24 AM — Zest half a lime, then juice eleven** (was 8:18 AM; shared step)
+2. **8:49 AM — Stir the corn sauce** (was 8:46 AM)
 
 ## Good to know
 

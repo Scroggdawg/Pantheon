@@ -389,7 +389,7 @@
   function alertHTML(a, focusId) {
     var st = a.stepId ? ix.byId[a.stepId] : null, viewing = !!st && st.id === focusId;
     var main = a.title || '', small = '', b = '', cls = 'bd-alert';
-    if (a.kind === 'lap') b = /^turn/i.test(main) ? 'Turned' : 'Done';
+    if (a.kind === 'lap') b = /^turn/i.test(main) ? 'Turned' : /^stir/i.test(main) ? 'Stirred' : 'OK';
     else if (a.kind === 'leave') {
       if (a.minsLeft >= 1) cls += ' is-soon';
       else { main = 'Time to leave'; if (st && !viewing) b = 'Go'; }

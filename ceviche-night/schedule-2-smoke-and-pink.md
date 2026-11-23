@@ -55,7 +55,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Stir until it is evenly pink. Taste it.
     - Want more heat? Add up to 1½ teaspoons more sriracha.
     - Lid on. Fridge.
-    - You need: Sour cream · Sriracha · Measuring spoons
+    - You need:
+        - Sour cream
+        - Sriracha
+        - Measuring spoons
     - Goes into: Pink sauce tub
 2. **8:18 AM — Zest half a lime, then juice eleven** (**18 min**; shared step, it also covers other dishes)
     - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
@@ -65,7 +68,13 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
-    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - You need:
+        - 11 limes (keep 4 whole)
+        - Lime squeezer
+        - Medium bowl
+        - Measuring cup
+        - Fine grater or vegetable peeler
+        - Cutting board and knife
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 3. **8:49 AM — Make the shrimp marinade** (**8 min**)
@@ -76,7 +85,14 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Add 1½ teaspoons of chipotle powder. For mild, use 1 teaspoon.
     - Add ¼ teaspoon of salt and ¼ teaspoon of black pepper.
     - Lid on. Shake. Fridge. The shrimp do not go in until tonight.
-    - You need: Sauce lime jar · Garlic · Cilantro · Chipotle powder · Olive oil · Salt · Pepper
+    - You need:
+        - Sauce lime jar
+        - Garlic
+        - Cilantro
+        - Chipotle powder
+        - Olive oil
+        - Salt
+        - Pepper
     - Goes into: Marinade jar
 
 ### Her kitchen
@@ -92,7 +108,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Pinch off any tails.
     - Pat them dry with paper towels. Put them in a medium bowl.
     - Cover the bowl. Fridge.
-    - You need: Shrimp · Paper towels · Medium bowl · Marinade jar
+    - You need:
+        - Shrimp
+        - Paper towels
+        - Medium bowl
+        - Marinade jar
     - Not before 6:40 PM.
     - **Warning:** Raw shrimp. Wash your hands with soap after. Wipe the counter and the fridge handle.
 6. **7:09 PM — Shrimp into the marinade** (**1 min**)
@@ -101,7 +121,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Stir with the spoon until every shrimp is coated. The spoon goes in the sink.
     - Leave the bowl on the counter.
     - They sit while the skillet heats, about **10 minutes** in all. Never more than 20: the lime starts to cook them.
-    - You need: Bowl of shrimp · Marinade jar · Spoon
+    - You need:
+        - Bowl of shrimp
+        - Marinade jar
+        - Spoon
     - Not before 7:09 PM.
     - **Timer: 5 minutes.** Shrimp marinating. Keep working. It ends about 7:15 PM.
     - Never longer than **20 minutes**.
@@ -112,7 +135,13 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Cast-iron skillet on high heat. Add 1½ teaspoons of olive oil.
     - Start the timer. Stay at the stove and watch the oil.
     - If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.
-    - You need: Cast-iron skillet · Olive oil · Tongs · Bowl of shrimp · Serving bowl and foil · Oven mitt
+    - You need:
+        - Cast-iron skillet
+        - Olive oil
+        - Tongs
+        - Bowl of shrimp
+        - Serving bowl and foil
+        - Oven mitt
     - **Timer: 3 minutes.** Skillet heating. Stay here.
     - Look for: The oil shimmers and moves like water.
     - Tip: Thick smoke before the shrimp go in? Slide the pan off the burner for **30 seconds**. Use the oven mitt.
@@ -122,7 +151,8 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Start at one side and work around the pan.
     - Leave the liquid behind in the bowl. Do not use it for anything. Raw shrimp sat in it. The bowl goes in the sink.
     - Start the timer. Do not move them. This is called searing.
-    - You need: Tongs
+    - You need:
+        - Tongs
     - **Timer: 1 minute.** Shrimp, side one. Stay here.
     - **Warning:** It will smoke and spit. That is normal. The chile smoke can make you cough.
 9. **7:20 PM — Flip the shrimp: side two** (**2 min**)
@@ -132,7 +162,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - White all the way through? Burner off. Move them all to the warm serving bowl. Cover it with foil.
     - Gray or see-through in the middle? Give them **30 seconds** more, then check again.
     - Leave the skillet on the stove. It stays hot for a long time.
-    - You need: Tongs · Knife · Warm serving bowl and foil
+    - You need:
+        - Tongs
+        - Knife
+        - Warm serving bowl and foil
     - **Timer: 1 minute.** Shrimp, side two. Stay here.
     - Look for: Pink outside, white inside, curled into a loose C.
     - **Warning:** Cooked shrimp go into a clean bowl. Never the bowl the raw shrimp were in.
@@ -155,6 +188,15 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Scoop the ceviche with tostadas, chips or saltines.
     - Pickled onions go on everything.
     - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
+
+## If you did not soak the beans
+
+- The other steps are written out above. Here they only get a new time.
+
+### Your kitchen · morning
+
+1. **8:24 AM — Zest half a lime, then juice eleven** (was 8:18 AM; shared step)
+2. **8:52 AM — Make the shrimp marinade** (was 8:49 AM)
 
 ## Good to know
 

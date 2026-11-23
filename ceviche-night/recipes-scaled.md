@@ -51,7 +51,13 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
     - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
-    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - You need:
+        - 11 limes (keep 4 whole)
+        - Lime squeezer
+        - Medium bowl
+        - Measuring cup
+        - Fine grater or vegetable peeler
+        - Cutting board and knife
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 2. **Dice the white onion**
@@ -87,7 +93,11 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
     - Unwrap the halibut and smell it. Clean, like the sea, is right.
     - You need ½ pound. That is about two-thirds of your fillet. The label shows the weight.
     - Cut off the extra third. Wrap it. Leave it at the edge of the board for now.
-    - You need: Halibut · Ceviche lime jar, lid off · Foil · Paper towels
+    - You need:
+        - Halibut
+        - Ceviche lime jar, lid off
+        - Foil
+        - Paper towels
     - **Warning:** Sour or strongly fishy? Stop. Do not make ceviche with it.
 8. **Cut the fish into ½-inch cubes**
     - Pat the fish dry with paper towels.
@@ -104,7 +114,10 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
     - Wash your hands with soap.
     - Now the bowl goes into the fridge. So does the wrapped leftover fish. Cook that tomorrow.
     - The lime juice now cures the fish. The first check is in **20 minutes**. Thick cubes often need longer.
-    - You need: Ceviche lime jar · Spoon · Foil
+    - You need:
+        - Ceviche lime jar
+        - Spoon
+        - Foil
     - **Timer: 20 minutes.** Fish curing. Keep working.
     - When it ends: Is the fish ready?
     - Tip: Fish not covered by the juice? Move it all into a smaller, deeper bowl made of glass or stainless steel.
@@ -116,7 +129,7 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
 11. **Is the fish ready?**
     - Lift out the biggest cube with a fork. Break it in half on a plate.
     - Ready means it is white all the way through. No shiny, see-through center.
-    - Still shiny in the middle? That is normal at first. It can take an hour or more.
+    - Still shiny in the middle? That is normal at first. It can take **an hour or more**.
     - Not ready? Stir it, cover it, and put it back in the fridge.
     - Still a little shiny **2 hours** before dinner? Call it ready. A thin shiny line in the center is fine. Lime juice changes the texture, not the safety.
     - White all the way. Go on to the next step.
@@ -133,7 +146,11 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
     - Cut the orange in half. Squeeze one half into a cup. Measure 1 tablespoon plus 1½ teaspoons of the juice into the bowl.
     - Stir gently. Taste it on a chip. Flat or only sour? Add a pinch of salt, stir, and taste again. It can take 3 or 4 pinches.
     - Cover. Back in the fridge. The avocado goes in at the very end.
-    - You need: Olive oil · Salt · Orange · Measuring spoons
+    - You need:
+        - Olive oil
+        - Salt
+        - Orange
+        - Measuring spoons
     - Not earlier than **2 hours** before dinner.
 14. **Add the avocado to the ceviche**
     - Take the ceviche out of the fridge.
@@ -142,7 +159,11 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
     - Take the half with no pit. Lay it on the board, skin side down. With a table knife, cut lines through the flesh one way, then the other way. Stop at the skin.
     - Scoop the cubes out with a spoon. Fold them gently into the ceviche.
     - Put the cilantro leaves on top. Take it to the table.
-    - You need: Avocado · Cutting board and knife · Table knife · Spoon
+    - You need:
+        - Avocado
+        - Cutting board and knife
+        - Table knife
+        - Spoon
     - Not earlier than **18 minutes** before dinner.
     - Tip: Brown or stringy inside? Use the second avocado.
     - **Warning:** Keep the avocado on the cutting board while you cut. Never cut it in your hand.
@@ -212,7 +233,10 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - Stir until it is evenly pink. Taste it.
     - Want more heat? Add up to 1½ teaspoons more sriracha.
     - Lid on. Fridge.
-    - You need: Sour cream · Sriracha · Measuring spoons
+    - You need:
+        - Sour cream
+        - Sriracha
+        - Measuring spoons
     - Goes into: Pink sauce tub
 2. **Zest half a lime, then juice eleven** (shared step, it also covers other dishes)
     - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
@@ -222,7 +246,13 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
-    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - You need:
+        - 11 limes (keep 4 whole)
+        - Lime squeezer
+        - Medium bowl
+        - Measuring cup
+        - Fine grater or vegetable peeler
+        - Cutting board and knife
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 3. **Make the shrimp marinade**
@@ -233,7 +263,14 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - Add 1½ teaspoons of chipotle powder. For mild, use 1 teaspoon.
     - Add ¼ teaspoon of salt and ¼ teaspoon of black pepper.
     - Lid on. Shake. Fridge. The shrimp do not go in until tonight.
-    - You need: Sauce lime jar · Garlic · Cilantro · Chipotle powder · Olive oil · Salt · Pepper
+    - You need:
+        - Sauce lime jar
+        - Garlic
+        - Cilantro
+        - Chipotle powder
+        - Olive oil
+        - Salt
+        - Pepper
     - Goes into: Marinade jar
 4. **Cut 2 limes into wedges**
     - Cut 2 limes. 1 is for the tacos. 1 is an extra for the corn and the ceviche.
@@ -246,7 +283,11 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - Pinch off any tails.
     - Pat them dry with paper towels. Put them in a medium bowl.
     - Cover the bowl. Fridge.
-    - You need: Shrimp · Paper towels · Medium bowl · Marinade jar
+    - You need:
+        - Shrimp
+        - Paper towels
+        - Medium bowl
+        - Marinade jar
     - Not earlier than **50 minutes** before dinner.
     - **Warning:** Raw shrimp. Wash your hands with soap after. Wipe the counter and the fridge handle.
 6. **Shrimp into the marinade**
@@ -255,7 +296,10 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - Stir with the spoon until every shrimp is coated. The spoon goes in the sink.
     - Leave the bowl on the counter.
     - They sit while the skillet heats, about **10 minutes** in all. Never more than 20: the lime starts to cook them.
-    - You need: Bowl of shrimp · Marinade jar · Spoon
+    - You need:
+        - Bowl of shrimp
+        - Marinade jar
+        - Spoon
     - Not earlier than **21 minutes** before dinner.
     - **Timer: 5 minutes.** Shrimp marinating. Keep working.
     - Never longer than **20 minutes**.
@@ -266,7 +310,13 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - Cast-iron skillet on high heat. Add 1½ teaspoons of olive oil.
     - Start the timer. Stay at the stove and watch the oil.
     - If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.
-    - You need: Cast-iron skillet · Olive oil · Tongs · Bowl of shrimp · Serving bowl and foil · Oven mitt
+    - You need:
+        - Cast-iron skillet
+        - Olive oil
+        - Tongs
+        - Bowl of shrimp
+        - Serving bowl and foil
+        - Oven mitt
     - **Timer: 3 minutes.** Skillet heating. Stay here.
     - Look for: The oil shimmers and moves like water.
     - Tip: Thick smoke before the shrimp go in? Slide the pan off the burner for **30 seconds**. Use the oven mitt.
@@ -276,7 +326,8 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - Start at one side and work around the pan.
     - Leave the liquid behind in the bowl. Do not use it for anything. Raw shrimp sat in it. The bowl goes in the sink.
     - Start the timer. Do not move them. This is called searing.
-    - You need: Tongs
+    - You need:
+        - Tongs
     - **Timer: 1 minute.** Shrimp, side one. Stay here.
     - **Warning:** It will smoke and spit. That is normal. The chile smoke can make you cough.
 9. **Flip the shrimp: side two**
@@ -286,7 +337,10 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - White all the way through? Burner off. Move them all to the warm serving bowl. Cover it with foil.
     - Gray or see-through in the middle? Give them **30 seconds** more, then check again.
     - Leave the skillet on the stove. It stays hot for a long time.
-    - You need: Tongs · Knife · Warm serving bowl and foil
+    - You need:
+        - Tongs
+        - Knife
+        - Warm serving bowl and foil
     - **Timer: 1 minute.** Shrimp, side two. Stay here.
     - Look for: Pink outside, white inside, curled into a loose C.
     - **Warning:** Cooked shrimp go into a clean bowl. Never the bowl the raw shrimp were in.
@@ -362,20 +416,29 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - No, they did not. See “If you did not soak the beans” below.
 2. **Drain the beans**
     - Pour the beans into the strainer in the sink.
-    - Rinse them under cold water for a few seconds.
-    - You need: Soaked beans · Strainer
+    - Rinse them under cold water for **a few seconds**.
+    - You need:
+        - Soaked beans
+        - Strainer
 3. **Cut the pork small**
     - You need 2 ounces of pork. That is 3 or 4 chunks of the stew meat, a small handful.
     - Snip each chunk into ½-inch pieces with kitchen scissors, into a small bowl. ½ inch is about the width of your little finger.
-    - Doing the quick soak? Cover the bowl and put it in the fridge. The pork goes in the pot in about an hour.
+    - Doing the quick soak? Cover the bowl and put it in the fridge. The pork goes in the pot in about **an hour**.
     - No scissors? Cut it on a dinner plate, not on your cutting board.
     - Wrap the rest of the pork and freeze it.
-    - You need: Stew pork · Kitchen scissors · Small bowl
+    - You need:
+        - Stew pork
+        - Kitchen scissors
+        - Small bowl
     - **Warning:** Raw pork. Wash your hands, the scissors and the plate with hot soapy water.
 4. **Fill the bean pot**
     - Into the big pot: the drained beans, 3½ cups of water, ½ cup of beer, and the pork.
     - Cap the rest of the beer or drink it.
-    - You need: Drained beans · Measuring cup · Beer · Pork (in the fridge if you cut it earlier)
+    - You need:
+        - Drained beans
+        - Measuring cup
+        - Beer
+        - Pork (in the fridge if you cut it earlier)
     - Goes into: Big pot
 5. **Beans on medium heat**
     - Burner on medium. No lid yet.
@@ -401,7 +464,11 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - No gas flame: move an oven rack to about 4 inches below the top element. Turn the broiler to high.
     - Put the chile on a foil-lined pan on that rack. Turn it with tongs every **2 to 3 minutes**, about **10 minutes**. Use an oven mitt.
     - Drop the hot chile in a bowl and cover the bowl with a plate. Burner or broiler off.
-    - You need: Poblano (labeled pasilla) · Tongs · Bowl and plate · No gas flame: foil-lined pan and oven mitt
+    - You need:
+        - Poblano (labeled pasilla)
+        - Tongs
+        - Bowl and plate
+        - No gas flame: foil-lined pan and oven mitt
     - **Timer: 5 minutes.** Poblano steaming. Keep working.
     - When it ends: Peel and chop the poblano.
     - Look for: Black on every side. No big green patches.
@@ -412,7 +479,10 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - Snip them with kitchen scissors into ½-inch pieces, straight into the cold skillet.
     - No scissors? Stack the slices on a dinner plate and cut them with a knife.
     - Wrap the rest of the bacon. Fridge or freezer.
-    - You need: Bacon · Kitchen scissors · Skillet
+    - You need:
+        - Bacon
+        - Kitchen scissors
+        - Skillet
     - **Warning:** Raw pork. Wash your hands and the scissors with hot soapy water.
 9. **Start the bacon**
     - Burner on medium-low under the skillet.
@@ -427,14 +497,20 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - Lay each half flat side down and cut it in half again. Peel the 4 wedges.
     - Dice one wedge into small pieces, about ¼ inch.
     - Wrap the other three wedges. One is for the rice purée. One goes to her place for the ceviche.
-    - You need: 1 white onion · Cutting board · Knife
+    - You need:
+        - 1 white onion
+        - Cutting board
+        - Knife
     - Goes into: Small bowl. The chopped poblano joins it later.
 11. **Drain half the can of tomatoes**
     - Open the plain diced tomatoes. Not the fire-roasted can.
     - Pour about half the can into the strainer over the sink. Let it drip.
     - They are already cut small, so no chopping.
     - You do not need the other half. Fridge it or toss it.
-    - You need: Plain diced tomatoes · Can opener · Strainer
+    - You need:
+        - Plain diced tomatoes
+        - Can opener
+        - Strainer
 12. **Peel and chop the poblano**
     - Rub the black skin off with your fingers or a paper towel.
     - Do not rinse it. Water washes away the smoky flavor.
@@ -449,7 +525,12 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - The skillet handle is hot. Touch it only with an oven mitt or a folded dry towel.
     - Do not pour. Do not lift or tilt the hot skillet. Spoon the hot fat out of it into the mug.
     - Spoon 1 tablespoon of the fat back into the skillet.
-    - You need: Slotted spoon · Spoon · Plate with a paper towel · Heatproof mug · Oven mitt or dry towel
+    - You need:
+        - Slotted spoon
+        - Spoon
+        - Plate with a paper towel
+        - Heatproof mug
+        - Oven mitt or dry towel
     - **Warning:** Hot fat burns. Keep it away from the flame. Never pour it down the drain. Let it harden in the mug, then bin it.
 14. **Fry the onion and poblano**
     - Burner on medium under the skillet with the bacon fat.
@@ -499,7 +580,10 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - Lid on. Burner on medium-low.
     - Stir them each time you are at the stove, so the bottom does not stick.
     - Too thick? Add a splash of water.
-    - You need: Bean tub · Pot with a lid · Spoon
+    - You need:
+        - Bean tub
+        - Pot with a lid
+        - Spoon
     - Not earlier than **52 minutes** before dinner.
     - Look for: By dinner they are steaming hot, with bubbles all over.
 21. **Last touches** (shared step, it also covers other dishes)
@@ -519,13 +603,17 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - Pour half the bag of beans (about 1¼ cups) onto a plate.
     - Pick out any pebbles or shriveled beans.
     - Rinse the beans in the strainer.
-    - You need: Plate · Strainer
+    - You need:
+        - Plate
+        - Strainer
 2. **Quick soak: beans and water on high**
     - Put the beans in the big pot.
     - Add 4 cups of water.
     - Lid on. Burner on high.
     - Tap Done now. The guide calls you back in **9 minutes**, when it should be at a full boil.
-    - You need: Big pot with a lid · Measuring cup
+    - You need:
+        - Big pot with a lid
+        - Measuring cup
     - **Timer: 9 minutes.** Beans coming to a boil. Keep working.
     - When it ends: Boil the beans for 2 minutes.
     - Tip: If foam lifts the lid, turn the burner down a little and leave the lid slightly open.
@@ -541,11 +629,53 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - Pour the beans into the strainer in the sink.
     - Rinse out the pot.
 
+### If you tick “No time. Finish them at her place.”
+
+- That answer is in “Are the beans tender?”.
+- Skip: Beans into the fridge.
+- Then go down this list.
+
+1. **Stop the beans for now** (Your kitchen; extra step)
+    - Turn the burner off.
+    - Scoop the beans and all their liquid into the big bean tub with a ladle or a mug. They are boiling hot, so do not pour from the pot.
+    - Lid on. Into the fridge, on a high shelf. Not next to the fish.
+    - Tomato mix or bacon not in the beans yet? Put them in the spare tub. Lid on. Fridge. It comes with you.
+    - You will finish the beans at her place.
+    - Goes into: Bean tub
+2. **Put the beans back on the stove** (Her kitchen; extra step)
+    - Pour the beans and all their liquid into a pot.
+    - Burner on medium. No lid yet.
+    - Tap Done now. A **12-minute** timer starts.
+    - The guide calls you back when the beans should be bubbling.
+    - You need:
+        - Bean tub
+        - Pot with a lid
+    - **Timer: 12 minutes.** Beans heating up. Keep working.
+    - When it ends: Turn the beans down again.
+3. **Turn the beans down again** (Her kitchen; extra step)
+    - Look in the bean pot. Steady bubbles? Turn the burner down to medium-low.
+    - Put the lid on, slightly open.
+    - Tap Done. The guide asks you to test the beans in **30 minutes**.
+    - **Timer: 30 minutes.** Beans simmering. Keep working.
+    - After **15 minutes**: Stir the beans. Add water if they poke out.
+    - When it ends: Are the beans tender?
+    - Look for: A simmer: a few lazy bubbles every second.
+    - Tip: Not bubbling yet? Turn the heat up a notch and give it **3 more minutes**.
+4. **Are the beans tender?** (Her kitchen; the step is listed above)
+5. **Add the good stuff to the beans** (Her kitchen; the step is listed above)
+6. **Taste the beans. They are done.** (Her kitchen; the step is listed above)
+7. **Beans into her fridge** (Her kitchen; extra step)
+    - Scoop the beans and their liquid back into the bean tub with a ladle or a mug.
+    - Lid on. Into her fridge.
+    - You warm them up again just before dinner.
+    - Less than **1 hour** until dinner? Skip this. Leave the pot on the stove with the lid on.
+    - Goes into: Bean tub
+
 ### Good to know
 
-- An overnight soak saves about an hour in the morning. The **1-hour** quick soak works too.
+- An overnight soak saves about **an hour** in the morning. The **1-hour** quick soak works too.
 - Beans are done when 3 of them mash easily against the roof of your mouth.
-- They keep for several days in the fridge and taste better the next day.
+- They keep for **several days** in the fridge and taste better the next day.
 - Freeze the leftover pork and bacon.
 
 ## The Milky Way — Red tomato rice
@@ -584,7 +714,11 @@ Rice toasted until milky white, then cooked in tomato and broth.
     - Add 1 peeled garlic clove, cut in half.
     - Blend until completely smooth.
     - Pour it into the purée jar. Use one of the 2-cup jars. Lid on. Fridge. Rinse the blender right away.
-    - You need: Fire-roasted tomatoes · White onion wedge · Garlic · Blender
+    - You need:
+        - Fire-roasted tomatoes
+        - White onion wedge
+        - Garlic
+        - Blender
     - Goes into: Purée jar
     - Tip: Blender just spinning? Stop it first. Push the tomatoes down with a spoon. Add 1 tablespoon of the juice from the can. Blend again.
 2. **Pack the rice kit**
@@ -592,7 +726,11 @@ Rice toasted until milky white, then cooked in tomato and broth.
     - Measure ¾ cup plus 2 tablespoons of chicken broth into the broth jar. Use one of the 2-cup jars.
     - Add ¼ teaspoon of salt plus a pinch to that jar. Use ¾ teaspoon if your broth says unsalted.
     - Lid on. Broth jar in the fridge. Rice bag by the door.
-    - You need: White rice · Chicken broth · Salt · Measuring cup
+    - You need:
+        - White rice
+        - Chicken broth
+        - Salt
+        - Measuring cup
     - Goes into: Zip bag and broth jar
 3. **Get the rice add-ins ready**
     - Take 2 serranos. Leave them whole, but cut a slit down one side of each.
@@ -613,7 +751,11 @@ Rice toasted until milky white, then cooked in tomato and broth.
     - Saucepan on the smallest burner, on medium. Add 2¼ teaspoons of vegetable oil. Let it heat for **1 minute**.
     - Pour in the rice from the bag. Start the timer.
     - Stir almost the whole time.
-    - You need: Saucepan · Vegetable oil · Rice bag · Wooden spoon
+    - You need:
+        - Saucepan
+        - Vegetable oil
+        - Rice bag
+        - Wooden spoon
     - Not earlier than **1 hour 5 minutes** before dinner.
     - **Timer: 5 minutes 30 seconds.** Rice toasting. Stay here.
     - Look for: The grains turn from see-through to chalky white.
@@ -621,7 +763,8 @@ Rice toasted until milky white, then cooked in tomato and broth.
 6. **Add the tomato purée**
     - Pour in the purée jar. It will spit, so stand back.
     - Start the timer. Keep stirring.
-    - You need: Purée jar
+    - You need:
+        - Purée jar
     - **Timer: 2 minutes 30 seconds.** Purée cooking down. Stay here.
     - Look for: Thick and fairly dry, like wet sand.
 7. **Add the broth and bring it to a boil**
@@ -629,7 +772,10 @@ Rice toasted until milky white, then cooked in tomato and broth.
     - When it reaches a full boil, stir in the serranos and parsley from the small bowl.
     - Scrape down any rice stuck to the sides of the pan.
     - Go straight to the next step.
-    - You need: Broth jar · Bowl of serranos and parsley · Lid
+    - You need:
+        - Broth jar
+        - Bowl of serranos and parsley
+        - Lid
     - Tip: Optional: stir in a handful of shredded carrots too.
 8. **Lid on. Lowest heat.**
     - Put the lid on tight.
@@ -692,7 +838,8 @@ Pink, sharp, crunchy. They go on everything.
 1. **Put the onion water on**
     - Fill a medium pot with 5 cups of water.
     - Lid on. Burner on high.
-    - You need: Medium pot with a lid
+    - You need:
+        - Medium pot with a lid
     - **Timer: 8 minutes.** Onion water heating. Keep working.
     - When it ends: Dunk the onions in hot water.
 2. **Slice 1½ red onions**
@@ -702,15 +849,22 @@ Pink, sharp, crunchy. They go on everything.
     - Wrap 1 half and put it in the fridge. It is for the slaw. Your onions are large, so the other 3 halves are enough.
     - Lay each of those 3 halves flat side down. Slice across it into thin half-moons.
     - Leave the slices on the board.
-    - You need: 2 red onions · Cutting board · Knife
+    - You need:
+        - 2 red onions
+        - Cutting board
+        - Knife
     - Look for: Slices about as thick as a coin.
 3. **Toast the oregano**
     - Put the dry skillet on medium-high. No oil.
-    - Let it heat until a drop of water sizzles in it. That takes a minute or two.
+    - Let it heat until a drop of water sizzles in it. That takes **a minute or two**.
     - Add 1 teaspoon of dried Mexican oregano. Start the timer. Keep it moving: shake the pan or stir with a spoon.
     - When the timer ends or it smells strong, tip or spoon it straight into the quart jar. It burns fast.
     - Burner off.
-    - You need: Skillet · Spoon · Mexican oregano · Quart jar
+    - You need:
+        - Skillet
+        - Spoon
+        - Mexican oregano
+        - Quart jar
     - Goes into: Onion jar
     - **Timer: 30 seconds.** Oregano toasting. Stay here.
     - Look for: You can smell it from a step away. No smoke.
@@ -721,7 +875,9 @@ Pink, sharp, crunchy. They go on everything.
     - Start the timer. You like strong onion flavor, so **30 seconds** is enough.
     - When it ends, pour everything through the strainer in the sink.
     - This is called blanching.
-    - You need: Sliced onions · Strainer in the sink
+    - You need:
+        - Sliced onions
+        - Strainer in the sink
     - **Timer: 30 seconds.** Onions in hot water. Stay here.
     - Look for: The onions bend but still have a little crunch.
     - Tip: For milder onions next time, leave them in for **2 minutes**.
@@ -730,7 +886,12 @@ Pink, sharp, crunchy. They go on everything.
     - Into the quart jar with the oregano: the drained onions, ½ cup of white vinegar and ½ cup of water.
     - Add 2 allspice berries, 3 black peppercorns, 1 bay leaf and ½ teaspoon of salt.
     - Lid on. Shake. Into the fridge.
-    - You need: White vinegar · Allspice berries · Peppercorns · Bay leaf · Salt
+    - You need:
+        - White vinegar
+        - Allspice berries
+        - Peppercorns
+        - Bay leaf
+        - Salt
     - Goes into: Onion jar
     - Look for: They turn bright pink over the next **2 hours**.
     - Tip: The liquid does not cover the onions at first. Press them down with a spoon. Shake the jar again each time you open the fridge.
@@ -739,7 +900,7 @@ Pink, sharp, crunchy. They go on everything.
 
 - You like strong onion flavor, so the hot dunk is **30 seconds**. For milder onions use **2 minutes**.
 - Ready after about **2 hours** in the fridge. Better by dinner.
-- They keep up to 2 weeks in the fridge in their liquid. Take them out with a clean fork.
+- They keep up to **2 weeks** in the fridge in their liquid. Take them out with a clean fork.
 
 ## The Smoky Cream — Creamy chipotle slaw
 
@@ -785,14 +946,26 @@ Goes inside the tacos and next to them.
     - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
-    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - You need:
+        - 11 limes (keep 4 whole)
+        - Lime squeezer
+        - Medium bowl
+        - Measuring cup
+        - Fine grater or vegetable peeler
+        - Cutting board and knife
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 2. **Shake up the slaw dressing**
     - Into one of the 2-cup jars: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice.
     - Add 2 tablespoons of sugar, 1 teaspoon of ground cumin and 1 teaspoon of chipotle powder.
     - Lid on tight. Shake until smooth. Fridge.
-    - You need: Mayonnaise · Greek yogurt · Sauce lime jar · Sugar · Cumin · Chipotle powder
+    - You need:
+        - Mayonnaise
+        - Greek yogurt
+        - Sauce lime jar
+        - Sugar
+        - Cumin
+        - Chipotle powder
     - Goes into: Slaw dressing jar
 3. **Shred the cabbage**
     - Stand the green cabbage on its stem end. Hold it at the side, away from the knife. Cut straight down through the middle.
@@ -801,7 +974,10 @@ Goes inside the tacos and next to them.
     - Slice that wedge across as thin as you can.
     - Keep going until you have 4 cups, loosely packed. That is about a quarter of the head.
     - Do the same with the purple cabbage until you have 1 cup.
-    - You need: Green cabbage · Purple cabbage · 1-cup measure
+    - You need:
+        - Green cabbage
+        - Purple cabbage
+        - 1-cup measure
     - Goes into: Slaw bowl (large)
     - Look for: Thin ribbons, like coleslaw.
 4. **Finish the slaw vegetables**
@@ -817,7 +993,10 @@ Goes inside the tacos and next to them.
     - Toss with tongs or two spoons until everything is coated.
     - Add ½ teaspoon of salt and ¼ teaspoon of black pepper. Toss. Taste a forkful. Flat? Add a pinch more salt and toss again.
     - Cover. Fridge.
-    - You need: Slaw dressing jar · Salt · Pepper
+    - You need:
+        - Slaw dressing jar
+        - Salt
+        - Pepper
     - Not earlier than **2 hours** before dinner.
 6. **Drain the slaw**
     - Take the slaw out of the fridge.
@@ -834,7 +1013,7 @@ Goes inside the tacos and next to them.
 
 - Best dressed **1 to 4 hours** before dinner.
 - Pour off the liquid that collects before you serve it.
-- Keeps 2 days but gets wetter.
+- Keeps **2 days** but gets wetter.
 
 ## Elote — Street corn, oven style
 
@@ -875,13 +1054,22 @@ Broiled corn with crema, cotija and chile.
     - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
-    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - You need:
+        - 11 limes (keep 4 whole)
+        - Lime squeezer
+        - Medium bowl
+        - Measuring cup
+        - Fine grater or vegetable peeler
+        - Cutting board and knife
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 2. **Stir the corn sauce**
     - In one of the 2-cup tubs: ½ cup of sour cream, ¼ cup of mayonnaise and 1 tablespoon of lime juice.
     - Stir until smooth. Lid on. Fridge.
-    - You need: Sour cream · Mayonnaise · Sauce lime jar
+    - You need:
+        - Sour cream
+        - Mayonnaise
+        - Sauce lime jar
     - Goes into: Corn sauce tub
 3. **Husk the corn. Crumble the cheese.**
     - Pull the green husks and the silky threads off all 4 ears.
@@ -896,8 +1084,11 @@ Broiled corn with crema, cotija and chile.
     - Drizzle 2 tablespoons of vegetable oil over the 4 ears on the pan.
     - Sprinkle on 1 teaspoon of salt and 1 teaspoon of black pepper.
     - Roll the ears around so they are coated.
-    - The broiler needs a few minutes to get hot. The guide tells you when the corn goes in.
-    - You need: Vegetable oil · Salt · Pepper
+    - The broiler needs **a few minutes** to get hot. The guide tells you when the corn goes in.
+    - You need:
+        - Vegetable oil
+        - Salt
+        - Pepper
     - Not earlier than **47 minutes** before dinner.
 5. **Corn under the broiler**
     - Slide the pan under the broiler.
@@ -905,7 +1096,9 @@ Broiled corn with crema, cotija and chile.
     - Every **3 minutes** the guide tells you to turn the corn.
     - To turn it: pull the rack part-way out with the oven mitt. Give each ear a quarter turn with tongs. Slide it back.
     - The time is an estimate. You want dark brown and black spots on every side.
-    - You need: Tongs · Oven mitt
+    - You need:
+        - Tongs
+        - Oven mitt
     - Not earlier than **40 minutes** before dinner.
     - **Timer: 12 minutes.** Corn broiling. Keep working.
     - After **3 minutes**, **6 minutes** and **9 minutes**: Turn the corn.
@@ -920,7 +1113,11 @@ Broiled corn with crema, cotija and chile.
     - Sprinkle the cotija all over and press it on.
     - Dust lightly with chipotle powder if you like.
     - Tent the pan loosely with foil to keep it warm.
-    - You need: Corn sauce tub · Plate of cotija · Foil · Oven mitt
+    - You need:
+        - Corn sauce tub
+        - Plate of cotija
+        - Foil
+        - Oven mitt
     - Look for: Plump, shiny kernels with dark brown and black spots on every side. Your corn is white, so it will not turn yellow.
 7. **Last touches** (shared step, it also covers other dishes)
     - The beans must be steaming and bubbling. Not yet? Turn the burner up to medium. Stir until they are.

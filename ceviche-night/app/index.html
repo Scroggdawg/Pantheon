@@ -300,6 +300,12 @@ svg { display: block; flex: none; }
 .chip b { font: 700 20px/1 var(--font-round); font-variant-numeric: tabular-nums; }
 .chip.ready { background: var(--alert-tint); color: var(--alert-text); }
 .chip:active { opacity: 0.6; }
+.chips-in { width: auto; }
+.chip { flex: 0 1 auto; min-width: 165px; }
+.chip > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.chip svg, .chip b { flex: none; }
+.chip + .chip svg { display: none; }
+.chip:has(+ .chip) svg { display: none; }
 
 /* ---------- the scrolling page ---------- */
 .page-wrap { flex: 1 1 auto; min-height: 0; position: relative; display: flex; }
@@ -325,7 +331,7 @@ svg { display: block; flex: none; }
 .crumb .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--dish); }
 .crumb .nick { color: var(--dish); font-weight: 700; }
 .crumb .where { white-space: nowrap; }
-.crumb .plain { grid-column: 2 / -1; font-weight: 500; }
+.crumb .plain { grid-column: 2 / -1; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .title { font: 700 clamp(32px, 8.7vw, 38px)/1.1 var(--font); letter-spacing: -0.022em; text-wrap: balance; }
 .note-row {
   display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px;
@@ -461,6 +467,7 @@ svg { display: block; flex: none; }
 .tn-open .txt { flex: 1; min-width: 0; }
 .tn-open .txt small { display: block; margin-top: 2px; }
 .tn-item .ticks { margin-top: 12px; }
+.tn-item > .tn-open { width: 100%; }
 .stack { display: grid; gap: 16px; }
 .tn-open svg { color: var(--fg-2); transition: transform 0.15s; }
 .tn-open[aria-expanded="true"] svg { transform: rotate(180deg); }

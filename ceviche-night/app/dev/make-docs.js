@@ -122,8 +122,12 @@ const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ESC[c]; }); }
 function mdEsc(s) { return String(s == null ? '' : s).replace(/([*`<|\\])/g, '\\$1'); }
 
-// a length of time inside a sentence: "30 seconds", "5 to 8 minutes", "2 more minutes", "12-minute"
-const DUR_RE = /(?:\b\d+[½¼¾]?|[½¼¾])(?: (?:to|or) \d+[½¼¾]?)?(?: more)?[ -](?:seconds?|minutes?|hours?)\b/g;
+// a length of time inside a sentence: "30 seconds", "5 to 8 minutes", "2 more minutes", "12-minute", "2 weeks",
+// and the spelled-out ones: "an hour", "a minute or two", "a few minutes" (never "a second ...", which is a count)
+const DUR_RE = new RegExp(
+  '(?:(?:\\b\\d+[½¼¾]?|[½¼¾])(?: (?:to|or) \\d+[½¼¾]?)?(?: more)?[ -](?:seconds?|minutes?|hours?|days?|weeks?)' +
+  '|\\ban? (?:minute|hour|day|week)(?: or (?:two|so|more))?' +
+  '|\\b(?:a few|several) (?:seconds|minutes|hours|days|weeks))\\b', 'g');
 function richH(t) { return esc(plain(t)).replace(DUR_RE, function (m) { return '<b>' + m + '</b>'; }); }
 function richM(t) { return mdEsc(plain(t)).replace(DUR_RE, function (m) { return '**' + m + '**'; }); }
 
@@ -224,6 +228,14 @@ function waitInfo(day, e) {
            lapLabel: def.lapLabel || '', maxMins: typeof def.max === 'number' ? def.max : null,
            maxAt: typeof def.max === 'number' ? e.wait.start + def.max * MIN : null, then: gated };
 }
+// The timer of a step that is in no planned day: lengths only, no clock times. pool = the steps it is listed with.
+function offPlanWait(step, pool) {
+  const def = step.wait;
+  const lapMins = (def.laps || []).filter(function (m) { return m > 0 && m < def.mins; }).sort(function (a, b) { return a - b; });
+  return { label: def.label || '', mins: def.mins, lapMins: lapMins, lapLabel: def.lapLabel || '',
+           maxMins: typeof def.max === 'number' ? def.max : null,
+           then: (pool || []).find(function (q) { return q.afterWait === def.id; }) || null };
+}
 function notBeforeAt(day, step) {
   const nb = step.notBefore;
   if (!nb || step.id === 'dinner') return null;
@@ -270,7 +282,7 @@ function compareDays(base, alt) {
           const r = ranges[ranges.length - 1];
           if (r && x.was.n === r[1].was.n + 1) r[1] = x; else ranges.push([x, x]);
         });
-        rows.push({ kind: 'run', from: e, to: span[j], ranges: ranges, lo: Math.min.apply(null, shifts), hi: Math.max.apply(null, shifts) });
+        rows.push({ kind: 'run', from: e, to: span[j], part: part, ranges: ranges, lo: Math.min.apply(null, shifts), hi: Math.max.apply(null, shifts) });
         i = j;
       } else rows.push({ kind: e.change, e: e });
     }
@@ -413,7 +425,7 @@ section.pb { break-before: page; }
 .howto .lines { margin: 0; }
 
 .box { flex: none; display: inline-block; width: 13pt; height: 13pt; border: 1.5pt solid #000; border-radius: 2pt; background: #fff; }
-.sbox { flex: none; display: inline-block; width: 10.5pt; height: 10.5pt; border: 1.2pt solid #000; border-radius: 1.5pt; background: #fff; margin-top: 2pt; }
+.sbox { flex: none; display: inline-block; width: 12pt; height: 12pt; border: 1.2pt solid #000; border-radius: 1.5pt; background: #fff; margin-top: 1.25pt; }
 
 /* one step = one band across the page: what to do on the left, what to have and watch for on the right */
 .step { break-inside: avoid; border-top: 0.75pt solid #555; border-left: 4pt solid var(--c, #444); padding: 3pt 1.5pt 4pt 7pt; }
@@ -438,6 +450,11 @@ ul.ticks.c2 { column-count: 2; }
 ul.ticks.c3 { column-count: 3; }
 ul.ticks li { display: flex; gap: 6pt; align-items: flex-start; margin: 0 0 2.5pt; break-inside: avoid; }
 .m { margin: 2.5pt 0 0; }
+.need { margin: 2.5pt 0 0; }
+.need ul { margin: 0; padding-left: 13pt; column-gap: 18pt; }
+.need li { margin: 0; break-inside: avoid; }
+.bd.stack .need ul.c2 { column-count: 2; }
+.bd.stack .need ul.c3 { column-count: 3; }
 .timer { margin: 3pt 0 0; padding: 1.5pt 5pt; border: 1pt solid #000; border-radius: 2pt; }
 .warn { margin: 3pt 0 0; padding: 2pt 5pt; border: 1.5pt solid #000; border-left: 6pt solid #000; }
 .warn .lbl { letter-spacing: .04em; }
@@ -470,7 +487,7 @@ table.jars td.sz { width: 31%; }
 
 .dish { border-left: 5pt solid var(--c, #444); padding-left: 8pt; margin: 0 0 11pt; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .dish h2 { font-size: 20pt; border-bottom: 0; margin: 0; padding: 0; display: block; break-after: avoid; }
-.dish h2 .pl { font-size: 14pt; font-weight: 400; }
+.dish h2 .pl { font-size: 14pt; font-weight: 400; display: inline-block; }
 .dish .meta { margin: 1pt 0 4pt; break-after: avoid; }
 .dish ul { margin: 0 0 4pt; padding-left: 13pt; }
 .dish li { margin: 0 0 1.5pt; break-inside: avoid; }
@@ -486,7 +503,7 @@ table.jars td.sz { width: 31%; }
 }
 @media screen and (max-width: 760px) {
   body { padding: 16px; }
-  .cols, .lines.c2, ul.ticks.c2, ul.ticks.c3 { column-count: 1; }
+  .cols, .lines.c2, ul.ticks.c2, ul.ticks.c3, .bd.stack .need ul.c2, .bd.stack .need ul.c3 { column-count: 1; }
   .bd { display: block; }
   .side { border-left: 0; padding-left: 0; margin-top: 2pt; }
   .head { flex-wrap: wrap; }
@@ -500,8 +517,16 @@ table.jars td.sz { width: 31%; }
 /* How wide to make the left side of a band. Rough text measuring is enough: it only picks one of a few widths. */
 const CHAR_PT = 6.2;            // about one character at the body size, with a little slack for line ends
 const BAND_PT = 528;            // inner width of a band
-function linesFor(texts, width) {
-  return texts.reduce(function (a, t) { return a + Math.max(1, Math.ceil(t.length * CHAR_PT / width)); }, 0);
+function linesFor(items, width, stacked) {          // items: strings, or { t: text, list: [items under it], cols }
+  const fit = function (t, w) { return Math.max(1, Math.ceil(t.length * CHAR_PT / w)); };
+  return items.reduce(function (a, x) {
+    let n = fit(typeof x === 'string' ? x : x.t, width);
+    if (x && x.list) {
+      const cols = stacked ? x.cols : 1, colW = (width - 18 * (cols - 1)) / cols - 13;
+      n += Math.ceil(x.list.reduce(function (k, y) { return k + fit(y, colW); }, 0) / cols);
+    }
+    return a + n;
+  }, 0);
 }
 function chooseSplit(left, right) {
   if (!right.length || !left.length) return { stack: true };
@@ -510,7 +535,7 @@ function chooseSplit(left, right) {
     const cost = Math.max(linesFor(left, (BAND_PT - 18) * r - 13), linesFor(right, (BAND_PT - 18) * (1 - r) - 5));
     if (!best || cost < best.cost || (cost === best.cost && Math.abs(r - 0.6) < Math.abs(best.r - 0.6))) best = { r: r, cost: cost };
   });
-  const stacked = linesFor(left, BAND_PT - 13) + linesFor(right, BAND_PT);
+  const stacked = linesFor(left, BAND_PT - 13) + linesFor(right, BAND_PT, true);
   return stacked <= best.cost ? { stack: true } : { r: best.r };
 }
 
@@ -534,8 +559,9 @@ function stepHtml(day, e, o) {
       const mine = e.answered ? op.value === e.value : op.value === E.opt(P, day.st, s.choice.opt);
       let what = mine ? 'This sheet is written for this answer. Go on.' : 'The steps change.', whatH = esc(what);
       if (!mine && s.choice.opt === 'soaked' && op.value === false) {
-        what = 'Use “' + NO_SOAK_TITLE + '”, page 00.';
-        whatH = 'Use “' + esc(NO_SOAK_TITLE) + '”' + (o.refs && o.refs.nosoak ? ', <a href="#nosoak">page ' + o.refs.nosoak + '</a>' : '') + '.';
+        const pg = o.refs && o.refs.nosoak;
+        what = 'Use “' + NO_SOAK_TITLE + '”' + (pg ? ', page ' + pg : '') + '.';
+        whatH = 'Use “' + esc(NO_SOAK_TITLE) + '”' + (pg ? ', <a href="#nosoak">page ' + pg + '</a>' : '') + '.';
       }
       L.push({ h: '<li><span class="sbox"></span><span><b>' + esc(sentence(op.label)) + '</b> ' + whatH + '</span></li>', t: op.label + ' ' + what, tick: true });
     });
@@ -553,10 +579,15 @@ function stepHtml(day, e, o) {
     }
   }
 
-  if ((s.need || []).length) R.push({ h: '<p class="m"><b>You need:</b> ' + s.need.map(esc).join(' · ') + '</p>', t: 'You need: ' + s.need.join(' · ') });
+  if ((s.need || []).length) {                             // a list, in columns when the band is not split in two
+    const longest = s.need.reduce(function (a, x) { return Math.max(a, x.length); }, 0);
+    const cols = s.need.length < 2 ? 1 : s.need.length >= 3 && longest <= 24 ? 3 : 2;
+    R.push({ h: '<div class="need"><b>You need:</b><ul class="c' + cols + '">' + s.need.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>',
+             t: 'You need:', list: s.need, cols: cols });
+  }
   if (s.into) R.push({ h: '<p class="m"><b>Goes into:</b> ' + esc(plain(s.into)) + '</p>', t: 'Goes into: ' + plain(s.into) });
   const nb = notBeforeAt(day, s);
-  if (nb != null) R.push({ h: '<p class="m">Not before <b>' + clock(nb) + '</b>.</p>', t: 'Not before 10:00 PM.' });
+  if (nb != null) R.push({ h: '<p class="m">Not before <b>' + clock(nb) + '</b>.</p>', t: 'Not before ' + clock(nb) + '.' });
   if (s.timer) {
     const tt = 'Timer: ' + words(s.timer.secs / 60) + '.', rest = sentence(s.timer.label || '') + ' Stay here.';
     R.push({ h: '<p class="timer"><b>' + esc(tt) + '</b> ' + esc(rest) + '</p>', t: tt + ' ' + rest + '   ' });
@@ -564,18 +595,25 @@ function stepHtml(day, e, o) {
   const w = waitInfo(day, e);
   if (w) {
     let h = '<p class="timer"><b>Timer: ' + esc(words(w.mins)) + '.</b> ' + esc(sentence(w.label)) + ' Keep working. It ends about <b>' + clock(w.end) + '</b>.';
-    const t = ['Timer: ' + words(w.mins) + '. ' + sentence(w.label) + ' Keep working. It ends about 10:00 PM.   '];
+    const t = ['Timer: ' + words(w.mins) + '. ' + sentence(w.label) + ' Keep working. It ends about ' + clock(w.end) + '.   '];
     if (w.lapTimes.length) { const x = 'At ' + listAnd(w.lapTimes.map(clock)) + ': ' + sentence(w.lapLabel); h += '<br>' + esc(x); t.push(x); }
-    if (w.maxAt != null) { h += '<br>Never longer than <b>' + esc(words(w.maxMins)) + '</b> (' + clock(w.maxAt) + ').'; t.push('Never longer than ' + words(w.maxMins) + ' (10:00 PM).'); }
+    if (w.maxAt != null) { h += '<br>Never longer than <b>' + esc(words(w.maxMins)) + '</b> (' + clock(w.maxAt) + ').'; t.push('Never longer than ' + words(w.maxMins) + ' (' + clock(w.maxAt) + ').'); }
     if (w.then) { const y = 'When it ends: ' + sentence(w.then.title); h += '<br>' + esc(y); t.push(y); }
     R.push({ h: h + '</p>', t: t[0] });
     t.slice(1).forEach(function (x) { R.push({ h: '', t: x }); });
   }
-  if (!w && s.wait) {                                      // a step outside the planned day: no clock time to give
-    const x = 'Timer: ' + words(s.wait.mins) + '.', y = sentence(s.wait.label || '') + ' Keep working.';
-    const nxt = (o.then || []).find(function (q) { return q.afterWait === s.wait.id; });
-    const z = nxt ? ' When it ends: ' + sentence(nxt.title) : '';
-    R.push({ h: '<p class="timer"><b>' + esc(x) + '</b> ' + esc(y + z) + '</p>', t: x + ' ' + y + z + '   ' });
+  if (!w && s.wait) {                                      // a step outside the planned day: lengths only, no clock time to give
+    const ow = offPlanWait(s, o.then);
+    let h = '<p class="timer"><b>Timer: ' + esc(words(ow.mins)) + '.</b> ' + esc(sentence(ow.label)) + ' Keep working.';
+    const t = ['Timer: ' + words(ow.mins) + '. ' + sentence(ow.label) + ' Keep working.   '];
+    if (ow.lapMins.length) {
+      h += '<br>After ' + listAnd(ow.lapMins.map(function (m) { return '<b>' + esc(words(m)) + '</b>'; })) + ': ' + esc(sentence(ow.lapLabel));
+      t.push('After ' + listAnd(ow.lapMins.map(words)) + ': ' + sentence(ow.lapLabel));
+    }
+    if (ow.maxMins != null) { h += '<br>Never longer than <b>' + esc(words(ow.maxMins)) + '</b>.'; t.push('Never longer than ' + words(ow.maxMins) + '.'); }
+    if (ow.then) { const y = 'When it ends: ' + sentence(ow.then.title); h += '<br>' + esc(y); t.push(y); }
+    R.push({ h: h + '</p>', t: t[0] });
+    t.slice(1).forEach(function (x) { R.push({ h: '', t: x }); });
   }
   if (s.look) R.push({ h: '<p class="m"><b>Look for:</b> ' + richH(s.look) + '</p>', t: 'Look for: ' + plain(s.look) });
   if (s.tip) R.push({ h: '<p class="m"><b>Tip:</b> ' + richH(s.tip) + '</p>', t: 'Tip: ' + plain(s.tip) });
@@ -593,7 +631,7 @@ function stepHtml(day, e, o) {
                    (ticks.length ? '<ul class="ticks">' + ticks.map(function (x) { return x.h; }).join('') + '</ul>' : '');
   const rightHtml = R.map(function (x) { return x.h; }).join('');
   if (leftHtml || rightHtml) {
-    const sp = chooseSplit(L.map(function (x) { return x.t; }), R.map(function (x) { return x.t; }));
+    const sp = chooseSplit(L.map(function (x) { return x.t; }), R);
     if (sp.stack) h += '<div class="bd stack">' + (leftHtml ? '<div>' + leftHtml + '</div>' : '') + (rightHtml ? '<div class="side">' + rightHtml + '</div>' : '') + '</div>';
     else h += '<div class="bd" style="grid-template-columns:' + Math.round(sp.r * 100) + '% 1fr"><div>' + leftHtml + '</div><div class="side">' + rightHtml + '</div></div>';
   }
@@ -696,7 +734,7 @@ function planBHtml(base, b) {
   b.order.forEach(function (s) {
     const e = base.byId[s.id];
     if (e) h += '<div class="ref"><span class="box"></span><span class="time">' + esc(whereLabel({ where: 'hers' })) + '</span><span><b>Step ' + e.n + ': ' + esc(sentence(s.title)) + '</b> Ignore the printed time.</span></div>';
-    else h += stepHtml(base, { step: s, start: NaN, end: NaN, loc: null }, { slot: whereLabel(s), flag: 'Extra step', then: b.on });
+    else h += stepHtml(base, { step: s, start: NaN, end: NaN, loc: null }, { slot: whereLabel(s), flag: 'Extra step', then: b.order });
   });
   return h;
 }
@@ -773,7 +811,7 @@ async function makeSheet(base, alt, cmp) {
   const pdfOpts = {
     format: 'Letter', printBackground: true, displayHeaderFooter: true,
     margin: { top: '0.5in', bottom: '0.5in', left: '0.5in', right: '0.5in' },
-    headerTemplate: '<div style="' + bar + 'margin-top:5pt;"><span>' + esc(runHead) + '</span><span>Dinner ' + clock(E.anchorMs(base.st, 'dinner')) + '</span></div>',
+    headerTemplate: '<div style="' + bar + 'margin-top:5pt;"><span>' + esc(runHead) + '</span><span>' + esc((P.anchorLabels || {}).dinner || '') + ' ' + clock(E.anchorMs(base.st, 'dinner')) + '</span></div>',
     footerTemplate: '<div style="' + bar + 'margin-bottom:5pt;"><span></span><span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>'
   };
   try {
@@ -830,7 +868,10 @@ function mdStepBody(day, e, o) {
     L.push(pad + '- ' + mdEsc(sentence(c.no)) + ' Wait **' + words(c.retryMins || 0) + '**. Then check again.');
     if (c.giveUp) L.push(pad + '- ' + mdEsc(sentence(c.giveUp.label)) + (o.clock && from != null ? ' Only from ' + clock(from) + ' on.' : ''));
   }
-  if ((s.need || []).length) L.push(pad + '- You need: ' + s.need.map(mdEsc).join(' · '));
+  if ((s.need || []).length) {
+    L.push(pad + '- You need:');
+    s.need.forEach(function (x) { L.push(pad + '    - ' + mdEsc(x)); });
+  }
   if (s.into) L.push(pad + '- Goes into: ' + mdEsc(plain(s.into)));
   if (o.clock) { const nb = notBeforeAt(day, s); if (nb != null) L.push(pad + '- Not before ' + clock(nb) + '.'); }
   else if (notBeforeWords(s)) L.push(pad + '- ' + notBeforeWords(s));
@@ -844,9 +885,11 @@ function mdStepBody(day, e, o) {
     if (w.maxMins != null) L.push(pad + '- Never longer than **' + words(w.maxMins) + '**.');
     if (w.then) L.push(pad + '- When it ends: ' + mdEsc(sentence(w.then.title)));
   } else if (s.wait) {                                     // a step outside the planned day
-    L.push(pad + '- **Timer: ' + words(s.wait.mins) + '.** ' + mdEsc(sentence(s.wait.label || '')) + ' Keep working.');
-    const nxt = (o.then || []).find(function (q) { return q.afterWait === s.wait.id; });
-    if (nxt) L.push(pad + '- When it ends: ' + mdEsc(sentence(nxt.title)));
+    const ow = offPlanWait(s, o.then);
+    L.push(pad + '- **Timer: ' + words(ow.mins) + '.** ' + mdEsc(sentence(ow.label)) + ' Keep working.');
+    if (ow.lapMins.length) L.push(pad + '- After ' + listAnd(ow.lapMins.map(function (m) { return '**' + words(m) + '**'; })) + ': ' + mdEsc(sentence(ow.lapLabel)));
+    if (ow.maxMins != null) L.push(pad + '- Never longer than **' + words(ow.maxMins) + '**.');
+    if (ow.then) L.push(pad + '- When it ends: ' + mdEsc(sentence(ow.then.title)));
   }
   if (s.look) L.push(pad + '- Look for: ' + richM(s.look));
   if (s.tip) L.push(pad + '- Tip: ' + richM(s.tip));
@@ -922,23 +965,22 @@ function masterMd(base, alt, cmp) {
   });
 
   L.push('## ' + NO_SOAK_TITLE, '');
-  L.push('- The morning changes. Use these times.');
+  L.push('- The morning changes. Use this list in place of the morning above.');
   cmp.removed.forEach(function (e) { L.push('- Skip: ' + mdEsc(e.step.title) + '.'); });
   if (cmp.sameFrom != null) L.push('- From ' + clock(cmp.sameFrom) + ' on, the schedule above is right again.');
   L.push('');
-  cmp.rows.forEach(function (r) {
-    if (r.kind === 'run') {
-      const span = r.ranges.map(function (x) { return x[0] === x[1] ? '“' + mdEsc(x[0].step.title) + '”' : 'from “' + mdEsc(x[0].step.title) + '” to “' + mdEsc(x[1].step.title) + '”'; });
-      L.push('- ' + clock(r.from.start) + ' to ' + clock(r.to.end) + ' — in the order listed above: ' + span.join(', then ') + '. ' + runWords(r).replace('printed', 'listed above'));
-      return;
+  const flat = [];
+  cmp.rows.forEach(function (r) { if (r.kind === 'run') r.part.forEach(function (e) { flat.push(e); }); else flat.push(r.e); });
+  flat.forEach(function (e) {
+    const s = e.step, w = waitInfo(alt, e);
+    L.push('- [ ] ' + clock(e.start) + ' — ' + mdEsc(s.title) + ' · ' + mdEsc(changeWords(e)) + (e.type !== 'move' && handsOn(s) ? ' · **' + handsOn(s) + '**' : ''));
+    if (w) {
+      L.push('  - Timer: ' + mdEsc(w.label) + ', **' + words(w.mins) + '**. Ends about ' + clock(w.end) + '.');
+      if (w.lapTimes.length) L.push('  - At ' + listAnd(w.lapTimes.map(clock)) + ': ' + mdEsc(sentence(w.lapLabel)));
     }
-    const e = r.e, w = waitInfo(alt, e);
-    L.push('- [ ] ' + clock(e.start) + ' — ' + mdEsc(e.step.title) + (r.kind === 'new' ? ' · extra step' : r.kind === 'moved' ? ' · was ' + clock(e.was.start) : ' · same time') +
-           (handsOn(e.step) ? ' · **' + handsOn(e.step) + '**' : ''));
-    if (w) L.push('  - Timer: ' + mdEsc(w.label) + ', **' + words(w.mins) + '**. Ends about ' + clock(w.end) + '.');
   });
   L.push('');
-  planBs(base, alt).forEach(function (b) { planBMd(base, alt, b, false).forEach(function (l) { L.push(l); }); });
+  planBs(base, alt).forEach(function (b) { planBMd(base, alt, b, false, true).forEach(function (l) { L.push(l); }); });
   return L.join('\n');
 }
 
@@ -959,36 +1001,64 @@ function numbered(day, list, o) {          // a numbered list of steps, with the
   return L;
 }
 
+function changeWords(e) {                  // how a step of another version of the day differs from the main day
+  if (e.change === 'new') return 'extra step';
+  return (clock(e.was.start) === clock(e.start) ? 'same time' : 'was ' + clock(e.was.start)) +
+         (e.was.loc !== e.loc ? ', was in ' + placeLabel(e.was.loc) : '');
+}
 function noSoakForDish(base, alt, cmp, d, clockOn) {
+  const skip = cmp.removed.filter(function (e) { return e.step.dish === d.id; });
   const extra = cmp.added.filter(function (e) { return e.step.dish === d.id; });
-  if (!extra.length) return [];
-  const L = ['## ' + NO_SOAK_TITLE, ''];
-  cmp.removed.filter(function (e) { return e.step.dish === d.id; }).forEach(function (e) { L.push('- Skip: ' + mdEsc(e.step.title) + '.'); });
-  L.push('- Do these steps instead.' + (clockOn ? ' The times are for a morning without the soak.' : ''), '');
-  numbered(alt, extra.map(function (e) { return { e: e, shared: false }; }), { clock: clockOn }).forEach(function (l) { L.push(l); });
-  if (clockOn) {
-    const moved = cmp.moved.filter(function (e) { return e.step.dish === d.id; });
-    if (moved.length) {
-      L.push('', 'These steps of this dish move:', '');
-      moved.forEach(function (e) { L.push('- ' + clock(e.start) + ' — ' + mdEsc(e.step.title) + ' (was ' + clock(e.was.start) + ')'); });
-    }
+  const L = [];
+  if (!clockOn) {                                          // the recipe: only the steps that are different, no times
+    if (!extra.length) return L;
+    L.push('## ' + NO_SOAK_TITLE, '');
+    skip.forEach(function (e) { L.push('- Skip: ' + mdEsc(e.step.title) + '.'); });
+    L.push('- Do these steps instead.', '');
+    numbered(alt, extra.map(function (e) { return { e: e, shared: false }; }), { clock: false }).forEach(function (l) { L.push(l); });
+    L.push('');
+    return L;
   }
+  // the schedule: every step of this dish that is new or at another time, in the order of that morning
+  const list = dishEntries(alt, d).filter(function (x) { return x.e.change === 'new' || x.e.change === 'moved'; });
+  if (!list.length && !skip.length) return L;
+  L.push('## ' + NO_SOAK_TITLE, '');
+  skip.forEach(function (e) { L.push('- Skip: ' + mdEsc(e.step.title) + '.'); });
+  if (extra.length) L.push('- An extra step is new. Its full text is in this list.');
+  if (list.some(function (x) { return x.e.change === 'moved'; })) L.push('- The other steps are written out above. Here they only get a new time.');
+  let loc = null, n = 0;
+  list.forEach(function (x) {
+    const e = x.e, s = e.step;
+    if (e.loc !== loc) { loc = e.loc; L.push('', '### ' + mdEsc(placeLabel(loc)), ''); }
+    n++;
+    const bits = [];
+    if (e.change === 'new' && handsOn(s)) bits.push('**' + handsOn(s) + '**');
+    bits.push(mdEsc(changeWords(e)));
+    if (x.shared) bits.push('shared step');
+    L.push(n + '. **' + clock(e.start) + ' — ' + mdEsc(s.title) + '** (' + bits.join('; ') + ')');
+    if (e.change === 'new') { mdStepBody(alt, e, { clock: true, pad: '    ' }).forEach(function (l) { L.push(l); }); return; }
+    const w = waitInfo(alt, e);
+    if (w) {
+      L.push('    - **Timer: ' + words(w.mins) + '.** ' + mdEsc(sentence(w.label)) + ' Keep working. It ends about ' + clock(w.end) + '.');
+      if (w.lapTimes.length) L.push('    - At ' + listAnd(w.lapTimes.map(clock)) + ': ' + mdEsc(sentence(w.lapLabel)));
+    }
+  });
   L.push('');
   return L;
 }
 
 // "If you tick ..." for the steps that only happen when a check is given up on
-function planBMd(base, alt, b, full) {
+function planBMd(base, alt, b, full, clockOn) {
   const L = ['## If you tick “' + mdEsc(b.label) + '”', ''];
-  L.push('- That answer is in “' + mdEsc(b.check.title) + '”.' + (b.from != null ? ' Not before ' + clock(b.from) + '.' : ''));
+  L.push('- That answer is in “' + mdEsc(b.check.title) + '”.' + (clockOn && b.from != null ? ' Not before ' + clock(b.from) + '.' : ''));
   b.off.forEach(function (e) { L.push('- Skip: ' + mdEsc(sentence(e.step.title))); });
   L.push('- Then go down this list.', '');
   let n = 0;
   b.order.forEach(function (s) {
     n++;
-    if (base.byId[s.id]) { L.push(n + '. **' + mdEsc(s.title) + '** (' + mdEsc(whereLabel({ where: 'hers' })) + '; the step is listed above, ignore its time)'); return; }
-    L.push(n + '. **' + mdEsc(s.title) + '** (' + mdEsc(whereLabel(s)) + '; extra step' + (handsOn(s) ? '; **' + handsOn(s) + '**' : '') + ')');
-    if (full) mdStepBody(base, { step: s, start: NaN, end: NaN, loc: null }, { clock: false, pad: '    ', then: b.on }).forEach(function (l) { L.push(l); });
+    if (base.byId[s.id]) { L.push(n + '. **' + mdEsc(s.title) + '** (' + mdEsc(whereLabel({ where: 'hers' })) + '; the step is listed above' + (clockOn ? ', ignore its time' : '') + ')'); return; }
+    L.push(n + '. **' + mdEsc(s.title) + '** (' + mdEsc(whereLabel(s)) + '; extra step' + (clockOn && handsOn(s) ? '; **' + handsOn(s) + '**' : '') + ')');
+    if (full) mdStepBody(base, { step: s, start: NaN, end: NaN, loc: null }, { clock: false, pad: '    ', then: b.order }).forEach(function (l) { L.push(l); });
   });
   L.push('');
   return L;
@@ -1015,7 +1085,7 @@ function dishMd(base, alt, cmp, d) {
   L.push('');
   noSoakForDish(base, alt, cmp, d, true).forEach(function (l) { L.push(l); });
   planBs(base, alt).forEach(function (b) {
-    if (b.on.some(function (s) { return s.dish === d.id; })) planBMd(base, alt, b, true).forEach(function (l) { L.push(l); });
+    if (b.on.some(function (s) { return s.dish === d.id; })) planBMd(base, alt, b, true, true).forEach(function (l) { L.push(l); });
   });
   L.push('## Good to know', '');
   (d.notes || []).forEach(function (x) { L.push('- ' + richM(x)); });
@@ -1041,6 +1111,9 @@ function recipesMd(base, alt, cmp) {
     numbered(base, dishEntries(base, d), { clock: false }).forEach(function (l) { L.push(l); });
     L.push('');
     noSoakForDish(base, alt, cmp, d, false).forEach(function (l) { L.push(l.replace(/^## /, '### ')); });
+    planBs(base, alt).forEach(function (b) {
+      if (b.on.some(function (s) { return s.dish === d.id; })) planBMd(base, alt, b, true, false).forEach(function (l) { L.push(l.replace(/^## /, '### ')); });
+    });
     L.push('### Good to know', '');
     (d.notes || []).forEach(function (x) { L.push('- ' + richM(x)); });
     L.push('');

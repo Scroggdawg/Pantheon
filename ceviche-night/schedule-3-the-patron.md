@@ -49,20 +49,29 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - No, they did not. See “If you did not soak the beans” below.
 2. **7:00 AM — Drain the beans** (**2 min**)
     - Pour the beans into the strainer in the sink.
-    - Rinse them under cold water for a few seconds.
-    - You need: Soaked beans · Strainer
+    - Rinse them under cold water for **a few seconds**.
+    - You need:
+        - Soaked beans
+        - Strainer
 3. **7:08 AM — Cut the pork small** (**3 min**)
     - You need 2 ounces of pork. That is 3 or 4 chunks of the stew meat, a small handful.
     - Snip each chunk into ½-inch pieces with kitchen scissors, into a small bowl. ½ inch is about the width of your little finger.
-    - Doing the quick soak? Cover the bowl and put it in the fridge. The pork goes in the pot in about an hour.
+    - Doing the quick soak? Cover the bowl and put it in the fridge. The pork goes in the pot in about **an hour**.
     - No scissors? Cut it on a dinner plate, not on your cutting board.
     - Wrap the rest of the pork and freeze it.
-    - You need: Stew pork · Kitchen scissors · Small bowl
+    - You need:
+        - Stew pork
+        - Kitchen scissors
+        - Small bowl
     - **Warning:** Raw pork. Wash your hands, the scissors and the plate with hot soapy water.
 4. **7:11 AM — Fill the bean pot** (**3 min**)
     - Into the big pot: the drained beans, 3½ cups of water, ½ cup of beer, and the pork.
     - Cap the rest of the beer or drink it.
-    - You need: Drained beans · Measuring cup · Beer · Pork (in the fridge if you cut it earlier)
+    - You need:
+        - Drained beans
+        - Measuring cup
+        - Beer
+        - Pork (in the fridge if you cut it earlier)
     - Goes into: Big pot
 5. **7:14 AM — Beans on medium heat** (**1 min**)
     - Burner on medium. No lid yet.
@@ -88,7 +97,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - No gas flame: move an oven rack to about 4 inches below the top element. Turn the broiler to high.
     - Put the chile on a foil-lined pan on that rack. Turn it with tongs every **2 to 3 minutes**, about **10 minutes**. Use an oven mitt.
     - Drop the hot chile in a bowl and cover the bowl with a plate. Burner or broiler off.
-    - You need: Poblano (labeled pasilla) · Tongs · Bowl and plate · No gas flame: foil-lined pan and oven mitt
+    - You need:
+        - Poblano (labeled pasilla)
+        - Tongs
+        - Bowl and plate
+        - No gas flame: foil-lined pan and oven mitt
     - **Timer: 5 minutes.** Poblano steaming. Keep working. It ends about 7:46 AM.
     - When it ends: Peel and chop the poblano.
     - Look for: Black on every side. No big green patches.
@@ -99,7 +112,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Snip them with kitchen scissors into ½-inch pieces, straight into the cold skillet.
     - No scissors? Stack the slices on a dinner plate and cut them with a knife.
     - Wrap the rest of the bacon. Fridge or freezer.
-    - You need: Bacon · Kitchen scissors · Skillet
+    - You need:
+        - Bacon
+        - Kitchen scissors
+        - Skillet
     - **Warning:** Raw pork. Wash your hands and the scissors with hot soapy water.
 9. **7:44 AM — Start the bacon** (**1 min**)
     - Burner on medium-low under the skillet.
@@ -114,14 +130,20 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Lay each half flat side down and cut it in half again. Peel the 4 wedges.
     - Dice one wedge into small pieces, about ¼ inch.
     - Wrap the other three wedges. One is for the rice purée. One goes to her place for the ceviche.
-    - You need: 1 white onion · Cutting board · Knife
+    - You need:
+        - 1 white onion
+        - Cutting board
+        - Knife
     - Goes into: Small bowl. The chopped poblano joins it later.
 11. **7:50 AM — Drain half the can of tomatoes** (**2 min**)
     - Open the plain diced tomatoes. Not the fire-roasted can.
     - Pour about half the can into the strainer over the sink. Let it drip.
     - They are already cut small, so no chopping.
     - You do not need the other half. Fridge it or toss it.
-    - You need: Plain diced tomatoes · Can opener · Strainer
+    - You need:
+        - Plain diced tomatoes
+        - Can opener
+        - Strainer
 12. **7:52 AM — Peel and chop the poblano** (**4 min**)
     - Rub the black skin off with your fingers or a paper towel.
     - Do not rinse it. Water washes away the smoky flavor.
@@ -136,7 +158,12 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - The skillet handle is hot. Touch it only with an oven mitt or a folded dry towel.
     - Do not pour. Do not lift or tilt the hot skillet. Spoon the hot fat out of it into the mug.
     - Spoon 1 tablespoon of the fat back into the skillet.
-    - You need: Slotted spoon · Spoon · Plate with a paper towel · Heatproof mug · Oven mitt or dry towel
+    - You need:
+        - Slotted spoon
+        - Spoon
+        - Plate with a paper towel
+        - Heatproof mug
+        - Oven mitt or dry towel
     - **Warning:** Hot fat burns. Keep it away from the flame. Never pour it down the drain. Let it harden in the mug, then bin it.
 14. **7:59 AM — Fry the onion and poblano** (**9 min**)
     - Burner on medium under the skillet with the bacon fat.
@@ -189,7 +216,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Lid on. Burner on medium-low.
     - Stir them each time you are at the stove, so the bottom does not stick.
     - Too thick? Add a splash of water.
-    - You need: Bean tub · Pot with a lid · Spoon
+    - You need:
+        - Bean tub
+        - Pot with a lid
+        - Spoon
     - Not before 6:38 PM.
     - Look for: By dinner they are steaming hot, with bubbles all over.
 21. **7:26 PM — Last touches** (**2 min**; shared step, it also covers other dishes)
@@ -203,25 +233,31 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
 ## If you did not soak the beans
 
 - Skip: Drain the beans.
-- Do these steps instead. The times are for a morning without the soak.
+- An extra step is new. Its full text is in this list.
+- The other steps are written out above. Here they only get a new time.
 
 ### Your kitchen · morning
 
-1. **7:00 AM — Sort and rinse the beans** (**3 min**)
+1. **7:00 AM — Sort and rinse the beans** (**3 min**; extra step)
     - Pour half the bag of beans (about 1¼ cups) onto a plate.
     - Pick out any pebbles or shriveled beans.
     - Rinse the beans in the strainer.
-    - You need: Plate · Strainer
-2. **7:03 AM — Quick soak: beans and water on high** (**2 min**)
+    - You need:
+        - Plate
+        - Strainer
+2. **7:03 AM — Quick soak: beans and water on high** (**2 min**; extra step)
     - Put the beans in the big pot.
     - Add 4 cups of water.
     - Lid on. Burner on high.
     - Tap Done now. The guide calls you back in **9 minutes**, when it should be at a full boil.
-    - You need: Big pot with a lid · Measuring cup
+    - You need:
+        - Big pot with a lid
+        - Measuring cup
     - **Timer: 9 minutes.** Beans coming to a boil. Keep working. It ends about 7:14 AM.
     - When it ends: Boil the beans for 2 minutes.
     - Tip: If foam lifts the lid, turn the burner down a little and leave the lid slightly open.
-3. **7:14 AM — Boil the beans for 2 minutes** (**3 min**)
+3. **7:11 AM — Cut the pork small** (was 7:08 AM)
+4. **7:14 AM — Boil the beans for 2 minutes** (**3 min**; extra step)
     - Lift the lid. The pot should be at a full boil. If not, wait until it is.
     - Leave the lid off. Start the timer.
     - When it ends: burner off, lid on. Do not drain.
@@ -229,20 +265,22 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - **Timer: 2 minutes.** Beans boiling. Stay here.
     - **Timer: 1 hour.** Beans resting in hot water. Keep working. It ends about 8:16 AM.
     - When it ends: Drain the rested beans.
-4. **8:18 AM — Drain the rested beans** (**2 min**)
+5. **8:18 AM — Drain the rested beans** (**2 min**; extra step)
     - Pour the beans into the strainer in the sink.
     - Rinse out the pot.
-
-These steps of this dish move:
-
-- 7:11 AM — Cut the pork small (was 7:08 AM)
-- 8:20 AM — Fill the bean pot (was 7:11 AM)
-- 8:23 AM — Beans on medium heat (was 7:14 AM)
-- 8:42 AM — Turn the beans down (was 7:28 AM)
-- 9:43 AM — Are the beans tender? (was 8:36 AM)
-- 9:45 AM — Add the good stuff to the beans (was 8:38 AM)
-- 10:12 AM — Taste the beans. They are done. (was 9:06 AM)
-- 10:40 AM — Beans into the fridge (was 9:36 AM)
+6. **8:20 AM — Fill the bean pot** (was 7:11 AM)
+7. **8:23 AM — Beans on medium heat** (was 7:14 AM)
+    - **Timer: 12 minutes.** Beans coming to a boil. Keep working. It ends about 8:36 AM.
+8. **8:42 AM — Turn the beans down** (was 7:28 AM)
+    - **Timer: 1 hour.** Beans simmering. Keep working. It ends about 9:43 AM.
+    - At 9:03 AM and 9:23 AM: Stir the beans. Add water if they poke out.
+9. **9:43 AM — Are the beans tender?** (was 8:36 AM)
+10. **9:45 AM — Add the good stuff to the beans** (was 8:38 AM)
+    - **Timer: 25 minutes.** Beans: last simmer. Keep working. It ends about 10:12 AM.
+    - At 9:59 AM: Stir the beans.
+11. **10:12 AM — Taste the beans. They are done.** (was 9:06 AM)
+    - **Timer: 25 minutes.** Beans cooling. Keep working. It ends about 10:40 AM.
+12. **10:40 AM — Beans into the fridge** (was 9:36 AM)
 
 ## If you tick “No time. Finish them at her place.”
 
@@ -262,7 +300,9 @@ These steps of this dish move:
     - Burner on medium. No lid yet.
     - Tap Done now. A **12-minute** timer starts.
     - The guide calls you back when the beans should be bubbling.
-    - You need: Bean tub · Pot with a lid
+    - You need:
+        - Bean tub
+        - Pot with a lid
     - **Timer: 12 minutes.** Beans heating up. Keep working.
     - When it ends: Turn the beans down again.
 3. **Turn the beans down again** (Her kitchen; extra step; **1 min**)
@@ -270,6 +310,8 @@ These steps of this dish move:
     - Put the lid on, slightly open.
     - Tap Done. The guide asks you to test the beans in **30 minutes**.
     - **Timer: 30 minutes.** Beans simmering. Keep working.
+    - After **15 minutes**: Stir the beans. Add water if they poke out.
+    - When it ends: Are the beans tender?
     - Look for: A simmer: a few lazy bubbles every second.
     - Tip: Not bubbling yet? Turn the heat up a notch and give it **3 more minutes**.
 4. **Are the beans tender?** (Her kitchen; the step is listed above, ignore its time)
@@ -284,7 +326,7 @@ These steps of this dish move:
 
 ## Good to know
 
-- An overnight soak saves about an hour in the morning. The **1-hour** quick soak works too.
+- An overnight soak saves about **an hour** in the morning. The **1-hour** quick soak works too.
 - Beans are done when 3 of them mash easily against the roof of your mouth.
-- They keep for several days in the fridge and taste better the next day.
+- They keep for **several days** in the fridge and taste better the next day.
 - Freeze the leftover pork and bacon.

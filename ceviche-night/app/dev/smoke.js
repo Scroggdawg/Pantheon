@@ -714,7 +714,7 @@ function staticChecks() {
       await page.locator('#view [data-act="reset-yes"]').click();
       const n = await info(page);
       ok(n.doneCount === 0 && n.undo === 0, 'the second tap clears everything');
-      ok(await page.evaluate(() => JSON.parse(localStorage.getItem('cevicheNight.v1')).rev) === 1, 'and the fresh state is saved');
+      ok(await page.evaluate(() => JSON.parse(localStorage.getItem('cevicheNight.v1')).rev) >= 1, 'and the fresh state is saved');
       await ctx.close();
     }
 

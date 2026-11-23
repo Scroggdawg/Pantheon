@@ -45,7 +45,13 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
     - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
     - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
-    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - You need:
+        - 11 limes (keep 4 whole)
+        - Lime squeezer
+        - Medium bowl
+        - Measuring cup
+        - Fine grater or vegetable peeler
+        - Cutting board and knife
     - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
     - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
 
@@ -84,7 +90,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Unwrap the halibut and smell it. Clean, like the sea, is right.
     - You need ½ pound. That is about two-thirds of your fillet. The label shows the weight.
     - Cut off the extra third. Wrap it. Leave it at the edge of the board for now.
-    - You need: Halibut · Ceviche lime jar, lid off · Foil · Paper towels
+    - You need:
+        - Halibut
+        - Ceviche lime jar, lid off
+        - Foil
+        - Paper towels
     - **Warning:** Sour or strongly fishy? Stop. Do not make ceviche with it.
 8. **4:11 PM — Cut the fish into ½-inch cubes** (**4 min**)
     - Pat the fish dry with paper towels.
@@ -101,7 +111,10 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Wash your hands with soap.
     - Now the bowl goes into the fridge. So does the wrapped leftover fish. Cook that tomorrow.
     - The lime juice now cures the fish. The first check is in **20 minutes**. Thick cubes often need longer.
-    - You need: Ceviche lime jar · Spoon · Foil
+    - You need:
+        - Ceviche lime jar
+        - Spoon
+        - Foil
     - **Timer: 20 minutes.** Fish curing. Keep working. It ends about 4:37 PM.
     - When it ends: Is the fish ready?
     - Tip: Fish not covered by the juice? Move it all into a smaller, deeper bowl made of glass or stainless steel.
@@ -113,7 +126,7 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
 11. **4:37 PM — Is the fish ready?** (**1 min**)
     - Lift out the biggest cube with a fork. Break it in half on a plate.
     - Ready means it is white all the way through. No shiny, see-through center.
-    - Still shiny in the middle? That is normal at first. It can take an hour or more.
+    - Still shiny in the middle? That is normal at first. It can take **an hour or more**.
     - Not ready? Stir it, cover it, and put it back in the fridge.
     - Still a little shiny **2 hours** before dinner? Call it ready. A thin shiny line in the center is fine. Lime juice changes the texture, not the safety.
     - White all the way. Go on to the next step.
@@ -130,7 +143,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Cut the orange in half. Squeeze one half into a cup. Measure 1 tablespoon plus 1½ teaspoons of the juice into the bowl.
     - Stir gently. Taste it on a chip. Flat or only sour? Add a pinch of salt, stir, and taste again. It can take 3 or 4 pinches.
     - Cover. Back in the fridge. The avocado goes in at the very end.
-    - You need: Olive oil · Salt · Orange · Measuring spoons
+    - You need:
+        - Olive oil
+        - Salt
+        - Orange
+        - Measuring spoons
     - Not before 5:30 PM.
 14. **7:12 PM — Add the avocado to the ceviche** (**3 min**)
     - Take the ceviche out of the fridge.
@@ -139,7 +156,11 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Take the half with no pit. Lay it on the board, skin side down. With a table knife, cut lines through the flesh one way, then the other way. Stop at the skin.
     - Scoop the cubes out with a spoon. Fold them gently into the ceviche.
     - Put the cilantro leaves on top. Take it to the table.
-    - You need: Avocado · Cutting board and knife · Table knife · Spoon
+    - You need:
+        - Avocado
+        - Cutting board and knife
+        - Table knife
+        - Spoon
     - Not before 7:12 PM.
     - Tip: Brown or stringy inside? Use the second avocado.
     - **Warning:** Keep the avocado on the cutting board while you cut. Never cut it in your hand.
@@ -148,6 +169,14 @@ Some steps say “Tap Done” or mention the guide. That is the phone app. On pa
     - Scoop the ceviche with tostadas, chips or saltines.
     - Pickled onions go on everything.
     - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
+
+## If you did not soak the beans
+
+- The other steps are written out above. Here they only get a new time.
+
+### Your kitchen · morning
+
+1. **8:24 AM — Zest half a lime, then juice eleven** (was 8:18 AM; shared step)
 
 ## Good to know
 

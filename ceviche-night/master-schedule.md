@@ -20,7 +20,7 @@
   - Pick out any pebbles or shriveled beans.
   - Rinse the beans in a strainer.
   - Put them in a big bowl with 4 cups of cold water. Leave it on the counter.
-  - Do this one. With the soak, the beans are done with more than an hour to spare.
+  - Do this one. With the soak, the beans are done with more than **an hour** to spare.
   - Without it there is a **1-hour** shortcut. It uses up almost all the spare time in your morning.
   - The beans may then have to finish cooking at her place.
 - [ ] **Ice packs into the freezer**
@@ -311,17 +311,36 @@ Only if a step did not get done:
 
 ## If you did not soak the beans
 
-- The morning changes. Use these times.
+- The morning changes. Use this list in place of the morning above.
 - Skip: Drain the beans.
 - From 11:00 AM on, the schedule above is right again.
 
 - [ ] 7:00 AM — Sort and rinse the beans · extra step · **3 min**
 - [ ] 7:03 AM — Quick soak: beans and water on high · extra step · **2 min**
   - Timer: Beans coming to a boil, **9 minutes**. Ends about 7:14 AM.
-- 7:05 AM to 7:14 AM — in the order listed above: from “Set out your gear” to “Cut the pork small”. Each one 3 minutes later than listed above.
+- [ ] 7:05 AM — Set out your gear · was 7:02 AM · **6 min**
+- [ ] 7:11 AM — Cut the pork small · was 7:08 AM · **3 min**
 - [ ] 7:14 AM — Boil the beans for 2 minutes · extra step · **3 min**
   - Timer: Beans resting in hot water, **1 hour**. Ends about 8:16 AM.
-- 7:16 AM to 8:18 AM — in the order listed above: from “Put the onion water on” to “Dunk the onions in hot water”, then from “Fill the onion jar” to “Make the pink sauce”. Up to 2 minutes later than listed above.
+- [ ] 7:16 AM — Put the onion water on · was 7:15 AM · **1 min**
+  - Timer: Onion water heating, **8 minutes**. Ends about 7:25 AM.
+- [ ] 7:17 AM — Slice 1½ red onions · was 7:16 AM · **6 min**
+- [ ] 7:23 AM — Toast the oregano · was 7:22 AM · **4 min**
+- [ ] 7:27 AM — Dunk the onions in hot water · was 7:25 AM · **3 min**
+- [ ] 7:29 AM — Fill the onion jar · same time · **4 min**
+- [ ] 7:33 AM — Blacken the poblano · same time · **8 min**
+  - Timer: Poblano steaming, **5 minutes**. Ends about 7:46 AM.
+- [ ] 7:41 AM — Cut the bacon · same time · **3 min**
+- [ ] 7:44 AM — Start the bacon · same time · **1 min**
+  - Timer: Bacon frying, **10 minutes**. Ends about 7:55 AM.
+  - At 7:49 AM and 7:52 AM: Stir the bacon.
+- [ ] 7:45 AM — Dice a wedge of white onion · same time · **5 min**
+- [ ] 7:50 AM — Drain half the can of tomatoes · same time · **2 min**
+- [ ] 7:52 AM — Peel and chop the poblano · same time · **4 min**
+- [ ] 7:56 AM — Take the bacon out · same time · **3 min**
+- [ ] 7:59 AM — Fry the onion and poblano · same time · **9 min**
+- [ ] 8:08 AM — Add the tomatoes and cook them dry · same time · **6 min**
+- [ ] 8:14 AM — Make the pink sauce · same time · **4 min**
 - [ ] 8:18 AM — Drain the rested beans · extra step · **2 min**
 - [ ] 8:20 AM — Fill the bean pot · was 7:11 AM · **3 min**
 - [ ] 8:23 AM — Beans on medium heat · was 7:14 AM · **1 min**
@@ -329,10 +348,19 @@ Only if a step did not get done:
 - [ ] 8:24 AM — Zest half a lime, then juice eleven · was 8:18 AM · **18 min**
 - [ ] 8:42 AM — Turn the beans down · was 7:28 AM · **1 min**
   - Timer: Beans simmering, **1 hour**. Ends about 9:43 AM.
-- 8:43 AM to 9:36 AM — in the order listed above: from “Shake up the slaw dressing” to “Pack the rice kit”, then from “Wash what goes to her place” to “Pack the dry bag”. Up to 4 minutes later than listed above.
+  - At 9:03 AM and 9:23 AM: Stir the beans. Add water if they poke out.
+- [ ] 8:43 AM — Shake up the slaw dressing · was 8:40 AM · **6 min**
+- [ ] 8:49 AM — Stir the corn sauce · was 8:46 AM · **3 min**
+- [ ] 8:52 AM — Make the shrimp marinade · was 8:49 AM · **8 min**
+- [ ] 9:00 AM — Blend the rice purée · was 8:57 AM · **6 min**
+- [ ] 9:06 AM — Pack the rice kit · was 9:03 AM · **3 min**
+- [ ] 9:09 AM — Wash what goes to her place · same time · **12 min**
+- [ ] 9:21 AM — Stack the gear by the door · same time · **8 min**
+- [ ] 9:29 AM — Pack the dry bag · same time · **7 min**
 - [ ] 9:43 AM — Are the beans tender? · was 8:36 AM · **2 min**
 - [ ] 9:45 AM — Add the good stuff to the beans · was 8:38 AM · **2 min**
   - Timer: Beans: last simmer, **25 minutes**. Ends about 10:12 AM.
+  - At 9:59 AM: Stir the beans.
 - [ ] 10:12 AM — Taste the beans. They are done. · was 9:06 AM · **3 min**
   - Timer: Beans cooling, **25 minutes**. Ends about 10:40 AM.
 - [ ] 10:40 AM — Beans into the fridge · was 9:36 AM · **3 min**
