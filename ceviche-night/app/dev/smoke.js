@@ -166,6 +166,18 @@ async function ready(page) {
 const info = page => page.evaluate(() => window.T.info());
 const bar = (page, act) => page.locator('#actions [data-act="' + act + '"]');
 const text = async loc => ((await loc.first().textContent()) || '').replace(/\s+/g, ' ').trim();
+// The day may open with a question. Answer it (first option) until a step with a Done button is on screen.
+async function toDone(page) {
+  for (let i = 0; i < 6; i++) {
+    if (await bar(page, 'done').count()) break;
+    const pick = bar(page, 'choose').first();
+    if (!(await pick.count())) break;
+    await pick.click();
+  }
+  return info(page);
+}
+// a checklist step with literal items, for tests that just need "some change" (a tick)
+const TICK_STEP = "c.plan.steps.filter(function (s) { return s.kind === 'checklist' && Array.isArray(s.items) && s.items.length > 5; })[0].id";
 async function ff(page, ms) { if (ms > 0) await page.clock.fastForward(Math.round(ms)); }
 async function audit(page, label) {
   const res = await page.evaluate(() => window.T.audit());
@@ -445,11 +457,13 @@ function staticChecks() {
 
       /* ---- 3a. Back restores the previous state exactly ---- */
       section('3. Back and reload');
-      const s0 = await page.evaluate(() => window.T.progress()), f0 = n.focus;
+      // the day may open with a question or a checklist: get to the first plain step (a Done button, no timer, no wait)
+      n = await walk(page, x => x.mode === 'step' && x.kind === 'do' && !x.timer && !x.hasWait, obs);
+      const s0 = await page.evaluate(() => window.T.progress()), f0 = n.focus, d0 = n.doneCount, u0 = n.undo;
       const meta0 = await page.evaluate(() => ({ rev: window.__cook.state.rev, at: window.__cook.state.updatedAt }));
       await bar(page, 'done').click();
       n = await info(page);
-      ok(n.focus !== f0 && n.doneCount === 1 && n.undo === 1, 'Done moves on to the next step');
+      ok(n.focus !== f0 && n.doneCount === d0 + 1 && n.undo === u0 + 1, 'Done moves on to the next step');
       await bar(page, 'undo').click();
       n = await info(page);
       ok(await page.evaluate(() => window.T.progress()) === s0 && n.focus === f0, 'Back restores the previous state and step exactly');
@@ -686,15 +700,16 @@ function staticChecks() {
     section('5b. Start over needs a second tap');
     {
       const { ctx, page } = await open(browser, { name: 'reset', time: '2026-11-23T07:05:00', viewport: SMALL });
+      const d5 = (await toDone(page)).doneCount + 1;
       await bar(page, 'done').click();
-      ok((await info(page)).doneCount === 1, 'one step done');
+      ok((await info(page)).doneCount === d5, 'one more step done');
       await goTab(page, 'setup');
       await page.locator('#view [data-act="reset-ask"]').click();
-      ok((await info(page)).doneCount === 1, 'the first tap on "Start over" erases nothing');
+      ok((await info(page)).doneCount === d5, 'the first tap on "Start over" erases nothing');
       ok(await page.locator('#view [data-act="reset-yes"]').count() === 1 && await page.locator('#view [data-act="reset-no"]').count() === 1, 'a confirm button appears in place');
       await audit(page, 'setup, confirm start over');
       await page.locator('#view [data-act="reset-no"]').click();
-      ok((await info(page)).doneCount === 1 && await page.locator('#view [data-act="reset-ask"]').count() === 1, '"Keep my progress" cancels');
+      ok((await info(page)).doneCount === d5 && await page.locator('#view [data-act="reset-ask"]').count() === 1, '"Keep my progress" cancels');
       await page.locator('#view [data-act="reset-ask"]').click();
       await page.locator('#view [data-act="reset-yes"]').click();
       const n = await info(page);
@@ -707,11 +722,13 @@ function staticChecks() {
     section('6. Double-tap guard, glossary sheet, help sheet, iPhone 13 size');
     {
       const { ctx, page } = await open(browser, { name: 'iphone13', time: '2026-11-23T07:00:00' });
+      const b6 = await toDone(page);
+      await ff(page, 1000);
       await page.evaluate(() => window.__cook.setGuard(500));
-      const first = (await info(page)).focus;
+      const first = b6.focus;
       await bar(page, 'done').dblclick();                     // two taps a few ms apart
       let n = await info(page);
-      ok(n.doneCount === 1 && n.focus !== first, 'a double tap on Done completes one step, not two (done: ' + n.doneCount + ')');
+      ok(n.doneCount === b6.doneCount + 1 && n.focus !== first, 'a double tap on Done completes one step, not two (done: ' + n.doneCount + ')');
       await page.waitForTimeout(600);
       await page.evaluate(() => window.__cook.setGuard(0));
       // find a step with a glossary term
@@ -855,15 +872,16 @@ function staticChecks() {
       await page.waitForFunction(() => window.__mock.first === true);
       ok(await page.evaluate(() => window.__mock.path) === 'cook/state' && await page.evaluate(() => window.__mock.subs) === 1, 'subscribes once to cook/state');
       ok(await page.evaluate(() => window.__mock.sets.length) === 0, 'nothing is written on load');
+      await toDone(page);
       await bar(page, 'done').click();
-      await page.evaluate(() => { const c = window.__cook; c.act('tick', Object.keys(c.state.done)[0], 'i5', true); });
+      await page.evaluate(new Function("const c = window.__cook; c.act('tick', " + TICK_STEP + ", 'i5', true);"));
       ok(await page.evaluate(() => window.__mock.sets.length) === 0, 'writes are debounced');
       await ff(page, 900);
       let m = await page.evaluate(() => ({ n: window.__mock.sets.length, rev: window.__mock.sets[0] && window.__mock.sets[0].rev, mine: window.__cook.state.rev, dev: window.__mock.sets[0] && window.__mock.sets[0].device }));
       ok(m.n === 1 && m.rev === m.mine && !!m.dev, 'one write after 800 ms with the latest state (rev ' + m.rev + ')');
-      await page.evaluate(() => { const c = window.__cook; c.act('tick', Object.keys(c.state.done)[0], 'i0', true); });
+      await page.evaluate(new Function("const c = window.__cook; c.act('tick', " + TICK_STEP + ", 'i0', true);"));
       await ff(page, 850);
-      await page.evaluate(() => { const c = window.__cook; c.act('tick', Object.keys(c.state.done)[0], 'i1', true); });
+      await page.evaluate(new Function("const c = window.__cook; c.act('tick', " + TICK_STEP + ", 'i1', true);"));
       await ff(page, 850);                                     // the second write must wait for the first to land
       ok(await page.evaluate(() => window.__mock.maxInflight) === 1, 'never two writes in flight');
       await ff(page, 2000);
@@ -892,7 +910,7 @@ function staticChecks() {
         return JSON.stringify(c.state) === before;
       });
       ok(older, 'an older snapshot is ignored');
-      await page.evaluate(() => { const c = window.__cook; c.act('tick', Object.keys(c.state.done)[0], 'i2', true); });
+      await page.evaluate(new Function("const c = window.__cook; c.act('tick', " + TICK_STEP + ", 'i2', true);"));
       await ff(page, 1500);
       ok(await page.evaluate(() => window.__mock.sets.slice(-1)[0].device !== 'laptop' && window.__mock.sets.slice(-1)[0].rev === window.__cook.state.rev), 'after adopting, this device signs its own writes');
       await goTab(page, 'setup');
@@ -906,7 +924,8 @@ function staticChecks() {
         await p2.waitForFunction(() => window.__mock.next && window.__cook.sync === 'on');
         const remoteDone = await p2.evaluate(() => Object.keys(window.__mock.remote.done).length);
         ok(remoteDone >= 2 && (await info(p2)).doneCount === 0, 'a phone with empty storage starts from nothing while the store has ' + remoteDone + ' steps done');
-        await bar(p2, 'done').click();                           // he taps before the store has answered
+        // he taps before the store has answered (the day may open with a question instead of a Done button)
+        await ((await bar(p2, 'done').count()) ? bar(p2, 'done') : bar(p2, 'choose').first()).click();
         await ff(p2, 2000);
         ok(await p2.evaluate(() => window.__mock.sets.length) === 0, 'nothing is written before the store has said what it holds');
         await ff(p2, 1500);
@@ -1094,10 +1113,11 @@ function staticChecks() {
       } }));
       n = await info(page);
       ok(n.mode === 'step', 'the page works when storage throws');
+      const b9 = await toDone(page);
       await bar(page, 'done').click();
-      ok((await info(page)).doneCount === 1, 'and steps can still be done');
+      ok((await info(page)).doneCount === b9.doneCount + 1, 'and steps can still be done');
       await bar(page, 'undo').click();
-      ok((await info(page)).doneCount === 0, 'and undone');
+      ok((await info(page)).doneCount === b9.doneCount, 'and undone');
       await ctx.close();
 
       // 9h. links straight to a tab
@@ -1157,8 +1177,15 @@ function staticChecks() {
       await page.locator('#view .term').first().tap();
       ok(await page.locator('#sheet-layer .gloss').count() === 1, 'a tap on a glossary term opens it');
       ok(await page.locator('#sheet-layer .scrim').evaluate(el => getComputedStyle(el).cursor) === 'pointer', 'so is the dimmed area behind a sheet');
-      await page.touchscreen.tap(195, 40);                    // the dimmed area above the sheet
-      ok(await page.locator('#sheet-layer').isHidden(), 'a tap outside the sheet closes it');
+      // the dimmed area above the sheet (a long explanation can fill the screen; then only the Close button is left)
+      const sheetTop = await page.locator('#sheet-layer .sheet').first().evaluate(el => el.getBoundingClientRect().top);
+      if (sheetTop >= 28) {
+        await page.touchscreen.tap(195, Math.round(sheetTop / 2));
+        ok(await page.locator('#sheet-layer').isHidden(), 'a tap outside the sheet closes it');
+      } else {
+        await page.locator('#sheet-layer .sheet-actions [data-act="sheet-close"]').tap();
+        ok(await page.locator('#sheet-layer').isHidden(), 'the Close button closes a sheet that fills the screen');
+      }
       await page.locator('#tabs .tab[data-tab="day"]').tap();
       await page.waitForFunction(() => location.hash === '#day' && !!document.querySelector('#view .srow'));
       await page.locator('#view .srow').nth(3).tap();
