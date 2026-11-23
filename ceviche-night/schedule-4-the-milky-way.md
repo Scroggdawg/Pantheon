@@ -80,6 +80,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Saucepan on the smallest burner, on medium. Add 2¼ teaspoons of vegetable oil. That is 2 teaspoons plus one ¼ teaspoon. Let it heat for **1 minute**.
     - Pour in the rice from the bag. Start the timer.
     - Stir almost the whole time.
+    - The purée goes in next. If the next card is something else, take the pan off the burner first.
     - You need:
         - Saucepan
         - Vegetable oil
@@ -92,6 +93,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 6. **6:32 PM — Add the tomato purée** (**3 min**)
     - Pour in the purée jar. It will spit, so stand back.
     - Start the timer. Keep stirring.
+    - The broth goes in next. If the next card is something else, take the pan off the burner first.
     - You need:
         - Purée jar
     - **Timer: 2 minutes 30 seconds.** Purée cooking down. Stay here.

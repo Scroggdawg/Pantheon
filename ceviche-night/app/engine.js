@@ -970,7 +970,7 @@
   }
   function isDeferred(step, loc) { return step.where === 'either' && step.block === 'am' && loc === 'hers'; }
   function titles(ix, ids) {
-    return ids.map(function (id) { var s = ix.byId[id]; return s && typeof s.title === 'string' && s.title ? s.title : id; }).join(', ');
+    return ids.map(function (id) { var s = ix.byId[id]; return String(s && typeof s.title === 'string' && s.title ? s.title : id).replace(/\.+$/, ''); }).join(', ');
   }
 
   function project(plan, state, now) {

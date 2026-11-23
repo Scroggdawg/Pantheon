@@ -553,10 +553,15 @@
   function freeParts(v) {
     var E = v.E, u = safe(function () { return E.nextUnlock(v.plan, v.state, v.now); }, null), h = '<div class="bd-card">', top = '', early = '';
     var mvName = { 'home-am': 'leaveAm', 'home-pm': 'leavePm' }[v.loc], mv = mvName ? ix.moveOf[mvName] : null;
+    var onStove = safe(function () { return E.waitsView(v.plan, v.state, v.now); }, []).filter(function (w) {
+      if (!w.attended || !w.here) return false;
+      var g = w.gatedStepId ? ix.byId[w.gatedStepId] : null;
+      return !g || !safe(function () { return E.blockers(v.plan, v.state, g, v.now); }, []).some(function (b) { return b.type === 'after'; });
+    });
     if (u && ix.byId[u.stepId]) {
       var nx = ix.byId[u.stepId];
       var why = u.reason === 'wait' ? ((ix.waitDef[nx.afterWait] || {}).label || 'A timer is running') + '.'
-        : u.reason === 'time' ? 'The next step is timed so the food is at its best at dinner.' : 'Everything for this kitchen is done.';
+        : u.reason === 'time' ? 'The next step is timed so the food is at its best at dinner.' : (onStove.length ? 'Still on the stove: ' + onStove.map(function (w) { return w.label; }).join(', ') + '. It has to come off before you go. Tap Leave early to see how.' : 'Everything for this kitchen is done.');
       h += '<h1 class="bd-title">Free until ' + esc(clock(u.at)) + '</h1><div class="bd-count" role="timer">' + cd(u.at, '0:00') + '</div>' +
         '<p class="bd-lead">' + esc(why) + '</p><div class="bd-block"><span class="bd-label">Next</span><p class="bd-lead"><b>' + esc(nx.title) + '</b></p></div>';
       if (v.preview) h += noteRow('', '', 'In a preview, skip ahead from the phone guide.');
@@ -567,7 +572,7 @@
     // Leaving: when nothing else is left here the card shows the walk-out checks and the button leaves.
     // While timers still run he can leave early, through the leave step, so he sees those checks first.
     var canLeave = !!mv && !safe(function () { return E.isDone(v.plan, v.state, mv); }, false);
-    var leaveNow = canLeave && (!u || u.reason === 'move');
+    var leaveNow = canLeave && (!u || u.reason === 'move') && !onStove.length;
     if (leaveNow && mv.body && mv.body.length) h += '<div class="bd-body">' + lines(mv.body) + '</div>';
     if (leaveNow && !top) top = btn('done', at('step', mv.id), esc(moveLabel(mv)), 'is-go');
     else if (leaveNow) early = btn('done', at('step', mv.id), esc(moveLabel(mv)), 'is-main');

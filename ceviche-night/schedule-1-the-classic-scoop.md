@@ -180,7 +180,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 
 ### Your kitchen · morning
 
-1. **8:24 AM — Zest half a lime, then juice eleven** (was 8:18 AM; shared step)
+1. **8:03 AM — Zest half a lime, then juice eleven** (was 8:18 AM; shared step)
 
 ## Good to know
 

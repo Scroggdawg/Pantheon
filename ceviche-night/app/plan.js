@@ -830,11 +830,12 @@
         body: [
           'Burner on [[heat|medium]] under the skillet with the bacon fat.',
           'Add the diced white onion and the chopped poblano.',
-          'Start the timer. Stir every minute or so.'
+          'Start the timer. Stir every minute or so.',
+          'The tomatoes go in next. If the next card is something else, turn this burner off first.'
         ],
         look: 'The onion is [[golden|deep golden]], brown at the edges.',
         tip: 'This is a half batch in a big pan, so it can brown early. Brown at the edges before the timer ends? Stop and go on. Darkening fast? Turn the burner down to [[heat|medium-low]]. Still pale when the timer ends? Give it 2 more minutes.',
-        after: ['bacon-out', 'sofrito-onion', 'poblano-peel'],
+        after: ['bacon-out', 'sofrito-onion', 'poblano-peel', 'beans-simmer'],
         timer: { secs: 480, label: 'Onion and poblano' },
         mins: 1
       },
@@ -1059,7 +1060,8 @@
           'Not sure what she has? Text her now. Ask too: does the oven broiler work? Is there room in the fridge for two big bowls?',
           'Wash and dry anything you cooked with this morning.',
           'Still using the skillet or a spoon? Leave it out. Wash it and add it when it is free.',
-          'Put the rest in a box, a laundry basket or two strong bags.'
+          'Put the rest in a box, a laundry basket or two strong bags.',
+          'Red bar says Time to leave? Tap Go and leave. This list comes back when you are home again.'
         ],
         items: 'gear',
         mins: 8
@@ -1070,7 +1072,8 @@
         body: [
           'Everything here is fine without a fridge. Put the bag by the door.',
           'Beans still cooking? Keep the salt out until they are done.',
-          'Find your cooler now. It has to hold the big bean tub, about 10 jars, the fish, the shrimp and the ice.'
+          'Find your cooler now. It has to hold the big bean tub, about 10 jars, the fish, the shrimp and the ice.',
+          'Red bar says Time to leave? Tap Go and leave. This list comes back when you are home again.'
         ],
         items: 'bag',
         mins: 7
@@ -1084,7 +1087,8 @@
           'Beans still in the pot? Scoop them and all their liquid into the big bean tub with a ladle or a mug. Lid on.',
           'The bean tub goes in the fridge, on a high shelf. Not next to the fish. Hot is fine.',
           'Tomato mix or bacon not in the beans yet? Put them in the spare tub. Lid on. Fridge.',
-          'Nothing that needs a fridge is on the counter or the stove: sour cream, yogurt, mayonnaise, broth, bacon, pork, every jar and tub you filled.'
+          'Nothing that needs a fridge is on the counter or the stove: sour cream, yogurt, mayonnaise, broth, bacon, pork, every jar and tub you filled.',
+          'Gear or dry bag not packed yet? Go anyway. Those two lists come back when you are home again.'
         ],
         mins: 0
       },
@@ -1423,7 +1427,8 @@
         body: [
           'Saucepan on the smallest burner, on [[heat|medium]]. Add 2¼ teaspoons of vegetable oil. That is 2 teaspoons plus one ¼ teaspoon. Let it heat for 1 minute.',
           'Pour in the rice from the bag. Start the timer.',
-          'Stir almost the whole time.'
+          'Stir almost the whole time.',
+          'The purée goes in next. If the next card is something else, take the pan off the burner first.'
         ],
         need: ['Saucepan', 'Vegetable oil', 'Rice bag', 'Wooden spoon'],
         look: 'The grains turn from see-through to [[milky|chalky white]].',
@@ -1438,7 +1443,8 @@
         title: 'Add the tomato purée',
         body: [
           'Pour in the purée jar. It will spit, so stand back.',
-          'Start the timer. Keep stirring.'
+          'Start the timer. Keep stirring.',
+          'The broth goes in next. If the next card is something else, take the pan off the burner first.'
         ],
         need: ['Purée jar'],
         look: 'Thick and fairly dry, like wet sand.',
@@ -1643,7 +1649,8 @@
           'Cast-iron skillet on high heat. Add 1½ teaspoons of olive oil.',
           'Start the timer. Stay at the stove and watch the oil.',
           'If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.',
-          'If the oil catches fire: burner off. Step back. Never use water. Do not move the skillet. There is very little oil, so the flames die out fast.'
+          'If the oil catches fire: burner off. Step back. Never use water. Do not move the skillet. There is very little oil, so the flames die out fast.',
+          'The shrimp go in next. If the next card is something else, turn this burner off first.'
         ],
         need: ['Cast-iron skillet', 'Olive oil', 'Tongs', 'Bowl of shrimp', 'Serving bowl and foil', 'Oven mitt'],
         look: 'The oil [[shimmer|shimmers]] and moves like water.',

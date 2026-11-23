@@ -341,32 +341,32 @@ Only if a step did not get done:
 - [ ] 7:50 AM — Drain half the can of tomatoes · same time · **2 min**
 - [ ] 7:52 AM — Peel and chop the poblano · same time · **4 min**
 - [ ] 7:56 AM — Take the bacon out · same time · **3 min**
-- [ ] 7:59 AM — Fry the onion and poblano · same time · **9 min**
-- [ ] 8:08 AM — Add the tomatoes and cook them dry · same time · **6 min**
-- [ ] 8:14 AM — Make the pink sauce · same time · **4 min**
-- [ ] 8:18 AM — Drain the rested beans · extra step · **2 min**
-- [ ] 8:20 AM — Fill the bean pot · was 7:11 AM · **3 min**
-- [ ] 8:23 AM — Beans on medium heat · was 7:14 AM · **1 min**
-  - Timer: Beans coming to a boil, **12 minutes**. Ends about 8:36 AM.
-- [ ] 8:24 AM — Zest half a lime, then juice eleven · was 8:18 AM · **18 min**
-- [ ] 8:42 AM — Turn the beans down · was 7:28 AM · **1 min**
-  - Timer: Beans simmering, **1 hour**. Ends about 9:43 AM.
-  - At 9:03 AM and 9:23 AM: Stir the beans. Add water if they poke out.
-- [ ] 8:43 AM — Shake up the slaw dressing · was 8:40 AM · **6 min**
-- [ ] 8:49 AM — Stir the corn sauce · was 8:46 AM · **3 min**
-- [ ] 8:52 AM — Make the shrimp marinade · was 8:49 AM · **8 min**
+- [ ] 7:59 AM — Make the pink sauce · was 8:14 AM · **4 min**
+- [ ] 8:03 AM — Zest half a lime, then juice eleven · was 8:18 AM · **18 min**
+- [ ] 8:21 AM — Drain the rested beans · extra step · **2 min**
+- [ ] 8:23 AM — Fill the bean pot · was 7:11 AM · **3 min**
+- [ ] 8:26 AM — Beans on medium heat · was 7:14 AM · **1 min**
+  - Timer: Beans coming to a boil, **12 minutes**. Ends about 8:39 AM.
+- [ ] 8:27 AM — Shake up the slaw dressing · was 8:40 AM · **6 min**
+- [ ] 8:33 AM — Stir the corn sauce · was 8:46 AM · **3 min**
+- [ ] 8:36 AM — Make the shrimp marinade · was 8:49 AM · **8 min**
+- [ ] 8:44 AM — Turn the beans down · was 7:28 AM · **1 min**
+  - Timer: Beans simmering, **1 hour**. Ends about 9:45 AM.
+  - At 9:05 AM and 9:25 AM: Stir the beans. Add water if they poke out.
+- [ ] 8:45 AM — Fry the onion and poblano · was 7:59 AM · **9 min**
+- [ ] 8:54 AM — Add the tomatoes and cook them dry · was 8:08 AM · **6 min**
 - [ ] 9:00 AM — Blend the rice purée · was 8:57 AM · **6 min**
 - [ ] 9:06 AM — Pack the rice kit · was 9:03 AM · **3 min**
 - [ ] 9:09 AM — Wash what goes to her place · same time · **12 min**
 - [ ] 9:21 AM — Stack the gear by the door · same time · **8 min**
 - [ ] 9:29 AM — Pack the dry bag · same time · **7 min**
-- [ ] 9:43 AM — Are the beans tender? · was 8:36 AM · **2 min**
-- [ ] 9:45 AM — Add the good stuff to the beans · was 8:38 AM · **2 min**
-  - Timer: Beans: last simmer, **25 minutes**. Ends about 10:12 AM.
-  - At 9:59 AM: Stir the beans.
-- [ ] 10:12 AM — Taste the beans. They are done. · was 9:06 AM · **3 min**
-  - Timer: Beans cooling, **25 minutes**. Ends about 10:40 AM.
-- [ ] 10:40 AM — Beans into the fridge · was 9:36 AM · **3 min**
+- [ ] 9:45 AM — Are the beans tender? · was 8:36 AM · **2 min**
+- [ ] 9:47 AM — Add the good stuff to the beans · was 8:38 AM · **2 min**
+  - Timer: Beans: last simmer, **25 minutes**. Ends about 10:14 AM.
+  - At 10:01 AM: Stir the beans.
+- [ ] 10:14 AM — Taste the beans. They are done. · was 9:06 AM · **3 min**
+  - Timer: Beans cooling, **25 minutes**. Ends about 10:42 AM.
+- [ ] 10:42 AM — Beans into the fridge · was 9:36 AM · **3 min**
 
 ## If you tick “No time. Finish them at her place.”
 

@@ -170,6 +170,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Burner on medium under the skillet with the bacon fat.
     - Add the diced white onion and the chopped poblano.
     - Start the timer. Stir every minute or so.
+    - The tomatoes go in next. If the next card is something else, turn this burner off first.
     - **Timer: 8 minutes.** Onion and poblano. Stay here.
     - Look for: The onion is deep golden, brown at the edges.
     - Tip: This is a half batch in a big pan, so it can brown early. Brown at the edges before the timer ends? Stop and go on. Darkening fast? Turn the burner down to medium-low. Still pale when the timer ends? Give it **2 more minutes**.
@@ -266,23 +267,25 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - **Timer: 2 minutes.** Beans boiling. Stay here.
     - **Timer: 1 hour.** Beans resting in hot water. Keep working. It ends about 8:16 AM.
     - When it ends: Drain the rested beans.
-5. **8:18 AM — Drain the rested beans** (**2 min**; extra step)
+5. **8:21 AM — Drain the rested beans** (**2 min**; extra step)
     - Tomatoes sitting in the strainer? Tip them into a small bowl first.
     - Pour the beans into the strainer in the sink.
     - Rinse out the pot.
-6. **8:20 AM — Fill the bean pot** (was 7:11 AM)
-7. **8:23 AM — Beans on medium heat** (was 7:14 AM)
-    - **Timer: 12 minutes.** Beans coming to a boil. Keep working. It ends about 8:36 AM.
-8. **8:42 AM — Turn the beans down** (was 7:28 AM)
-    - **Timer: 1 hour.** Beans simmering. Keep working. It ends about 9:43 AM.
-    - At 9:03 AM and 9:23 AM: Stir the beans. Add water if they poke out.
-9. **9:43 AM — Are the beans tender?** (was 8:36 AM)
-10. **9:45 AM — Add the good stuff to the beans** (was 8:38 AM)
-    - **Timer: 25 minutes.** Beans: last simmer. Keep working. It ends about 10:12 AM.
-    - At 9:59 AM: Stir the beans.
-11. **10:12 AM — Taste the beans. They are done.** (was 9:06 AM)
-    - **Timer: 25 minutes.** Beans cooling. Keep working. It ends about 10:40 AM.
-12. **10:40 AM — Beans into the fridge** (was 9:36 AM)
+6. **8:23 AM — Fill the bean pot** (was 7:11 AM)
+7. **8:26 AM — Beans on medium heat** (was 7:14 AM)
+    - **Timer: 12 minutes.** Beans coming to a boil. Keep working. It ends about 8:39 AM.
+8. **8:44 AM — Turn the beans down** (was 7:28 AM)
+    - **Timer: 1 hour.** Beans simmering. Keep working. It ends about 9:45 AM.
+    - At 9:05 AM and 9:25 AM: Stir the beans. Add water if they poke out.
+9. **8:45 AM — Fry the onion and poblano** (was 7:59 AM)
+10. **8:54 AM — Add the tomatoes and cook them dry** (was 8:08 AM)
+11. **9:45 AM — Are the beans tender?** (was 8:36 AM)
+12. **9:47 AM — Add the good stuff to the beans** (was 8:38 AM)
+    - **Timer: 25 minutes.** Beans: last simmer. Keep working. It ends about 10:14 AM.
+    - At 10:01 AM: Stir the beans.
+13. **10:14 AM — Taste the beans. They are done.** (was 9:06 AM)
+    - **Timer: 25 minutes.** Beans cooling. Keep working. It ends about 10:42 AM.
+14. **10:42 AM — Beans into the fridge** (was 9:36 AM)
 
 ## If you tick “No time. Finish them at her place.”
 

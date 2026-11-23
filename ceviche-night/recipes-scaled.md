@@ -316,6 +316,7 @@ Seared chipotle-lime shrimp, slaw, pink sauce, lime.
     - Start the timer. Stay at the stove and watch the oil.
     - If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.
     - If the oil catches fire: burner off. Step back. Never use water. Do not move the skillet. There is very little oil, so the flames die out fast.
+    - The shrimp go in next. If the next card is something else, turn this burner off first.
     - You need:
         - Cast-iron skillet
         - Olive oil
@@ -545,6 +546,7 @@ Pinto beans simmered with pork, bacon, poblano, tomato and beer.
     - Burner on medium under the skillet with the bacon fat.
     - Add the diced white onion and the chopped poblano.
     - Start the timer. Stir every minute or so.
+    - The tomatoes go in next. If the next card is something else, turn this burner off first.
     - **Timer: 8 minutes.** Onion and poblano. Stay here.
     - Look for: The onion is deep golden, brown at the edges.
     - Tip: This is a half batch in a big pan, so it can brown early. Brown at the edges before the timer ends? Stop and go on. Darkening fast? Turn the burner down to medium-low. Still pale when the timer ends? Give it **2 more minutes**.
@@ -761,6 +763,7 @@ Rice toasted until milky white, then cooked in tomato and broth.
     - Saucepan on the smallest burner, on medium. Add 2¼ teaspoons of vegetable oil. That is 2 teaspoons plus one ¼ teaspoon. Let it heat for **1 minute**.
     - Pour in the rice from the bag. Start the timer.
     - Stir almost the whole time.
+    - The purée goes in next. If the next card is something else, take the pan off the burner first.
     - You need:
         - Saucepan
         - Vegetable oil
@@ -773,6 +776,7 @@ Rice toasted until milky white, then cooked in tomato and broth.
 6. **Add the tomato purée**
     - Pour in the purée jar. It will spit, so stand back.
     - Start the timer. Keep stirring.
+    - The broth goes in next. If the next card is something else, take the pan off the burner first.
     - You need:
         - Purée jar
     - **Timer: 2 minutes 30 seconds.** Purée cooking down. Stay here.

@@ -137,6 +137,7 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
     - Start the timer. Stay at the stove and watch the oil.
     - If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.
     - If the oil catches fire: burner off. Step back. Never use water. Do not move the skillet. There is very little oil, so the flames die out fast.
+    - The shrimp go in next. If the next card is something else, turn this burner off first.
     - You need:
         - Cast-iron skillet
         - Olive oil
@@ -199,8 +200,9 @@ Some steps say “tap” or mention the guide. That is the phone app. On paper, 
 
 ### Your kitchen · morning
 
-1. **8:24 AM — Zest half a lime, then juice eleven** (was 8:18 AM; shared step)
-2. **8:52 AM — Make the shrimp marinade** (was 8:49 AM)
+1. **7:59 AM — Make the pink sauce** (was 8:14 AM)
+2. **8:03 AM — Zest half a lime, then juice eleven** (was 8:18 AM; shared step)
+3. **8:36 AM — Make the shrimp marinade** (was 8:49 AM)
 
 ## Good to know
 
