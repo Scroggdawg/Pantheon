@@ -1500,6 +1500,10 @@
       '<div class="sheet-scroll"><div class="wrap sheet-pad">' + inner + '</div></div>' +
       '<div class="sheet-actions"><div class="wrap sheet-actions-in">' + actions + '</div></div></section>';
   }
+  function sheetList(top) {
+    var dishId = top && typeof top.ctx === 'string' && top.ctx.indexOf('dish:') === 0 ? top.ctx.slice(5) : null;
+    return listSteps(dishId ? function (st) { return st.dish === dishId; } : function () { return true; });
+  }
   function glossLines(g) { return String(g.text || '').split('\n').map(function (l) { return '<p>' + esc(l) + '</p>'; }).join(''); }
   function sheetHTML(top) {
     var close = row(btn('sheet-close', '', 'Close', 'fill'));
@@ -1514,6 +1518,18 @@
     if (isDone(step)) acts = row(btn('mark-undone', id, 'Not done'));
     else if (isSkipped(step)) acts = row(btn('mark-done', id, 'Mark done'));
     else if (isActive(step)) acts = row(step.kind === 'choice' ? '' : btn('mark-done', id, 'Mark done', 'half'), btn('do-now', id, 'Do this now', 'go main'));
+    // Previous and Next page through the list the sheet was opened from: one dish's steps, or the whole day.
+    // They sit in the bottom row, so they never move under the finger.
+    var list = safe(function () { return sheetList(top); }, []), at0 = -1, k;
+    for (k = 0; k < list.length; k++) if (list[k].id === step.id) { at0 = k; break; }
+    if (at0 >= 0 && list.length > 1) {
+      var navBtn = function (st, label) {
+        return '<button type="button" class="btn nav" data-act="sheet-nav"' + (st ? at('step', st.id) : ' disabled') + '>' + label + '</button>';
+      };
+      close = row(navBtn(at0 > 0 ? list[at0 - 1] : null, 'Previous'),
+        btn('sheet-close', '', '<span class="lines">Close<small>' + (at0 + 1) + ' of ' + list.length + '</small></span>', 'fill'),
+        navBtn(at0 < list.length - 1 ? list[at0 + 1] : null, 'Next'));
+    }
     return sheetShell('full', stepHTML(step, { sheet: true }), acts + close);
   }
   function helpHTML(step, top) {
@@ -1628,7 +1644,16 @@
     'term': function (el) { openSheet({ type: 'term', key: el.getAttribute('data-key') }); },
     'help': function (el) { openSheet({ type: 'help', id: el.getAttribute('data-step'), q: '', a: '', status: 'idle' }); },
     'read': function (el) { toggleRead(el.getAttribute('data-step')); },
-    'open-step': function (el) { var id = el.getAttribute('data-step'); if (byId[id]) openSheet({ type: 'step', id: id }); },
+    'open-step': function (el) { var id = el.getAttribute('data-step'); if (byId[id]) openSheet({ type: 'step', id: id, ctx: cur.tab === 'dishes' && cur.dish ? 'dish:' + cur.dish : 'day' }); },
+    // Previous / Next inside a step sheet: the next step of that dish, or of the whole day
+    'sheet-nav': function (el) {
+      var top = sheets[sheets.length - 1], id = el.getAttribute('data-step');
+      if (!top || top.type !== 'step' || !byId[id]) return;
+      stopSpeech();
+      top.id = id; top.scroll = 0;
+      $('sheet-layer').__top = null;                        // a different step: show it from its top
+      renderSheet();
+    },
     'sheet-close': function () { closeSheet(); },
     'do-now': function (el) { goFocus(el.getAttribute('data-step')); },
     'mark-done': function (el) { doComplete(el.getAttribute('data-step')); },
@@ -1668,7 +1693,7 @@
     var fn = HANDLERS[el.getAttribute('data-act')];
     if (!fn) return;
     var inBar = !!el.closest('#actions');
-    var guarded = inBar || !!el.closest('.sheet-actions, .banner');
+    var guarded = (inBar || !!el.closest('.sheet-actions, .banner')) && el.getAttribute('data-act') !== 'sheet-nav';
     if (guarded) {
       var quick = ev.timeStamp - lastActionAt < guardMs;
       lastActionAt = ev.timeStamp;
