@@ -2,7 +2,7 @@
 
 Source: Pati Jinich.
 
-**Status: DROPPED for now (Luke, Mon Nov 23).** Not on the master schedule or the shopping list. Kept here in case it comes back. It needs a thermometer and a press or star-tip bag you don't own yet. See `equipment.md`.
+**Status: DROPPED for now (Luke, Sun Nov 22).** Not on the master schedule or the shopping list. Kept here in case it comes back. It needs a thermometer and a press or star-tip bag you don't own yet. See `equipment.md`.
 
 - **Start:** after dinner
 - **Total:** about 40 minutes (15 heating oil, 25 cooking)

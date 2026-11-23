@@ -2,8 +2,8 @@
 
 Source: Rick Bayless, *Authentic Mexican*.
 
-- **Soak:** Mon night (or quick soak Tue 6:30 AM)
-- **Start cooking:** Tue 7:30 AM (your kitchen)
+- **Soak:** Sun night (or quick soak Mon 6:30 AM)
+- **Start cooking:** Mon 7:30 AM (your kitchen)
 - **Done:** about 10:00 AM
 - **Must be in the fridge by:** 10:45 AM (you leave at 11:00)
 - **Reheat:** 6:45 PM (her kitchen)

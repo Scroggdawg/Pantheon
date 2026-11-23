@@ -2,7 +2,7 @@
 
 Source: RecipeTin Eats, Prawn Tacos.
 
-- **Pink sauce:** Tue 8:50 AM (your kitchen)
+- **Pink sauce:** Mon 8:50 AM (your kitchen)
 - **Marinade whisked:** 5:55 PM
 - **Shrimp in marinade:** 7:05 PM
 - **Sear:** 7:20 PM

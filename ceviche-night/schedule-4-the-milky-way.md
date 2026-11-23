@@ -2,7 +2,7 @@
 
 Source: Rick Bayless, Red Tomato Rice.
 
-- **Purée:** Tue 9:50 AM (your kitchen, so the blender stays home)
+- **Purée:** Mon 9:50 AM (your kitchen, so the blender stays home)
 - **Start:** 6:25 PM (her kitchen)
 - **Off heat:** 7:02 PM
 - **Holds covered until:** 7:30 PM

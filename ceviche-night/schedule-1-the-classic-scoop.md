@@ -2,8 +2,8 @@
 
 Source: Rick Bayless, Classic Ceviche.
 
-- **Lime juice:** Tue 9:30 AM (your kitchen)
-- **Fish arrives:** Mon night with the Lazy Acres order. Coldest part of the fridge.
+- **Lime juice:** Mon 9:30 AM (your kitchen)
+- **Fish arrives:** Sun night with the Lazy Acres order. Coldest part of the fridge.
 - **Cure:** 4:10 PM (her kitchen)
 - **Cure done:** 4:35 PM
 - **Mix:** 5:30 PM (her kitchen)

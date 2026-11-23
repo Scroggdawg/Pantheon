@@ -1,7 +1,7 @@
 # Shopping List — Operation Ceviche Night
 
-Dinner: Tue Nov 24, 7:30 PM, 2 people.
-Two Instacart orders, tonight (Mon Nov 23):
+Dinner: Mon Nov 23, 7:30 PM, 2 people.
+Two Instacart orders, tonight (Sun Nov 22):
 - **Lazy Acres:** halibut, shrimp, corn, tortilla chips.
 - **Ralphs:** everything else.
 

@@ -3,7 +3,7 @@
 Quantities: Tasting Table's 4-ear elote recipe, at full size.
 Method: broiler adaptation, because there is no grill. The broil time is an estimate. Watch the corn, not the clock.
 
-- **Sauce:** Tue 5:55 PM
+- **Sauce:** Mon 5:55 PM
 - **Broiler on:** 6:50 PM
 - **Corn in:** 6:55 PM
 - **Done:** about 7:08 PM

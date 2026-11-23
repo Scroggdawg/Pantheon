@@ -1,12 +1,12 @@
 # Master Schedule — Operation Ceviche Night
 
-- Dinner (T): **Tue Nov 24, 7:30 PM**
+- Dinner (T): **Mon Nov 23, 7:30 PM**
 - You are out: **11:00 AM – 2:00 PM** (west side appointment)
 - Hard out from your place: **2:30 PM**. Arrive at her place: **3:00 PM**
 - Morning work happens at your place and travels in a cooler.
 - Dessert: churros dropped for now. Nothing scheduled.
 
-## Mon Nov 23 — tonight
+## Sun Nov 22 — tonight
 
 - [ ] Place the Instacart order.
 - [ ] Double-check the pantry list at the bottom of `shopping-list.md`.
@@ -18,7 +18,7 @@
   - [ ] Start the quick soak at **6:30 AM**: boil **2 min**, cover, stand **1 hour**. Then pick up the table below at 7:30.
   - [ ] Thaw the shrimp in a bowl of cold water for 20–30 minutes, then fridge.
 
-## Tue Nov 24 — morning, your kitchen (7:30–11:00)
+## Mon Nov 23 — morning, your kitchen (7:30–11:00)
 
 | Clock | T− | Task | Hands |
 |---|---|---|---|
@@ -38,7 +38,7 @@
 
 If the beans are not tender by 10:15: turn them off anyway, refrigerate, and finish the simmer at her place starting at 3:05 PM. Stir in the tomato mix and bacon there.
 
-## Tue Nov 24 — midday, out
+## Mon Nov 23 — midday, out
 
 | Clock | Task |
 |---|---|
@@ -74,7 +74,7 @@ Equipment — bring anything her kitchen lacks:
 - [ ] Sharp knife, cutting board, tongs
 - [ ] Lime squeezer (for wedges and touch-ups)
 
-## Tue Nov 24 — afternoon, her kitchen
+## Mon Nov 23 — afternoon, her kitchen
 
 | Clock | T− | Task | Burner |
 |---|---|---|---|

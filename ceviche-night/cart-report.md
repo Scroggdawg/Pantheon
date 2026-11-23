@@ -1,6 +1,6 @@
 # Cart Report
 
-Final state, Mon Nov 23 about 10:00 PM. Two Instacart carts. Nothing is checked out.
+Final state, Sun Nov 22 about 10:00 PM. Two Instacart carts. Nothing is checked out.
 
 - Built through the Instacart connector.
 - Verified and adjusted in Luke's own Chrome on the Mac mini (totals, counts, replacement settings).

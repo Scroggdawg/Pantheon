@@ -2,7 +2,7 @@
 
 Source: Leite's Culinaria, adapted from Daphne Oz.
 
-- **Chop:** Tue 4:20 PM
+- **Chop:** Mon 4:20 PM
 - **Mix:** 5:40 PM
 - **Drain and serve:** 7:15 PM
 
