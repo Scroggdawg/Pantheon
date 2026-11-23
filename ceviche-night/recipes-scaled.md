@@ -8,7 +8,7 @@
 - **The Smoky Cream** — Creamy chipotle slaw. Makes: About 6 cups: enough for the tacos plus a side
 - **Elote** — Street corn, oven style. Makes: 4 ears
 
-Some steps say “Tap Done” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.
+Some steps say “tap” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.
 
 ## The Classic Scoop — Classic ceviche
 

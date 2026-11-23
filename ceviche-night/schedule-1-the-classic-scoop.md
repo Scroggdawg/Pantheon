@@ -33,7 +33,7 @@ Lime-cured halibut with tomato, serrano, olives and avocado.
 
 ## Steps
 
-Some steps say “Tap Done” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.
+Some steps say “tap” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.
 
 ### Your kitchen · morning
 

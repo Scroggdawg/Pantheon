@@ -1,2 +1,4 @@
 dev/shots/
 dev/preview.html
+*.orig
+*.rej

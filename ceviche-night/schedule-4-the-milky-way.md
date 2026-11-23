@@ -30,7 +30,7 @@ Rice toasted until milky white, then cooked in tomato and broth.
 
 ## Steps
 
-Some steps say “Tap Done” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.
+Some steps say “tap” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.
 
 ### Your kitchen · morning
 

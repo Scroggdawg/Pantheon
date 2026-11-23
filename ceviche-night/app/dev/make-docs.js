@@ -390,8 +390,8 @@ function fixedTimes(day) {
     return { key: k, at: E.anchorMs(day.st, k), label: (P.anchorLabels || {})[k] || k };
   });
 }
-function mentionsApp() {
-  return P.steps.some(function (s) { return (s.body || []).some(function (b) { return /\bTap Done\b|\b[Tt]he guide\b/.test(b); }); });
+function mentionsApp() {                   // do the steps talk to the phone app ("Tap Done", "tap Yes", "the guide calls you back")?
+  return P.steps.some(function (s) { return (s.body || []).some(function (b) { return /\b[Tt]ap [A-Z]|\b[Tt]he guide\b/.test(b); }); });
 }
 
 /* ================================================================================================
@@ -655,7 +655,7 @@ function howToHtml() {
   return '<div class="howto"><ul class="lines">' +
     '<li>Tick the box when a step is done. The left side says what to do. The right side says what you need and what to look for.</li>' +
     '<li>The times are the plan. Running late? Keep the same order.</li>' +
-    (mentionsApp() ? '<li>“Tap Done” and “the guide” mean the phone app. On paper, set your own timer for every box that starts with Timer.</li>' : '') +
+    (mentionsApp() ? '<li>“Tap” and “the guide” mean the phone app. On paper, tick the box instead. Set your own timer for every box that starts with Timer.</li>' : '') +
     '</ul></div>';
 }
 
@@ -894,7 +894,7 @@ function mdSource(d) {
   return s.url ? '[' + mdEsc(s.label) + '](' + s.url + ')' : mdEsc(s.label);
 }
 function appNoteMd() {
-  return mentionsApp() ? ['Some steps say “Tap Done” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.', ''] : [];
+  return mentionsApp() ? ['Some steps say “tap” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.', ''] : [];
 }
 
 function masterMd(base, alt, cmp) {
