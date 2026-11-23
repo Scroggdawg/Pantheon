@@ -1319,19 +1319,38 @@
       return ka === kb ? orderOf[a.id] - orderOf[b.id] : ka < kb ? -1 : 1;
     });
   }
+  // A rough time for one dish: the hands-on minutes of its steps, plus the timers those steps start.
+  function dishTime(d) {
+    var hands = 0, timers = 0;
+    STEPS.forEach(function (st) {
+      if (st.dish !== d.id || !isActive(st)) return;
+      hands += stepMins(st) || 0;
+      if (st.wait && st.wait.mins > 0) timers += st.wait.mins;
+    });
+    function r5(m) { return m <= 0 ? 0 : Math.max(5, Math.round(m / 5) * 5); }
+    return { hands: r5(hands), total: r5(hands + timers), timers: timers > 0 };
+  }
   function gridHTML() {
     var s = S(), h = '<div class="stack"><h1 class="h1">Dishes</h1><div class="grid">';
     DISHES.concat([DAY_DISH]).forEach(function (d) {
       var pr = safe(function () { return E.dishProgress(PLAN, s, d.id); }, { done: 0, total: 0 });
+      var tm = safe(function () { return dishTime(d); }, { hands: 0, total: 0 });
       h += '<a class="tile ' + colorClass(d) + '" href="#dish-' + esc(d.id) + '"><span><span class="nick">' + esc(d.nick) + '</span><span class="name">' + esc(d.name) + '</span></span>' +
-        '<span class="prog">' + pr.done + ' of ' + pr.total + ' steps</span></a>';
+        '<span><span class="prog">' + pr.done + ' of ' + pr.total + ' steps</span>' +
+        (tm.total > 0 ? '<span class="est">About ' + esc(dur(tm.total)) + ' total</span>' : '') + '</span></a>';
     });
     return h + '</div></div>';
+  }
+  function dishTimeLine(d) {
+    var tm = safe(function () { return dishTime(d); }, { hands: 0, total: 0 });
+    if (!(tm.total > 0)) return '';
+    return '<p class="sub"><b>About ' + esc(dur(tm.total)) + ' in all.</b> ' +
+      (tm.timers && tm.hands < tm.total ? 'About ' + esc(dur(tm.hands)) + ' of that is hands-on. The rest is timers.' : 'All of it is hands-on.') + '</p>';
   }
   function dishHTML(d) {
     var p = projection(), isDay = d.id === 'day', seg = isDay ? 'steps' : ui.seg, h = '';
     h += '<div class="dish ' + colorClass(d) + '"><div class="block"><h1 class="h1">' + esc(d.nick) + '</h1><p class="lede">' + esc(d.name) + '</p>' +
-      (d.blurb ? '<p class="sub">' + esc(d.blurb) + '</p>' : '') + '</div>';
+      (d.blurb ? '<p class="sub">' + esc(d.blurb) + '</p>' : '') + dishTimeLine(d) + '</div>';
     if (!isDay) {
       h += '<div class="segs" role="group" aria-label="What to show">' + [['steps', 'Steps'], ['ingredients', 'Ingredients'], ['gear', 'Gear']].map(function (x) {
         return '<button type="button" class="btn' + (seg === x[0] ? ' on' : '') + '" aria-pressed="' + (seg === x[0] ? 'true' : 'false') + '" data-act="seg"' + at('seg', x[0]) + '>' + x[1] + '</button>';
@@ -1382,6 +1401,9 @@
   function setupHTML() {
     var s = S(), t = now(), h = '<div class="setup"><h1 class="h1">Setup</h1>';
     function sect(title, inner) { return '<section class="sect"><h2 class="h2">' + title + '</h2>' + inner + '</section>'; }
+
+    h += sect('Big board', '<p class="sub">The whole day as a timeline, with the current step beside it. Best on a laptop or an iPad.</p>' +
+      '<a class="btn big on block" href="#board">Open the big board</a>');
 
     h += sect('The night before', tonightList());
 
@@ -1435,8 +1457,6 @@
       : wake.status === 'idle' ? (gestured ? 'It turns back on when you return to this page.' : 'It turns on after your first tap.')
       : 'Not available here. On your phone: Settings → Display & Brightness → Auto-Lock → Never.';
     h += sect('Keep the screen on', '<div class="card"><p>' + esc(wk) + '</p></div>');
-
-    h += sect('Other layouts', '<a class="linkrow" href="#board"><span>Open the big-screen board</span>' + ico('right', 22) + '</a>');
 
     h += sect('Start over', '<p class="sub">' + (preview ? 'Starts the practice run again. Your real day is not touched.' : 'Erases your progress, your ticks and your time changes.') + '</p>' +
       (confirmReset ? '<div class="pair">' + btn('reset-no', '', preview ? 'Keep going' : 'Keep my progress') + btn('reset-yes', '', preview ? 'Yes, start again' : 'Yes, erase it', 'danger') + '</div>' : btn('reset-ask', '', 'Start over')));
