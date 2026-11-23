@@ -64,7 +64,7 @@ Choices made:
 | OXO Citrus Squeezer | 1 | Lime juicing |
 
 Choices made:
-- **Fish = fresh halibut.** No snapper or sea bass fillet is listed. The only items labeled "previously frozen" are ahi tuna and orange roughy, and neither is a ceviche fish in this recipe. The halibut listing does not say sushi-grade or previously frozen.
+- **Fish = fresh halibut.** No snapper or sea bass fillet is listed. The only items labeled "previously frozen" are ahi tuna and orange roughy, and neither is a ceviche fish in this recipe. The halibut listing does not say sushi-grade or previously frozen. Luke made an exception to the brief's fish rule for this dinner (Mon Nov 23): pick the best-tasting fish. Halibut is one of the three fish the recipe names and the best of what the counter lists; branzino fillet is the runner-up.
 - **Shrimp = extra large**, not medium. It is the only raw peeled-and-deveined counter shrimp in a 1 lb size. Sear time may run a little over 60 seconds per side.
 - Greek yogurt: swapped the 32 oz tub the search picked for the 5.3 oz cup.
 - Garlic: swapped a 1 lb listing for a single head.
