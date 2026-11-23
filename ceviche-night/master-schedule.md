@@ -1,133 +1,352 @@
-# Master Schedule — Operation Ceviche Night
+# Master Schedule — Ceviche Night
 
-- Dinner (T): **Mon Nov 23, 7:30 PM**
-- You are out: **11:00 AM – 2:00 PM** (west side appointment)
-- Hard out from your place: **2:30 PM**. Arrive at her place: **3:00 PM**
-- Morning work happens at your place and travels in a cooler.
-- Dessert: churros dropped for now. Nothing scheduled.
+## Fixed times
 
-## Sun Nov 22 — tonight
+- 7:00 AM — Start cooking
+- 11:00 AM — Leave for appointment
+- 2:00 PM — Back home
+- 2:30 PM — Leave for her place
+- 3:00 PM — Arrive at her place
+- 7:30 PM — Dinner
 
-- [ ] Place the Instacart order.
-- [ ] Double-check the pantry list at the bottom of `shopping-list.md`.
-- [ ] If the order arrives tonight:
-  - [ ] Fish: straight into the coldest part of the fridge, in its wrapper, on a plate.
-  - [ ] Frozen shrimp: put **½ lb** in a bowl in the fridge to thaw. Rest stays frozen.
-  - [ ] Beans: sort, rinse, cover ½ lb with 1 quart water. Soak overnight.
-- [ ] If it arrives tomorrow morning instead:
-  - [ ] Start the quick soak at **6:30 AM**: boil **2 min**, cover, stand **1 hour**. Then pick up the table below at 7:30.
-  - [ ] Thaw the shrimp in a bowl of cold water for 20–30 minutes, then fridge.
+## The night before
 
-## Mon Nov 23 — morning, your kitchen (7:30–11:00)
+- [ ] **Fish and shrimp into the fridge**
+  - Halibut: bottom shelf, at the back. That is the coldest spot.
+  - Keep it in its wrapper, on a plate.
+  - Shrimp: same shelf.
+- [ ] **Soak the beans tonight (3 minutes)**
+  - Pour half the bag of pinto beans (about 1¼ cups) onto a plate.
+  - Pick out any pebbles or shriveled beans.
+  - Rinse the beans in a strainer.
+  - Put them in a big bowl with 4 cups of cold water. Leave it on the counter.
+  - Do this one. With the soak, the beans are done with more than an hour to spare.
+  - Without it there is a **1-hour** shortcut. It uses up almost all the spare time in your morning.
+  - The beans may then have to finish cooking at her place.
+- [ ] **Ice packs into the freezer**
+  - You need them frozen for the cooler tomorrow afternoon.
+  - No ice packs? Buy a bag of ice on your way home tomorrow.
+- [ ] **Find your cooler and a box for the gear**
+  - The cooler has to hold the big bean tub, about 10 jars, the fish, the shrimp and the ice.
+  - No cooler? A sturdy box lined with a trash bag works. Buy 2 bags of ice tomorrow.
+  - The gear is about 20 things. Find a box, a laundry basket or two strong bags for it.
+- [ ] **Text her 3 questions**
+  - Does your oven broiler work?
+  - Do you have a microwave?
+  - Can you clear a fridge shelf? Two big bowls have to fit.
+  - Ask what she has from the gear list. Leave those things at home.
+- [ ] **Find 10 jars or tubs, 1 big tub, 3 zip bags**
+  - All with lids that seal. They ride in a cooler.
+  - 1 quart jar (4 cups) for the pickled onions.
+  - 5 jars or tubs that hold about 2 cups: slaw dressing, rice broth, rice purée, corn sauce, and one spare.
+  - 4 small jars or tubs, about 1 cup each: two for lime juice, one for the marinade, one for the pink sauce.
+  - 1 big tub, 2 quarts (8 cups), for the beans.
+  - 3 zip bags: one for the rice, two for the fish and the shrimp in the cooler.
+  - Short on jars? A mug covered tightly with foil works, packed upright.
+- [ ] **Check the pantry**
+  - You said you have these. Look now.
+  - Salt, black pepper, whole peppercorns, sugar, bay leaves.
+  - Ground cumin, chipotle powder, dried Mexican oregano.
+  - White vinegar, vegetable oil, olive oil, sriracha, chicken broth, white rice.
+  - Also find: a can opener and an oven mitt.
+  - Something missing? Buy it tonight if you can.
+- [ ] **Check the avocados**
+  - Squeeze one gently.
+  - If it gives a little, put both in the fridge.
+  - Rock hard? Leave them on the counter in a paper bag.
+- [ ] **Charge your phone. Set Auto-Lock to Never.**
+  - The timers cannot ring while the phone is locked.
+  - Keep the screen on: Settings, Display & Brightness, Auto-Lock, Never.
+  - Low Power Mode off. It forces the screen to lock after **30 seconds**.
+  - Turn the ringer on and the volume up so you hear the timers.
 
-| Clock | T− | Task | Hands |
-|---|---|---|---|
-| 7:30 AM | T−12:00 | Drain beans. Add 3½ cups water, ½ cup beer, pork. Bring to a boil, then simmer. | 10 min, then passive |
-| 7:45 | T−11:45 | **The Blanch**: toast oregano, blanch onions, jar them. | 15 min |
-| 8:05 | T−11:25 | Roast the poblano. Steam **5 min**, peel, chop. | 15 min |
-| 8:20 | T−11:10 | Fry bacon **10 min**. Keep 1 Tbsp fat. | 10 min |
-| 8:30 | T−11:00 | Fry onion + poblano **8 min**. Add tomatoes, cook dry. | 15 min |
-| 8:50 | T−10:40 | Make the pink sauce. Fridge. | 5 min |
-| 9:00–9:30 | | When a bean mashes easily: stir in tomato mix, bacon, salt. Simmer **20–30 min**. | passive |
-| 9:30 | T−10:00 | Zest ½ lime, then juice 10 limes (about 1⅛ cups). Jar it. Fridge. | 20 min |
-| 9:50 | T−9:40 | Blend the rice purée (tomato, onion, garlic). Jar it. Fridge. | 5 min |
-| 10:00 | T−9:30 | Beans off the heat. Uncover to cool. | 2 min |
-| 10:10 | T−9:20 | Pack the dry bag and equipment (list below). | 25 min |
-| 10:45 | T−8:45 | Beans into a shallow lidded container. Fridge. Hold the cilantro. | 5 min |
-| 11:00 | T−8:30 | **Leave for the west side.** | — |
+## How to read the day
 
-If the beans are not tender by 10:15: turn them off anyway, refrigerate, and finish the simmer at her place starting at 3:05 PM. Stir in the tomato mix and bacon there.
+- Each line: clock time, task, dish, hands-on time.
+- An indented line is a timer that runs in the background while you go on.
+- The full text of every step is in the dish schedules and on the run sheet.
 
-## Mon Nov 23 — midday, out
+## Your kitchen · morning — 7:00 AM to 11:00 AM
 
-| Clock | Task |
-|---|---|
-| 12:00–1:00 PM | Appointment |
-| 2:00 PM | Home. Load the cooler with the cold items (list below). Load the bag and equipment. |
-| 2:30 PM | **Hard out.** Leave for her place. |
+- [ ] 7:00 AM — Did the beans soak overnight? · The Patrón · **30 sec**
+- [ ] 7:00 AM — Drain the beans · The Patrón · **2 min**
+- [ ] 7:02 AM — Set out your gear · The day · **6 min**
+- [ ] 7:08 AM — Cut the pork small · The Patrón · **3 min**
+- [ ] 7:11 AM — Fill the bean pot · The Patrón · **3 min**
+- [ ] 7:14 AM — Beans on medium heat · The Patrón · **1 min**
+  - Timer: Beans coming to a boil, **12 minutes**. Ends about 7:27 AM.
+- [ ] 7:15 AM — Put the onion water on · The Blanch · **1 min**
+  - Timer: Onion water heating, **8 minutes**. Ends about 7:24 AM.
+- [ ] 7:16 AM — Slice 1½ red onions · The Blanch · **6 min**
+- [ ] 7:22 AM — Toast the oregano · The Blanch · **4 min**
+- [ ] 7:25 AM — Dunk the onions in hot water · The Blanch · **3 min**
+- [ ] 7:28 AM — Turn the beans down · The Patrón · **1 min**
+  - Timer: Beans simmering, **1 hour**. Ends about 8:29 AM.
+  - At 7:49 AM and 8:09 AM: Stir the beans. Add water if they poke out.
+- [ ] 7:29 AM — Fill the onion jar · The Blanch · **4 min**
+- [ ] 7:33 AM — Blacken the poblano · The Patrón · **8 min**
+  - Timer: Poblano steaming, **5 minutes**. Ends about 7:46 AM.
+- [ ] 7:41 AM — Cut the bacon · The Patrón · **3 min**
+- [ ] 7:44 AM — Start the bacon · The Patrón · **1 min**
+  - Timer: Bacon frying, **10 minutes**. Ends about 7:55 AM.
+  - At 7:49 AM and 7:52 AM: Stir the bacon.
+- [ ] 7:45 AM — Dice a wedge of white onion · The Patrón · **5 min**
+- [ ] 7:50 AM — Drain half the can of tomatoes · The Patrón · **2 min**
+- [ ] 7:52 AM — Peel and chop the poblano · The Patrón · **4 min**
+- [ ] 7:56 AM — Take the bacon out · The Patrón · **3 min**
+- [ ] 7:59 AM — Fry the onion and poblano · The Patrón · **9 min**
+- [ ] 8:08 AM — Add the tomatoes and cook them dry · The Patrón · **6 min**
+- [ ] 8:14 AM — Make the pink sauce · Smoke & Pink · **4 min**
+- [ ] 8:18 AM — Zest half a lime, then juice eleven · The day · **18 min**
+- [ ] 8:36 AM — Are the beans tender? · The Patrón · **2 min**
+- [ ] 8:38 AM — Add the good stuff to the beans · The Patrón · **2 min**
+  - Timer: Beans: last simmer, **25 minutes**. Ends about 9:05 AM.
+  - At 8:52 AM: Stir the beans.
+- [ ] 8:40 AM — Shake up the slaw dressing · The Smoky Cream · **6 min**
+- [ ] 8:46 AM — Stir the corn sauce · Elote · **3 min**
+- [ ] 8:49 AM — Make the shrimp marinade · Smoke & Pink · **8 min**
+- [ ] 8:57 AM — Blend the rice purée · The Milky Way · **6 min**
+- [ ] 9:03 AM — Pack the rice kit · The Milky Way · **3 min**
+- [ ] 9:06 AM — Taste the beans. They are done. · The Patrón · **3 min**
+  - Timer: Beans cooling, **25 minutes**. Ends about 9:34 AM.
+- [ ] 9:09 AM — Wash what goes to her place · The day · **12 min**
+- [ ] 9:21 AM — Stack the gear by the door · The day · **8 min**
+- [ ] 9:29 AM — Pack the dry bag · The day · **7 min**
+- [ ] 9:36 AM — Beans into the fridge · The Patrón · **3 min**
+- 9:39 AM — Free until 11:00 AM · **1 hr 21 min**
+- [ ] **11:00 AM — Leave for your appointment**
 
-## Pack list
+## Out — 11:00 AM to 2:00 PM
 
-Cooler with ice packs:
-- [ ] Fish (raw, sealed, directly on the ice packs)
-- [ ] Shrimp (thawed, raw)
-- [ ] Beans
-- [ ] Pink sauce
-- [ ] Jar of pickled onions
-- [ ] Jar of rice purée
-- [ ] Jar of lime juice
-- [ ] Sour cream, mayo, Greek yogurt, cotija
+- [ ] **2:00 PM — Back home**
 
-Bag:
-- [ ] All remaining produce, chips, tostadas, saltines, tortillas
-- [ ] Olives, rice (¾ cup), broth, spices, sugar, oils, sriracha
-- [ ] The zested lime zest, in a small container
-- [ ] Cilantro for the beans
+## Your kitchen · pack up — 2:00 PM to 2:30 PM
 
-Equipment — bring anything her kitchen lacks:
+- [ ] 2:00 PM — Pack the cooler · The day · **10 min**
+- [ ] 2:10 PM — Load the car · The day · **4 min**
+- 2:14 PM — Free until 2:30 PM · **16 min**
+- [ ] **2:30 PM — Drive to her place**
+
+## Drive — 2:30 PM to 3:00 PM
+
+- [ ] **3:00 PM — You are at her place**
+
+## Her kitchen — 3:00 PM to 7:30 PM
+
+- [ ] 3:00 PM — Unpack the cold things first · The day · **5 min**
+- [ ] 3:05 PM — Set up her kitchen · The day · **8 min**
+- [ ] 3:13 PM — Wash your hands. Rinse the vegetables. · The day · **4 min**
+- [ ] 3:17 PM — Dice the white onion · The Classic Scoop · **5 min**
+- [ ] 3:22 PM — Dice 2 tomatoes · The Classic Scoop · **6 min**
+- [ ] 3:28 PM — Seed and chop 1 serrano · The Classic Scoop · **3 min**
+- [ ] 3:31 PM — Chop the cilantro · The Classic Scoop · **6 min**
+- [ ] 3:37 PM — Chop the olives · The Classic Scoop · **3 min**
+- [ ] 3:40 PM — Get the rice add-ins ready · The Milky Way · **3 min**
+- [ ] 3:43 PM — Shred the cabbage · The Smoky Cream · **10 min**
+- [ ] 3:53 PM — Finish the slaw vegetables · The Smoky Cream · **8 min**
+- [ ] 4:01 PM — Cut 2 limes into wedges · Smoke & Pink · **2 min**
+- [ ] 4:03 PM — Husk the corn. Crumble the cheese. · Elote · **6 min**
+- [ ] 4:09 PM — Smell the fish. Set one third aside. · The Classic Scoop · **2 min**
+- [ ] 4:11 PM — Cut the fish into ½-inch cubes · The Classic Scoop · **4 min**
+- [ ] 4:15 PM — Cover the fish with lime juice · The Classic Scoop · **2 min**
+  - Timer: Fish curing, **20 minutes**. Ends about 4:37 PM.
+- [ ] 4:17 PM — Wash up after the raw fish · The day · **4 min**
+- [ ] 4:21 PM — Set the table · The day · **10 min**
+- 4:31 PM — Free until 4:37 PM · **6 min**
+- [ ] 4:37 PM — Is the fish ready? · The Classic Scoop · **1 min**
+- [ ] 4:38 PM — Drain the fish · The Classic Scoop · **2 min**
+- 4:40 PM — Free until 5:30 PM · **50 min**
+- [ ] 5:30 PM — Mix the ceviche · The Classic Scoop · **5 min**
+- [ ] 5:35 PM — Dress the slaw · The Smoky Cream · **4 min**
+- 5:39 PM — Free until 6:22 PM · **43 min**
+- [ ] 6:22 PM — Line up everything for the rice · The Milky Way · **2 min**
+- [ ] 6:25 PM — Toast the rice · The Milky Way · **7 min**
+- [ ] 6:32 PM — Add the tomato purée · The Milky Way · **3 min**
+- [ ] 6:35 PM — Add the broth and bring it to a boil · The Milky Way · **2 min**
+- [ ] 6:37 PM — Lid on. Lowest heat. · The Milky Way · **1 min**
+  - Timer: Rice cooking, **20 minutes**. Ends about 6:58 PM.
+- [ ] 6:38 PM — Warm the beans · The Patrón · **2 min**
+- [ ] 6:40 PM — Dry the shrimp · Smoke & Pink · **3 min**
+- [ ] 6:43 PM — Broiler on. Oil the corn. · Elote · **3 min**
+- 6:46 PM — Free until 6:50 PM · **4 min**
+- [ ] 6:50 PM — Corn under the broiler · Elote · **1 min**
+  - Timer: Corn broiling, **12 minutes**. Ends about 7:03 PM.
+  - At 6:54 PM, 6:57 PM and 7:00 PM: Turn the corn.
+- [ ] 6:51 PM — Put the snacks and sauces out · The day · **4 min**
+- 6:55 PM — Free until 6:58 PM · **3 min**
+- [ ] 6:58 PM — Fluff the rice · The Milky Way · **1 min**
+- 6:59 PM — Free until 7:03 PM · **4 min**
+- [ ] 7:03 PM — Take the corn out and dress it · Elote · **4 min**
+- [ ] 7:09 PM — Shrimp into the marinade · Smoke & Pink · **1 min**
+  - Timer: Shrimp marinating, **5 minutes**. Ends about 7:15 PM.
+- [ ] 7:10 PM — Drain the slaw · The Smoky Cream · **2 min**
+- [ ] 7:12 PM — Add the avocado to the ceviche · The Classic Scoop · **3 min**
+- [ ] 7:15 PM — Get the skillet very hot · Smoke & Pink · **4 min**
+- [ ] 7:19 PM — Sear the shrimp: side one · Smoke & Pink · **2 min**
+- [ ] 7:20 PM — Flip the shrimp: side two · Smoke & Pink · **2 min**
+- [ ] 7:24 PM — Warm the tortillas · Smoke & Pink · **2 min**
+- [ ] 7:26 PM — Last touches · The day · **2 min**
+- [ ] 7:30 PM — Dinner is served · The day
+
+## Pack lists
+
+### Stack the gear by the door — 9:21 AM
+
 - [ ] 12-inch cast-iron skillet
-- [ ] Small saucepan with a tight lid (rice)
-- [ ] Pot for reheating beans
-- [ ] Sheet pan + foil (elote)
-- [ ] 2 large glass or stainless bowls
-- [ ] Strainer or colander (draining the fish)
-- [ ] Sharp knife, cutting board, tongs
-- [ ] Lime squeezer (for wedges and touch-ups)
+- [ ] Saucepan with a tight lid that holds 6 to 8 cups: rice
+- [ ] Medium pot with its lid: for the beans. The big pot may still be full.
+- [ ] Sheet pan
+- [ ] Foil
+- [ ] 2 large bowls
+- [ ] 3 medium bowls: one glass or stainless steel, one kept clean for the cooked shrimp
+- [ ] 3 small bowls
+- [ ] Strainer
+- [ ] Cutting board
+- [ ] Sharp knife: wrapped in a towel
+- [ ] Tongs
+- [ ] Wooden spoon
+- [ ] Measuring spoons and all your measuring cups
+- [ ] Paper towels and 2 kitchen towels
+- [ ] Oven mitt
+- [ ] Phone charger
 
-## Mon Nov 23 — afternoon, her kitchen
+### Pack the dry bag — 9:29 AM
 
-| Clock | T− | Task | Burner |
-|---|---|---|---|
-| 3:00 PM | T−4:30 | Arrive. Cold items into the fridge. Fish to the coldest shelf. | — |
-| 3:15 | T−4:15 | Open hour. Check her equipment, set the table, finish the beans if they ran short this morning. | — |
-| 4:10 | T−3:20 | Dice ½ white onion. Cube the fish. Cure with ¾ cup lime juice + the onion, **20 min** in the fridge. | — |
-| 4:20 | T−3:10 | **Chop everything** (checklist below). | — |
-| 4:35 | T−2:55 | Check the fish is opaque. Drain. Back in the fridge. | — |
-| 5:30 | T−2:00 | Mix the ceviche: tomato, serrano, cilantro, olives, oil, fish, salt, orange juice. No avocado yet. Fridge. | — |
-| 5:40 | T−1:50 | Make **The Smoky Cream**. Fridge. | — |
-| 5:55 | T−1:35 | Stir the elote sauce. Whisk the shrimp marinade (no shrimp yet). | — |
-| 6:05 | T−1:25 | Break. Clean up, set the table. | — |
-| 6:25 | T−1:05 | Start **The Milky Way**: toast rice **5–6 min**, purée **2–3 min**, broth, boil, cover. | 1 |
-| 6:42 | T−0:48 | Rice covered on lowest heat, **20 min**. Don't lift the lid. | 1 (passive) |
-| 6:45 | T−0:45 | Beans on low. Stir every few minutes. | 2 (passive) |
-| 6:50 | T−0:40 | Broiler on high. Oil and season the corn. | oven |
-| 6:55 | T−0:35 | Corn under the broiler. Turn every 3 min. | oven |
-| 7:00 | T−0:30 | Set out chips, tostadas, saltines, pickled onions, pink sauce. | — |
-| 7:02 | T−0:28 | Rice off the heat. Fluff, re-cover. | — |
-| 7:05 | T−0:25 | Shrimp into the marinade. **20 min max.** | — |
-| 7:08 | T−0:22 | Corn out. Sauce, cotija, chipotle dust. Tent with foil. | — |
-| 7:15 | T−0:15 | Cast iron on high with 1½ tsp oil. Drain the slaw. | 3 |
-| 7:20 | T−0:10 | Sear shrimp **60 sec per side**. Into a warm bowl, foil on. | 3 |
-| 7:24 | T−0:06 | Tortillas: damp towel, microwave **30–45 sec**. | — |
-| 7:26 | T−0:04 | Avocado into the ceviche. Cilantro into the beans. Pull the serranos out of the rice. | — |
-| 7:30 | T | **Dinner.** | — |
+- [ ] Rice bag
+- [ ] Tomatoes: all 3
+- [ ] Serranos: all 4
+- [ ] Jalapeño
+- [ ] Green cabbage
+- [ ] Purple cabbage
+- [ ] The 4 whole limes: 2 become wedges
+- [ ] Orange
+- [ ] Avocados: both
+- [ ] Corn: 4 ears
+- [ ] Jar of green olives
+- [ ] Corn tortillas
+- [ ] Tortilla chips
+- [ ] Tostadas
+- [ ] Saltines
+- [ ] Olive oil
+- [ ] Vegetable oil
+- [ ] Salt
+- [ ] Black pepper
+- [ ] Chipotle powder
 
-Option: put the ceviche and chips out at 7:00 as a starter while you finish cooking. Fold the avocado in at 6:58 if you do.
+Only if a step did not get done:
 
-### 4:20 PM chop checklist
+- [ ] Rice and chicken broth. Only if “Pack the rice kit” is not done.
+- [ ] Sriracha. Only if “Make the pink sauce” is not done.
+- [ ] Sugar, ground cumin and an empty 2-cup jar: for the slaw dressing. Only if “Shake up the slaw dressing” is not done.
+- [ ] All 15 limes, the lime squeezer, the fine grater or peeler, and 2 small jars for the juice. Only if “Zest half a lime, then juice eleven” is not done.
+- [ ] Garlic and the marinade jar: the jar may already hold the lime zest. Only if “Make the shrimp marinade” is not done.
+- [ ] For the pickled onions: the red onions, vinegar, oregano, allspice, peppercorns, bay leaf, quart jar. Only if “Fill the onion jar” is not done.
+- [ ] Can of plain diced tomatoes and a can opener: for the beans. Only if “Drain half the can of tomatoes” is not done.
+- [ ] 1 bottle of beer: for the beans. Only if “Fill the bean pot” is not done.
 
-- [ ] Ceviche: 2 tomatoes, ¼-inch dice
-- [ ] Ceviche: 1 serrano, seeded, fine
-- [ ] Ceviche: 2 Tbsp + 2 tsp cilantro; save leaves for garnish
-- [ ] Ceviche: 2 Tbsp + 2 tsp olives, chopped
-- [ ] Ceviche: juice the orange (1½ Tbsp)
-- [ ] Slaw: 4 cups green cabbage, 1 cup purple, shredded thin
-- [ ] Slaw: 1 small red onion, very thin
-- [ ] Slaw: 3 scallions, thin
-- [ ] Slaw: 1 jalapeño, seeded, minced
-- [ ] Tacos: 1 garlic clove, minced; 1 Tbsp cilantro, fine
-- [ ] Tacos: 1 lime in wedges
-- [ ] Rice: 2 serranos, slit lengthwise; 2 Tbsp parsley, chopped
-- [ ] Beans: ¼ cup cilantro, rough chop
-- [ ] Elote: shuck corn; crumble cotija; cut lime wedges
-- [ ] Leave the avocado whole until 7:26
+### Pack the cooler — 2:00 PM
 
-## Conflicts checked
+- [ ] Ice packs: on the bottom
+- [ ] Halibut: in a sealed zip bag, right on the ice
+- [ ] Shrimp: in a sealed zip bag, right on the ice
+- [ ] Bean tub
+- [ ] Onion jar
+- [ ] Pink sauce tub
+- [ ] Ceviche lime jar
+- [ ] Sauce lime jar: bring it even if it looks almost empty
+- [ ] Slaw dressing jar
+- [ ] Corn sauce tub
+- [ ] Marinade jar
+- [ ] Purée jar
+- [ ] Broth jar
+- [ ] Cotija cheese
+- [ ] White onion wedge, wrapped: for the ceviche
+- [ ] Half red onion, wrapped: for the slaw
+- [ ] Cilantro
+- [ ] Parsley
+- [ ] Scallions (the bunch labeled green onions)
+- [ ] Bag of shredded carrots
 
-- 7:30–10:00 AM: the beans simmer on their own. Every other morning task fits around a stir every 15 minutes.
-- 11:00 AM–2:00 PM: nothing is on the stove and nothing is curing. The fish stays in your fridge until 2:00.
-- 4:10–4:35 PM: the fish cures in the fridge while you chop.
-- 6:25–6:42: rice needs constant stirring. Nothing else is hands-on then.
-- 6:55–7:08: corn needs a turn every 3 minutes. The rice fluff (7:02) and shrimp marinade (7:05) each take under a minute between turns.
-- 7:15–7:24: the skillet has your full attention. Beans and rice only need holding.
-- Burners in use at once: 3 at most (rice, beans, skillet), plus the oven broiler.
+Only if a step did not get done:
+
+- [ ] Beans not started: the beans (drained if they soaked) in the bean tub, and the stew pork. Only if “Fill the bean pot” is not done.
+- [ ] Spare tub of tomato mix and bacon (for the beans): in the fridge since this morning. Only if “Add the tomatoes and cook them dry” is done and “Add the good stuff to the beans” is not done.
+- [ ] For the beans: bacon, poblano, diced white onion (or 1 wedge), drained tomatoes: whatever state they are in. Plus 1 tablespoon of bacon fat from the mug if the bacon is fried. Only if “Add the tomatoes and cook them dry” is not done.
+- [ ] Sour cream (for the pink sauce). Only if “Make the pink sauce” is not done.
+- [ ] Mayonnaise and Greek yogurt (for the slaw dressing). Only if “Shake up the slaw dressing” is not done.
+- [ ] Sour cream and mayonnaise (for the corn sauce). Only if “Stir the corn sauce” is not done.
+
+## Jars, tubs and bowls
+
+### At your place
+
+- [ ] **Onion jar** · 1 quart (4 cups), with a lid · Pickled onions
+- [ ] **Slaw dressing jar** · 1 pint (2 cups), with a lid · Slaw dressing
+- [ ] **Ceviche lime jar** · About 1 cup, with a lid · ¾ cup of lime juice
+- [ ] **Sauce lime jar** · About 1 cup, with a lid · The rest of the lime juice, for the slaw dressing, corn sauce and marinade
+- [ ] **Marinade jar** · About 1 cup, with a lid · Shrimp marinade
+- [ ] **Purée jar** · About 2 cups, with a lid · Tomato purée for the rice
+- [ ] **Broth jar** · About 2 cups, with a lid · Broth and salt for the rice
+- [ ] **Pink sauce tub** · About 1 cup, with a lid · Pink sauce
+- [ ] **Corn sauce tub** · About 2 cups, with a lid · Sauce for the corn
+- [ ] **Spare tub** · About 2 cups, with a lid · Tomato mix and bacon, only if the beans are not finished at home
+- [ ] **Bean tub** · 2 quarts (8 cups), with a lid · The beans and their broth
+- [ ] **Zip bag** · Sandwich size · ¾ cup of rice
+- [ ] **2 more zip bags** · Quart or gallon size · The halibut and the shrimp, sealed, for the cooler
+- [ ] **Pork bowl** · Small bowl · Raw pork pieces, until the bean pot is filled
+- [ ] **Onion and poblano bowl** · Small bowl · Diced white onion and chopped poblano, until they are fried
+- [ ] **Mug** · Heatproof · Hot bacon fat. It stays home.
+
+### At her place
+
+- [ ] **Ceviche bowl** · Large · Tomato, serrano, cilantro, olives. Later the fish.
+- [ ] **Slaw bowl** · Large · All the slaw vegetables
+- [ ] **Fish bowl** · Medium, glass or stainless steel · Onion, fish and lime juice
+- [ ] **Shrimp bowl** · Medium · Shrimp and marinade
+- [ ] **Small bowl (bean cilantro)** · Small · Cilantro for the beans
+- [ ] **Small bowl (rice add-ins)** · Small · Serranos and parsley for the rice
+- [ ] **Small bowl (lime wedges)** · Small · Lime wedges
+- [ ] **Plate** · Dinner plate · Crumbled cotija
+- [ ] **Serving bowl** · Medium, with a sheet of foil · Cooked shrimp
+
+## If you did not soak the beans
+
+- The morning changes. Use these times.
+- Skip: Drain the beans.
+- From 11:00 AM on, the schedule above is right again.
+
+- [ ] 7:00 AM — Sort and rinse the beans · extra step · **3 min**
+- [ ] 7:03 AM — Quick soak: beans and water on high · extra step · **2 min**
+  - Timer: Beans coming to a boil, **9 minutes**. Ends about 7:14 AM.
+- 7:05 AM to 7:14 AM — in the order listed above: from “Set out your gear” to “Cut the pork small”. Each one 3 minutes later than listed above.
+- [ ] 7:14 AM — Boil the beans for 2 minutes · extra step · **3 min**
+  - Timer: Beans resting in hot water, **1 hour**. Ends about 8:16 AM.
+- 7:16 AM to 8:18 AM — in the order listed above: from “Put the onion water on” to “Dunk the onions in hot water”, then from “Fill the onion jar” to “Make the pink sauce”. Up to 2 minutes later than listed above.
+- [ ] 8:18 AM — Drain the rested beans · extra step · **2 min**
+- [ ] 8:20 AM — Fill the bean pot · was 7:11 AM · **3 min**
+- [ ] 8:23 AM — Beans on medium heat · was 7:14 AM · **1 min**
+  - Timer: Beans coming to a boil, **12 minutes**. Ends about 8:36 AM.
+- [ ] 8:24 AM — Zest half a lime, then juice eleven · was 8:18 AM · **18 min**
+- [ ] 8:42 AM — Turn the beans down · was 7:28 AM · **1 min**
+  - Timer: Beans simmering, **1 hour**. Ends about 9:43 AM.
+- 8:43 AM to 9:36 AM — in the order listed above: from “Shake up the slaw dressing” to “Pack the rice kit”, then from “Wash what goes to her place” to “Pack the dry bag”. Up to 4 minutes later than listed above.
+- [ ] 9:43 AM — Are the beans tender? · was 8:36 AM · **2 min**
+- [ ] 9:45 AM — Add the good stuff to the beans · was 8:38 AM · **2 min**
+  - Timer: Beans: last simmer, **25 minutes**. Ends about 10:12 AM.
+- [ ] 10:12 AM — Taste the beans. They are done. · was 9:06 AM · **3 min**
+  - Timer: Beans cooling, **25 minutes**. Ends about 10:40 AM.
+- [ ] 10:40 AM — Beans into the fridge · was 9:36 AM · **3 min**
+
+## If you tick “No time. Finish them at her place.”
+
+- That answer is in “Are the beans tender?”. Not before 10:10 AM.
+- Skip: Beans into the fridge.
+- Then go down this list.
+
+1. **Stop the beans for now** (Your kitchen; extra step; **3 min**)
+2. **Put the beans back on the stove** (Her kitchen; extra step; **3 min**)
+3. **Turn the beans down again** (Her kitchen; extra step; **1 min**)
+4. **Are the beans tender?** (Her kitchen; the step is listed above, ignore its time)
+5. **Add the good stuff to the beans** (Her kitchen; the step is listed above, ignore its time)
+6. **Taste the beans. They are done.** (Her kitchen; the step is listed above, ignore its time)
+7. **Beans into her fridge** (Her kitchen; extra step; **3 min**)

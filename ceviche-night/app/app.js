@@ -264,14 +264,15 @@
   function countDone(s) { return s && s.done ? Object.keys(s.done).length : 0; }
   function onRemote(snap) {
     try {
+      var cached = !!(snap && snap.metadata && snap.metadata.fromCache);
       var first = !sync.heard;
-      sync.heard = true;
+      if (!(freshState && cached)) sync.heard = true;     // a remembered copy is not the store's answer
       if (!snap || !snap.exists) return;
       var r = snap.data();
       if (!validState(r)) return;
       var newer = (r.updatedAt || 0) > (state.updatedAt || 0) && r.device !== device;
       // This phone lost its storage and started from nothing: the day saved online wins over a tap or two made since.
-      var rescue = first && freshState && r.day === state.day && countDone(r) > countDone(state);
+      var rescue = first && freshState && (r.day === state.day || r.day === ymd(new Date(realNow()))) && countDone(r) > countDone(state);
       if (!newer && !rescue && state.rev !== 0) return;
       if (r.rev === state.rev && r.updatedAt === state.updatedAt) return;
       if (rescue) { ui.focus = null; ui.pinned = false; saveUi(); }
@@ -287,6 +288,7 @@
     proj = null;
     settleFocus();
     render();
+    swapAt = realNow();
     emit();
   }
   function initSync(db) {
@@ -295,7 +297,7 @@
       sync.ref = db.doc('cook/state');
       sync.status = 'on';
       sync.ref.onSnapshot(onRemote, function () { sync.ref = null; sync.status = 'local'; });
-      setTimeout(function () { sync.heard = true; }, 5000);      // a store that stays silent must not block saving for good
+      setTimeout(function () { if (!freshState) sync.heard = true; }, 5000);      // a store that stays silent must not block saving for good
     } catch (e) { sync.ref = null; sync.status = 'local'; }
   }
 
@@ -520,6 +522,7 @@
   function startOver() {
     stopSpeech();
     preview = null;
+    freshState = false;
     var t = realNow();
     state = tidy(Object.assign({}, E.initialState(PLAN, device, t), { rev: 1, updatedAt: t, device: device }));
     undoStack = []; saveUndo();
@@ -580,7 +583,21 @@
     if (dbg.rings.length > 500) dbg.rings.shift();
     try {
       var c = audio.ctx;
-      if (!c || c.state !== 'running') return;
+      if (!c) return;
+      if (c.state !== 'running') {
+        if (audio.waking || !c.resume) return;
+        audio.waking = true;
+        var asked = realNow(), p = c.resume(), fin = function () { audio.waking = false; };
+        if (p && p.then) p.then(function () { fin(); if (c.state === 'running' && realNow() - asked < 4000) play(kind); }, fin);
+        else fin();
+        return;
+      }
+      play(kind);
+    } catch (e) { audio.waking = false; }
+  }
+  function play(kind) {
+    try {
+      var c = audio.ctx;
       var t0 = c.currentTime + 0.03, i;
       if (kind === 'chime') {
         beep(t0, 784, 0.18, 0.4, 'sine');
@@ -1389,7 +1406,7 @@
     h += sect('Practice run', '<p class="sub">Walk through the day without changing anything real.</p>' +
       (preview ? btn('preview-exit', '', 'Exit preview', 'on') : btn('preview-enter', '', esc(previewLabel()))));
 
-    h += sect('Sound', '<p class="sub">Timers beep through this phone. Turn the ringer on and the volume up.</p>' + btn('test-alarm', '', 'Test the alarm'));
+    h += sect('Sound', '<p class="sub">Timers beep through this phone. Turn the ringer on and the volume up. If your music stops when you tap the guide, play music from another device.</p>' + btn('test-alarm', '', 'Test the alarm'));
 
     var wk = wake.status === 'on' ? 'On. The screen stays awake while the guide is open.'
       : wake.status === 'idle' ? (gestured ? 'It turns back on when you return to this page.' : 'It turns on after your first tap.')
@@ -1547,7 +1564,7 @@
 
   /* ================================================================== events */
 
-  var guardMs = 500, lastActionAt = -1e9;
+  var guardMs = 500, lastActionAt = -1e9, swapAt = 0;
   var HANDLERS = {
     'undo': function () { undo(); },
     'done': function (el) { doComplete(el.getAttribute('data-step')); },
@@ -1604,14 +1621,17 @@
     var fn = HANDLERS[el.getAttribute('data-act')];
     if (!fn) return;
     var inBar = !!el.closest('#actions');
+    var guarded = inBar || !!el.closest('.sheet-actions, .banner');
+    if (guarded && ev.timeStamp - lastActionAt < guardMs) { ev.preventDefault(); return; }
+    if (inBar && guardMs && realNow() - swapAt < 700) { ev.preventDefault(); return; }
+    if (guarded) lastActionAt = ev.timeStamp;
+    var before = sheets.length + '|' + viewKey();
     if (inBar) {
-      // a slippery double tap must not skip a step: ignore the bar for half a second after it was used
-      if (ev.timeStamp - lastActionAt < guardMs) { ev.preventDefault(); return; }
-      lastActionAt = ev.timeStamp;
       var f = focusGet();
       if (f) ack(function (a) { return a.stepId === f && (a.kind === 'wait' || a.kind === 'max' || a.kind === 'fg'); });
     }
     fn(el, ev);
+    if (before !== sheets.length + '|' + viewKey()) lastActionAt = ev.timeStamp;
   }
   function onKey(ev) {
     if (ev.key === 'Escape' && sheets.length) { ev.preventDefault(); closeSheet(); return; }
@@ -1635,6 +1655,7 @@
     if (downTicks > 5) { pointerDown = false; downTicks = 0; }      // a finger-up event that never arrived must not freeze the page
     var wasFree = shownMode === 'free';
     if (settleFocus()) {                        // free time is over, or it is time to go
+      swapAt = realNow();
       if (wasFree && focusGet() && !preview) nudge = { since: realNow(), n: 0 };
       proj = null;
       render();
@@ -1741,7 +1762,7 @@
   window.addEventListener('hashchange', route);
   window.addEventListener('focus', refreshAll);
   doc.addEventListener('visibilitychange', function () {
-    if (doc.visibilityState === 'visible') { requestWake(); if (gestured) initAudio(); refreshAll(); }
+    if (doc.visibilityState === 'visible') { requestWake(); if (gestured) initAudio(); alarm = {}; refreshAll(); }
   });
   window.addEventListener('storage', function (ev) {         // the same guide open in another tab on this device
     if (ev.key !== KEY || !ev.newValue) return;

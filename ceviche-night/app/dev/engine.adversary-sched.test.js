@@ -184,10 +184,20 @@ function ref(plan) {
   const placeOk = (s, l) => (s.kind === 'move' ? MOVE_FROM[s.move] === l
     : s.where === 'home' ? (l === 'home-am' || l === 'home-pm') : s.where === 'hers' ? l === 'hers' : (l === 'home-am' || l === 'hers'));
   const depsOk = (st, s) => (s.after || []).every((id) => { const d = byId[id]; return !d || done(st, d) || !active(st, d); });
+  // When a running timer lets its step go: SPEC 3.3, the end of the timer. One exception, added when the finding "a must
+  // step whose timer ends after the hard out is never offered and never warned about" was fixed: SPEC section 2 says a
+  // must step is never dropped, so in a place with a hard out its gate opens no later than (hard out - its own hands-on
+  // minutes). He puts the stew in the fridge and still leaves on time.
+  const gateEnd = (st, s, r) => {
+    let end = r.start + r.mins * MIN;
+    const l = loc(st), L = l === 'home-am' ? E.anchorMs(st, 'leaveAm') : l === 'home-pm' ? E.anchorMs(st, 'leavePm') : NaN;
+    if (s.must === true && placeOk(s, l) && Number.isFinite(L)) end = Math.min(end, Math.max(r.start, L - stepMins(s) * MIN));
+    return end;
+  };
   const gateOpen = (st, s, now) => {
     if (!s.afterWait) return true;
     const r = st.waits && st.waits[s.afterWait];
-    if (r) return now >= r.start + r.mins * MIN;
+    if (r) return now >= gateEnd(st, s, r);
     // no record: open when the arming step is inactive or skipped (a done armer always has a record in these tests)
     return !(armers[s.afterWait] || []).some((a) => active(st, a) && !done(st, a));
   };
@@ -214,7 +224,7 @@ function ref(plan) {
     seen[s.id] = true;
     return (s.after || []).some((id) => { const d = byId[id]; return !!d && !done(st, d) && active(st, d) && (d.kind === 'move' || behindMove(st, d, seen)); });
   };
-  return { plan, byId, order, armers, moves, opt, whenOk, active, done, loc, since, placeOk, depsOk, gateOpen, notBeforeAt, available, stepMins, needMins, waitDef, urgentOver, ringing, behindMove };
+  return { plan, byId, order, armers, moves, opt, whenOk, active, done, loc, since, placeOk, depsOk, gateEnd, gateOpen, notBeforeAt, available, stepMins, needMins, waitDef, urgentOver, ringing, behindMove };
 }
 
 // --------------------------------------------------------------------------------------------------- the audit
@@ -267,9 +277,15 @@ function audit(plan, state, now, R = ref(plan)) {
   }
   if (!(p && alarmOk.indexOf(p.id) >= 0)) {
     if (Number.isFinite(hard)) {
-      // Work that will certainly be done here before he leaves: must steps, plus (in the morning) home-only steps.
+      // Work that will certainly be done here before he leaves: must steps, plus (in the morning) home-only steps,
+      // plus a step whose urgent timer is already running in this kitchen (when it rings, that step comes first).
+      // The alarm part was added when the fit rule was fixed: without it this audit called "fry" a certain fit with
+      // 20.5 minutes left, 19 minutes of must-do work and the 3 minute "fry-out" its own alarm then forces: 2.5 minutes
+      // past the hard out.
+      const left0 = loc === 'home-am' ? -Infinity : state.done[R.moves[loc === 'home-pm' ? 'leaveAm' : 'leavePm'].id];
+      const alarmHere = (s) => { const r = s.afterWait && state.waits && state.waits[s.afterWait], d = r && R.waitDef(state, s.afterWait); return !!(r && d && d.urgent && r.start > (left0 == null ? R.since(state) : left0)); };
       const sure = plan.steps.filter((s) => s.kind !== 'move' && R.active(state, s) && !R.done(state, s) && R.placeOk(s, loc) && !R.behindMove(state, s) &&
-        (s.must === true || (loc === 'home-am' && s.where === 'home' && !s.optional)));
+        (s.must === true || (loc === 'home-am' && s.where === 'home' && !s.optional) || alarmHere(s)));
       const left = (hard - now) / MIN;
       const before = p && p.kind !== 'move' ? work.filter((s) => R.order[s.id] < R.order[p.id]) : work;
       for (const x of before) {
@@ -286,7 +302,10 @@ function audit(plan, state, now, R = ref(plan)) {
         }
         // x was passed over. That is right only when it does not fit. It certainly fits when its own length
         // (hands-on + stove time) ends before the hard out AND its hands-on time plus all the sure work does too.
-        const room = sure.filter((s) => s.id !== x.id).reduce((n, s) => n + R.stepMins(s), 0);
+        // ... and an urgent timer that x itself starts, and that rings before the hard out, calls for its own step too.
+        const called = x.wait && x.wait.urgent && R.stepMins(x) + x.wait.mins <= left
+          ? plan.steps.filter((g) => g.afterWait === x.wait.id && g.id !== x.id && sure.indexOf(g) < 0 && R.active(state, g) && !R.done(state, g) && R.placeOk(g, loc)).reduce((n, g) => n + R.stepMins(g), 0) : 0;
+        const room = sure.filter((s) => s.id !== x.id).reduce((n, s) => n + R.stepMins(s), 0) + called;
         if (R.needMins(x) <= left && R.stepMins(x) + room <= left) {
           bad('pick-skips-fitting', (p ? p.id : 'nothing') + ' was picked, but ' + x.id + ' comes first and fits: ' + R.needMins(x) + ' min long (' + R.stepMins(x) +
             ' hands-on), ' + room + ' min of must-do work, ' + left.toFixed(1) + ' min left');
@@ -309,7 +328,7 @@ function audit(plan, state, now, R = ref(plan)) {
     if (us && u.reason === 'move' && (us.kind !== 'move' || u.at !== E.anchorMs(state, us.move))) bad('unlock-reason', u.stepId + ': reason move but that is not its anchor');
     if (us && u.reason === 'wait') {
       const r = us.afterWait && state.waits && state.waits[us.afterWait];
-      if (!r || u.at !== r.start + r.mins * MIN) bad('unlock-reason', u.stepId + ': reason wait but its timer does not end at ' + clock(u.at));
+      if (!r || u.at !== R.gateEnd(state, us, r)) bad('unlock-reason', u.stepId + ': reason wait but its timer does not let it go at ' + clock(u.at));
     }
     const then = E.pick(plan, state, u.at);
     if (!then) bad('unlock-nothing', 'nothing is pickable at the unlock ' + clock(u.at) + ' (' + u.stepId + ')');
@@ -1216,11 +1235,9 @@ test('evening before: nothing done, the plan is tomorrow from 7:00 and nothing n
   assert.deepEqual(span(q, 'stew-drain'), [H(7, 5), H(7, 7)]);
 });
 
-// Marked todo: the pseudo-code of SPEC 3.7 starts at the start anchor only "if nothing is done yet", and the engine follows
-// it. The sentence above that pseudo-code ("if now is before the day's start anchor, begin at the start anchor") and the
-// cook's evening both say otherwise.
-const BEYOND_SPEC_NIGHT = 'SPEC 3.7 pseudo-code allows this; the Day tab shows the whole morning happening tonight';
-test('evening before: one step done tonight does not move the whole morning into the night', { todo: BEYOND_SPEC_NIGHT }, () => {
+// Was a todo (the pseudo-code of SPEC 3.7 starts at the start anchor only "if nothing is done yet"). Fixed in the engine:
+// on any day before the cook day the plan begins at the start anchor, as the sentence above that pseudo-code says.
+test('evening before: one step done tonight does not move the whole morning into the night', () => {
   // 8:05 PM the evening before, he slices tomorrow's onions and marks the step done.
   const eve = H(20) - DAY;
   let s = E.initialState(PLAN, 'adv', eve);

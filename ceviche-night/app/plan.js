@@ -96,6 +96,7 @@
         ],
         gear: [
           '12-inch cast-iron skillet',
+          'Oven mitt',
           'Tongs',
           'Medium bowl',
           'Serving bowl and foil',
@@ -143,7 +144,7 @@
         ],
         notes: [
           'An overnight soak saves about an hour in the morning. The 1-hour quick soak works too.',
-          'Beans are done when one mashes easily against the roof of your mouth.',
+          'Beans are done when 3 of them mash easily against the roof of your mouth.',
           'They keep for several days in the fridge and taste better the next day.',
           'Freeze the leftover pork and bacon.'
         ]
@@ -230,7 +231,7 @@
         ],
         gear: [
           'Large bowl',
-          'Pint jar with a lid',
+          '2-cup jar with a tight lid',
           'Cutting board and sharp knife',
           '1-cup measure'
         ],
@@ -260,7 +261,8 @@
         gear: [
           'Sheet pan lined with foil',
           'Tongs',
-          'Small tub with a lid',
+          'Oven mitt',
+          '2-cup tub with a lid',
           'Plate',
           'Oven with a broiler'
         ],
@@ -397,9 +399,11 @@
         ]
       },
       {
-        id: 'tn-phone', title: 'Charge your phone',
+        id: 'tn-phone', title: 'Charge your phone. Set Auto-Lock to Never.',
         body: [
-          'Tomorrow, keep the screen on: Settings, Display & Brightness, Auto-Lock, Never.',
+          'The timers cannot ring while the phone is locked.',
+          'Keep the screen on: Settings, Display & Brightness, Auto-Lock, Never.',
+          'Low Power Mode off. It forces the screen to lock after 30 seconds.',
           'Turn the ringer on and the volume up so you hear the timers.'
         ]
       }
@@ -532,6 +536,7 @@
         title: 'Set out your gear',
         body: ['Get these out now, so you are not hunting for them with messy hands.'],
         items: [
+          'Your phone: plugged in. Settings, Display & Brightness, Auto-Lock, Never. Low Power Mode off. Ringer on, volume up. The timers cannot ring while the phone is locked.',
           'Big heavy pot with a lid (beans)',
           'Skillet (oregano, then bacon)',
           'Medium pot with a lid (onion water)',
@@ -805,8 +810,8 @@
           'The bacon should be brown and crisp. If it is still soft, give it 2 more minutes.',
           'Burner off.',
           'Lift the bacon out with the slotted spoon onto a plate lined with a paper towel.',
-          'The skillet handle is hot. Hold it with an oven mitt or a folded dry towel.',
-          'Do not pour. Tilt the skillet a little and spoon the hot [[bacon-fat|fat]] into the mug.',
+          'The skillet handle is hot. Touch it only with an oven mitt or a folded dry towel.',
+          'Do not pour. Do not lift or tilt the hot skillet. Spoon the hot [[bacon-fat|fat]] out of it into the mug.',
           'Spoon 1 tablespoon of the fat back into the skillet.'
         ],
         need: ['Slotted spoon', 'Spoon', 'Plate with a paper towel', 'Heatproof mug', 'Oven mitt or dry towel'],
@@ -963,7 +968,7 @@
         id: 'slaw-dressing', dish: 'cream', block: 'am', where: 'either',
         title: 'Shake up the slaw dressing',
         body: [
-          'Into the pint jar: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice.',
+          'Into one of the 2-cup jars: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice.',
           'Add 2 tablespoons of sugar, 1 teaspoon of ground cumin and 1 teaspoon of chipotle powder.',
           'Lid on tight. Shake until smooth. Fridge.'
         ],
@@ -1491,7 +1496,7 @@
         need: ['Bean tub', 'Pot with a lid', 'Spoon'],
         look: 'By dinner they are steaming hot, with bubbles all over.',
         after: ['beans-off'],
-        notBefore: { anchor: 'dinner', mins: -45 },
+        notBefore: { anchor: 'dinner', mins: -52 },
         mins: 2
       },
       {
@@ -1503,11 +1508,12 @@
           'Turn on the fan over the stove.',
           'Drizzle 2 tablespoons of vegetable oil over the 4 ears on the pan.',
           'Sprinkle on 1 teaspoon of salt and 1 teaspoon of black pepper.',
-          'Roll the ears around so they are coated.'
+          'Roll the ears around so they are coated.',
+          'The broiler needs a few minutes to get hot. The guide tells you when the corn goes in.'
         ],
         need: ['Vegetable oil', 'Salt', 'Pepper'],
         after: ['prep-corn'],
-        notBefore: { anchor: 'dinner', mins: -42 },
+        notBefore: { anchor: 'dinner', mins: -47 },
         mins: 3
       },
       {
@@ -1523,7 +1529,7 @@
         need: ['Tongs', 'Oven mitt'],
         warn: 'Do not reach in under the broiler. Pull the rack out to you.',
         after: ['corn-oil'],
-        notBefore: { anchor: 'dinner', mins: -36 },
+        notBefore: { anchor: 'dinner', mins: -40 },
         wait: { id: 'corn', mins: 12, label: 'Corn broiling', attended: true, urgent: true, laps: [3, 6, 9], lapLabel: 'Turn the corn' },
         mins: 1
       },
@@ -1537,7 +1543,7 @@
           'Lime wedges on the table.',
           'Put the corn sauce tub, a spoon, the plate of cotija and a sheet of foil next to the stove.'
         ],
-        notBefore: { anchor: 'dinner', mins: -34 },
+        notBefore: { anchor: 'dinner', mins: -39 },
         mins: 4
       },
       {
@@ -1560,6 +1566,7 @@
         title: 'Take the corn out and dress it',
         body: [
           'Look first. Dark brown and black spots on every side? Then it is ready.',
+          'No dark spots yet? Leave it in. Turn it every 2 minutes, for up to 6 more minutes.',
           'Take the pan out with the oven mitt. Turn the broiler off.',
           'Set the pan on a free part of the stovetop or on a folded dry towel. Never on a bare counter.',
           'Spoon the corn sauce over each hot ear and spread it around.',
@@ -1569,7 +1576,6 @@
         ],
         need: ['Corn sauce tub', 'Plate of cotija', 'Foil', 'Oven mitt'],
         look: 'Plump, shiny kernels with dark brown and black spots on every side. Your corn is white, so it will not turn yellow.',
-        tip: 'No dark spots yet? Leave it in. Turn it every 2 minutes, for up to 6 more minutes.',
         after: ['corn-in'],
         afterWait: 'corn',
         mins: 4
@@ -1598,8 +1604,8 @@
           'Tip the bowl over the sink and pour off the liquid at the bottom.',
           'Toss once more. Put it on the table.'
         ],
-        after: ['slaw-toss'],
-        notBefore: { anchor: 'dinner', mins: -18 },
+        after: ['slaw-toss', 'shrimp-marinate'],
+        notBefore: { anchor: 'dinner', mins: -20 },
         mins: 2
       },
       {
@@ -1616,8 +1622,8 @@
         need: ['Avocado', 'Cutting board and knife', 'Table knife', 'Spoon'],
         tip: 'Brown or stringy inside? Use the second avocado.',
         warn: 'Keep the avocado on the cutting board while you cut. Never cut it in your hand.',
-        after: ['ceviche-mix'],
-        notBefore: { anchor: 'dinner', mins: -16 },
+        after: ['ceviche-mix', 'shrimp-marinate'],
+        notBefore: { anchor: 'dinner', mins: -18 },
         mins: 3
       },
       {
@@ -1628,11 +1634,11 @@
           'Turn on the fan over the stove. Open a window if you can.',
           'Cast-iron skillet on high heat. Add 1½ teaspoons of olive oil.',
           'Start the timer. Stay at the stove and watch the oil.',
-          'If the oil smokes a lot before the timer ends, skip the timer and start the shrimp.'
+          'If the oil starts to smoke before the timer ends, skip the timer and start the shrimp.'
         ],
         need: ['Cast-iron skillet', 'Olive oil', 'Tongs', 'Bowl of shrimp', 'Serving bowl and foil', 'Oven mitt'],
         look: 'The oil [[shimmer|shimmers]] and moves like water.',
-        tip: 'Thick smoke before the shrimp go in? Slide the pan off the burner for 30 seconds.',
+        tip: 'Thick smoke before the shrimp go in? Slide the pan off the burner for 30 seconds. Use the oven mitt.',
         warn: 'The handle gets as hot as the pan. Touch it only with the oven mitt, even after the burner is off.',
         after: ['shrimp-marinate'],
         afterWait: 'marinade',
@@ -1682,7 +1688,8 @@
         ],
         look: 'Warm and soft. They bend without cracking.',
         tip: 'No microwave? Warm each one in a dry skillet, about 30 seconds per side.',
-        notBefore: { anchor: 'dinner', mins: -8 },
+        after: ['shrimp-sear-2'],
+        notBefore: { anchor: 'dinner', mins: -6 },
         mins: 2
       },
       {
@@ -1767,7 +1774,7 @@
         { id: 'b-pepper', label: 'Black pepper' },
         { id: 'b-chipotle', label: 'Chipotle powder' },
         { id: 'b-sriracha', label: 'Sriracha', ifNotDone: 'pink-sauce' },
-        { id: 'b-sugar', label: 'Sugar, ground cumin and the empty pint jar', note: 'for the slaw dressing', ifNotDone: 'slaw-dressing' },
+        { id: 'b-sugar', label: 'Sugar, ground cumin and an empty 2-cup jar', note: 'for the slaw dressing', ifNotDone: 'slaw-dressing' },
         { id: 'b-limes-all', label: 'All 15 limes, the lime squeezer, the fine grater or peeler', note: 'and 2 small jars for the juice', ifNotDone: 'limes' },
         { id: 'b-garlic', label: 'Garlic and the marinade jar', note: 'the jar may already hold the lime zest', ifNotDone: 'marinade' },
         { id: 'b-onion-kit', label: 'For the pickled onions: the red onions, vinegar, oregano, allspice, peppercorns, bay leaf, quart jar', ifNotDone: 'onion-jar' },

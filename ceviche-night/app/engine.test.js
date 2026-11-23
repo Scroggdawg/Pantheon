@@ -189,6 +189,8 @@ const BAD = [
   ['glossary key missing (plain)', (p) => { step(p, 'sauce').body = ['Now [[whisk]] it.']; }, /\[\[whisk\]\]/],
   ['glossary key missing (with shown text)', (p) => { step(p, 'sauce').tip = 'Keep it [[cold|very cold]].'; }, /\[\[cold\]\]/],
   ['glossary key missing in tonight', (p) => { p.tonight[0].body = ['[[thaw]] the fish.']; }, /Tonight list.*\[\[thaw\]\]/],
+  ['two tonight items share an id', (p) => { p.tonight[1].id = 'order'; }, /Tonight item #2: id "order" is used twice/],
+  ['a tonight item without an id', (p) => { delete p.tonight[0].id; }, /Tonight item #1 has no id/],
   ['unknown dish', (p) => { step(p, 'sauce').dish = 'soup'; }, /dish "soup" does not exist/],
   ['notBefore names a missing anchor', (p) => { step(p, 'table').notBefore = { anchor: 'lunch', mins: 0 }; }, /"notBefore" names anchor "lunch"/],
   ['withinMinsOf names a missing anchor', (p) => { step(p, 'beans-check').check.giveUp.withinMinsOf.anchor = 'lunch'; }, /"withinMinsOf" names anchor "lunch"/],
@@ -739,7 +741,15 @@ test('retry re-arms the check timer; giveUp applies its options', () => {
   assert.equal(E.canGiveUp(PLAN, s, step(PLAN, 'beans-check'), H(11, 30)), true);
   assert.equal(E.canGiveUp(PLAN, s, 'sauce', H(10, 30)), false);
   assert.equal(E.canGiveUp(PLAN, s, 'nope', H(10, 30)), false);
+  // SPEC 9.2: only while he is in his kitchen in the morning
+  let gone = s;
+  for (const [id, at, loc] of [['leave-am', H(11), 'away'], ['back-home', H(14), 'home-pm'], ['leave-pm', H(14, 30), 'drive'], ['arrive', H(15), 'hers']]) {
+    gone = E.complete(PLAN, gone, id, at);
+    assert.equal(E.location(PLAN, gone), loc);
+    assert.equal(E.canGiveUp(PLAN, gone, 'beans-check', at + MIN), false, 'no give-up button in ' + loc);
+  }
   s = E.giveUp(PLAN, s, 'beans-check', H(10, 15));
+  assert.equal(E.giveUp(PLAN, s, 'beans-check', H(10, 16)), s, 'giving up twice changes nothing');
   assert.equal(s.opts.beansLater, true);
   assert.equal(E.isActive(PLAN, s, 'beans-check'), false);
   assert.equal(E.isAvailable(PLAN, s, 'beans-off', H(10, 15)), true);
@@ -764,7 +774,15 @@ test('ackLap, tick, tickTonight, setOpt, fg', () => {
   assert.equal(E.isDone(PLAN, n, 'soak-q'), true);
   n = E.tickTonight(PLAN, n, 'soak', false, T);
   assert.deepEqual(n.tonight, {});
-  assert.equal(n.opts.soaked, true, 'unticking does not guess the old answer');
+  assert.equal('soaked' in n.opts, false, 'unticking takes back what the tick decided');
+  assert.equal(E.isDone(PLAN, n, 'soak-q'), false, 'so the question is asked again in the morning');
+  // ... unless he answered the question himself in the meantime
+  let own = E.complete(PLAN, fresh(), 'soak-q', T, { value: true });
+  own = E.tickTonight(PLAN, E.tickTonight(PLAN, own, 'soak', true, T), 'soak', false, T);
+  assert.equal(own.opts.soaked, true);
+  // ... and an answer that is not the one the tick gave stays
+  let other = E.setOpt(PLAN, E.tickTonight(PLAN, fresh(), 'soak', true, T), 'soaked', false, T);
+  assert.equal(E.tickTonight(PLAN, other, 'soak', false, T).opts.soaked, false);
   n = E.tickTonight(PLAN, n, 'order', true, T);
   assert.deepEqual(n.tonight, { order: true });
   // setOpt
@@ -1378,6 +1396,247 @@ test('every public function survives junk arguments', () => {
 });
 
 
+// ---------------------------------------------------------------- findings from the engine review
+
+// A variant where the must step "turn the beans off" waits for a 25 minute rest that the bean check starts.
+function restPlan() {
+  const p = fixture();
+  step(p, 'beans-check').wait = { id: 'rest', mins: 25, label: 'Beans resting' };
+  step(p, 'beans-off').afterWait = 'rest';
+  return p;
+}
+const mornOf = (p, skip, at = H(7)) =>
+  run(E.initialState(p, 't', H(6)), AM_ALL.filter((id) => !skip.includes(id)).map((id) => [id, at, id === 'soak-q' ? { value: true } : undefined]), p);
+
+test('must: a must step waiting on a timer is released in time to be done before the hard out', () => {
+  const p = restPlan();
+  assert.deepEqual(E.validate(p), []);
+  // the check is done 10:42: the rest would end 11:07, after the 11:00 hard out. The 2 minute step is released at 10:58.
+  let s = run(mornOf(p, ['beans-check', 'beans-off']), [['beans-check', H(10, 42)]], p);
+  assert.deepEqual(E.blockers(p, s, 'beans-off', H(10, 50)), [{ type: 'wait', waitId: 'rest', endsAt: H(10, 58) }]);
+  assert.equal(E.isAvailable(p, s, 'beans-off', H(10, 57, 59)), false);
+  assert.equal(E.isAvailable(p, s, 'beans-off', H(10, 58)), true);
+  assert.equal(E.nextStep(p, s, H(10, 50)), null);
+  assert.deepEqual(E.nextUnlock(p, s, H(10, 50)), { at: H(10, 58), stepId: 'beans-off', reason: 'wait' });
+  assert.equal(E.nextStep(p, s, H(10, 58)), 'beans-off');
+  let proj = E.project(p, s, H(10, 50));
+  assert.deepEqual(span(proj, 'beans-off'), [H(10, 58), H(11)]);
+  assert.equal(proj.byStep['beans-off'].loc, 'home-am');
+  assert.equal(proj.byStep['leave-am'].start, H(11), 'and he still leaves on time');
+  assert.deepEqual(codes(proj), []);
+  assert.equal(E.waitsView(p, s, H(10, 50))[0].endsAt, H(11, 7), 'the timer itself is shown as it runs');
+  // a timer that ends before that moment is not cut short
+  s = run(mornOf(p, ['beans-check', 'beans-off']), [['beans-check', H(10, 20)]], p);
+  assert.deepEqual(E.blockers(p, s, 'beans-off', H(10, 30)), [{ type: 'wait', waitId: 'rest', endsAt: H(10, 45) }]);
+  // a timer started too late for that: the step is open at once, he leaves late and the plan says so
+  s = run(mornOf(p, ['beans-check', 'beans-off']), [['beans-check', H(10, 59)]], p);
+  assert.equal(E.nextStep(p, s, H(10, 59)), 'beans-off');
+  proj = E.project(p, s, H(10, 59));
+  assert.deepEqual(span(proj, 'beans-off'), [H(10, 59), H(11, 1)]);
+  assert.equal(proj.byStep['leave-am'].start, H(11, 1));
+  assert.deepEqual(warning(proj, 'am-overrun').stepIds, ['beans-off']);
+  // only must steps, and only where there is a hard out: the onions (not a must) wait for their timer and are deferred
+  s = run(morningDone(['onion-dunk', 'onion-jar']), [['onion-dunk', H(10, 40)]]);
+  assert.deepEqual(E.blockers(PLAN, s, 'onion-jar', H(10, 59)), [{ type: 'wait', waitId: 'steep', endsAt: H(11, 10) }]);
+});
+
+test('fit rule: stove time runs while he does the home-only work, the two are not added up', () => {
+  const p = fixture();
+  step(p, 'sauce').wait = { id: 'reduce', mins: 20, label: 'Sauce reducing', attended: true };
+  const s = mornOf(p, ['sauce', 'pack-bag']);
+  assert.equal(E.needMins(step(p, 'sauce')), 25);
+  assert.equal(E.nextStep(p, s, H(10, 35)), 'sauce', '5 min + 20 on the stove end at 11:00; the 10 min of packing fit inside');
+  assert.equal(E.nextStep(p, s, H(10, 35, 1)), 'pack-bag', 'one second later the stove time runs past the hard out');
+});
+
+test('fit rule: only work that can still happen before the hard out takes room', () => {
+  // beans on at 10:30: the check (home-only) and "beans off" (must, behind the check) cannot come up before 11:30
+  let s = run(morningDone(['sauce', 'beans-start', 'beans-check', 'beans-off']), [['beans-start', H(10, 30)]]);
+  assert.equal(E.nextStep(PLAN, s, H(10, 55)), 'sauce', '5 minutes left and nothing else can be done here: the sauce fits');
+  assert.equal(E.nextStep(PLAN, s, H(10, 55, 1)), null);
+  // work that follows the candidate still counts: a home-only step behind the sauce keeps its 10 minutes
+  const p = fixture();
+  step(p, 'pack-bag').after = ['sauce'];
+  s = mornOf(p, ['sauce', 'pack-bag']);
+  assert.equal(E.nextStep(p, s, H(10, 45)), 'sauce');
+  assert.equal(E.nextStep(p, s, H(10, 46)), null, 'sauce + packing would end 11:01: the sauce goes to her kitchen');
+});
+
+test('fit rule: an urgent timer he starts, or that is already running, takes its step\'s minutes too', () => {
+  const p = fixture();
+  step(p, 'bacon-fry').where = 'either';
+  step(p, 'bacon-out').where = 'either';
+  // open: bacon-fry (3 min + 10 on the stove, urgent), bacon-out (2 min, the alarm step) and the bag (home-only, 10 min)
+  let s = mornOf(p, ['bacon-fry', 'bacon-out', 'pack-bag']);
+  assert.equal(E.nextStep(p, s, H(10, 45)), 'bacon-fry', '3 + 2 + 10 minutes of hands-on end exactly at 11:00');
+  assert.equal(E.nextStep(p, s, H(10, 46)), 'pack-bag', 'the bacon and its alarm step would push the bag past 11:00');
+  // the pan is already on (alarm 10:53): the sauce must leave room for "take the bacon out" as well as the bag
+  s = run(mornOf(p, ['bacon-fry', 'bacon-out', 'sauce', 'pack-bag']), [['bacon-fry', H(10, 43)]], p);
+  assert.equal(E.nextStep(p, s, H(10, 43)), 'sauce', '5 + 2 + 10 = 17 minutes, ends 11:00');
+  assert.equal(E.nextStep(p, s, H(10, 44)), 'pack-bag');
+});
+
+test('pack-up stop: two leftover home steps do not block each other', () => {
+  const p = fixture();
+  delete step(p, 'garnish').optional;                    // now two home-only steps that are not a must: garnish 15, gear 5
+  let s = run(mornOf(p, ['garnish']), [['leave-am', H(11)], ['back-home', H(14, 8)], ['load-cooler', H(14, 18)]], p);
+  assert.equal(E.nextStep(p, s, H(14, 18)), 'load-gear', '12 minutes left: the garnish cannot fit, the gear can');
+  const proj = E.project(p, s, H(14, 18));
+  assert.deepEqual(span(proj, 'load-gear'), [H(14, 18), H(14, 23)]);
+  assert.deepEqual(warning(proj, 'missed').stepIds, ['garnish']);
+  // must work is still protected: before the cooler is loaded the garnish (15) + cooler (10) do not fit in 22 minutes
+  s = run(mornOf(p, ['garnish']), [['leave-am', H(11)], ['back-home', H(14, 8)]], p);
+  assert.equal(E.nextStep(p, s, H(14, 8)), 'load-cooler');
+});
+
+test('timers of this kitchen keep ringing when a move is taken back and done again', () => {
+  let s = replay(fresh(), H(6, 55), 'corn-broil');
+  s = E.complete(PLAN, s, 'corn-broil', H(18, 50));
+  assert.deepEqual(E.alerts(PLAN, s, H(18, 54)).map((a) => a.id), ['lap:corn:1']);
+  s = E.uncomplete(PLAN, s, 'arrive', H(18, 55));          // Day tab: "Not done" on the arrival by mistake
+  assert.equal(E.location(PLAN, s), 'drive');
+  s = E.complete(PLAN, s, 'arrive', H(18, 55, 20));        // "I'm here"
+  assert.equal(E.location(PLAN, s), 'hers');
+  assert.deepEqual(E.waitsView(PLAN, s, H(18, 57)).map((w) => [w.id, w.here]), [['corn', true]]);
+  assert.deepEqual(E.alerts(PLAN, s, H(18, 57)).map((a) => a.id), ['lap:corn:2']);
+  assert.equal(E.nextStep(PLAN, s, H(19, 2)), 'corn-out', 'the alarm still jumps the queue');
+});
+
+test('moves out of order: a later move completes the earlier ones, "Not done" on a move takes the later ones back', () => {
+  // "I'm here" without "I'm on my way": the leave happened too, so the home steps are written off and dinner can be planned
+  let s = run(morningDone(['garnish']), [['leave-am', H(11)], ['back-home', H(14)], ['load-cooler', H(14, 10)]]);
+  const there = E.complete(PLAN, s, 'arrive', H(15));
+  assert.equal(E.location(PLAN, there), 'hers');
+  assert.equal(there.done['leave-pm'], H(15));
+  assert.equal(there.rev, s.rev + 1, 'still one change');
+  assert.equal(there.skipped['load-gear'], true);
+  let p = E.project(PLAN, there, H(15));
+  assert.equal(p.dinnerAt, H(19, 30));
+  assert.equal(warning(p, 'missed'), undefined);
+  // the rules of the skipped-over move run as well
+  const jumped = E.complete(PLAN, fresh(), 'back-home', H(14));
+  assert.equal(jumped.done['leave-am'], H(14));
+  assert.equal(E.opt(PLAN, jumped, 'beansLater'), true);
+  assert.equal(E.location(PLAN, jumped), 'home-pm');
+  // "Not done" on the leave while he is marked as arrived: he is back at the pack-up stop, nothing is lost
+  const back = E.uncomplete(PLAN, there, 'leave-pm', H(15, 1));
+  assert.equal(E.location(PLAN, back), 'home-pm');
+  assert.equal('arrive' in back.done, false);
+  assert.equal('load-gear' in back.skipped, false);
+  assert.equal(back.rev, there.rev + 1);
+  assert.equal(E.nextStep(PLAN, back, H(15, 1)), 'leave-pm');
+  // a home step taken back in her kitchen cannot be done any more: it is written off, dinner stays reachable
+  const undone = E.uncomplete(PLAN, there, 'pack-bag', H(15, 2));
+  assert.equal('pack-bag' in undone.done, false);
+  assert.equal(undone.skipped['pack-bag'], true);
+  assert.equal(E.project(PLAN, undone, H(15, 2)).dinnerAt, H(19, 30));
+  // at his place the same "Not done" just reopens the step
+  const home = E.uncomplete(PLAN, morningDone(), 'pack-bag', H(8));
+  assert.equal('pack-bag' in home.skipped, false);
+  assert.equal(E.nextStep(PLAN, home, H(8)), 'pack-bag');
+});
+
+test('project: an alarm that goes off exactly at the hard out is planned the way the guide will say it', () => {
+  const s = run(morningDone(['bacon-fry', 'bacon-out']), [['bacon-fry', H(10, 50)]]);
+  assert.equal(E.nextStep(PLAN, s, H(11)), 'bacon-out');
+  const p = E.project(PLAN, s, H(10, 55));
+  assert.deepEqual([span(p, 'bacon-out'), p.byStep['bacon-out'].loc], [[H(11), H(11, 2)], 'home-am']);
+  assert.equal(p.byStep['leave-am'].start, H(11, 2));
+  assert.deepEqual(warning(p, 'am-overrun').stepIds, ['bacon-out']);
+  assert.deepEqual(p.rows.find((r) => r.type === 'free'), { type: 'free', start: H(10, 55), end: H(11), loc: 'home-am', nextStepId: 'bacon-out' });
+});
+
+test('project: a home step whose stove timer is still running at the hard out is named under am-overrun', () => {
+  // bacon in the pan at 10:58 (home-only, 10 minutes on the stove). The plan has him leave at 11:00: it must say so.
+  const s = morningDone(['bacon-fry', 'bacon-out']);
+  const p = E.project(PLAN, s, H(10, 55));
+  assert.deepEqual(span(p, 'bacon-fry'), [H(10, 55), H(10, 58)]);
+  assert.equal(p.byStep['leave-am'].start, H(11));
+  assert.deepEqual(p.warnings, [{ code: 'am-overrun', stepIds: ['bacon-fry'],
+    text: 'Still on the stove when it is time to leave at 11:00 AM: Fry the bacon.' }]);
+  // when the plan's own rules take the pot over on leaving ("the beans finish at her place"), that warning stands in
+  assert.deepEqual(codes(E.project(PLAN, fresh(), H(10, 30))), ['deferred', 'beans-later']);
+});
+
+test('nextUnlock: two timers end together before the hard out, it names the one pick will give him', () => {
+  const p = restPlan();
+  // onions steeping until 9:30, beans resting until 9:30 ("beans off" is a must, but later in the master order)
+  const s = run(mornOf(p, ['onion-dunk', 'onion-jar', 'beans-check', 'beans-off']), [['onion-dunk', H(9)], ['beans-check', H(9, 5)]], p);
+  assert.equal(E.pick(p, s, H(9, 10)), null);
+  assert.equal(E.nextStep(p, s, H(9, 30)), 'onion-jar');
+  assert.deepEqual(E.nextUnlock(p, s, H(9, 10)), { at: H(9, 30), stepId: 'onion-jar', reason: 'wait' });
+});
+
+test('project: one step done the evening before leaves the plan on tomorrow morning', () => {
+  const eve = H(20) - 24 * 60 * MIN;
+  let s = fresh(eve);
+  assert.equal(s.day, '2026-11-23');
+  s = E.complete(PLAN, s, 'onion-slice', eve + 5 * MIN);
+  const p = E.project(PLAN, s, eve + 5 * MIN);
+  assert.equal(p.byStep['soak-q'].start, H(7));
+  assert.equal(p.byStep['soak-q'].status, 'next');
+  assert.ok(stepRows(p).filter((r) => r.status !== 'done').every((r) => r.start >= H(7)));
+});
+
+test('uncomplete: a step that is not done changes nothing, also when another step runs the same timer', () => {
+  const p = fixture();
+  step(p, 'beans-quick').wait = { id: 'beans', mins: 90, label: 'Beans simmering (long)', attended: true };
+  step(p, 'beans-quick').after = ['soak-q'];
+  step(p, 'beans-start').when = { soaked: true };
+  delete step(p, 'beans-start').afterWait;
+  let v = run(E.initialState(p, 't', H(6)), [['soak-q', H(7), { value: false }], ['beans-quick', H(7, 5)]], p);
+  assert.equal(E.uncomplete(p, v, 'beans-start', H(7, 6)), v, 'beans-start is not done: the timer of beans-quick stays');
+  assert.equal('beans' in E.uncomplete(p, v, 'beans-quick', H(7, 6)).waits, false);
+  // both variants done (he changed his answer): taking one back leaves the timer the other one started
+  v = E.setOpt(p, v, 'soaked', true, H(7, 7));
+  v = E.complete(p, v, 'beans-start', H(7, 20));
+  assert.deepEqual(E.uncomplete(p, v, 'beans-quick', H(7, 21)).waits.beans, { start: H(7, 20), mins: 60, by: 'beans-start' });
+});
+
+test('uncomplete: what the step\'s rules set is taken back, unless something else still explains it', () => {
+  let s = run(fresh(), [['soak-q', H(7), { value: true }], ['beans-start', H(7, 10)]]);
+  const left = E.complete(PLAN, s, 'leave-am', H(7, 30));       // a stray "I'm leaving now"
+  assert.equal(left.opts.beansLater, true);
+  const undone = E.uncomplete(PLAN, left, 'leave-am', H(7, 31));
+  assert.equal(E.location(PLAN, undone), 'home-am');
+  assert.deepEqual(undone.opts, s.opts, 'the beans are back in the morning plan');
+  assert.equal(E.isActive(PLAN, undone, 'beans-check'), true);
+  // another rule whose step is still done sets the same thing: it stays
+  const p = fixture();
+  p.rules.push({ on: 'sauce', set: { beansLater: true } });
+  let t = run(E.initialState(p, 't', H(6)), [['sauce', H(7)], ['leave-am', H(7, 30)]], p);
+  assert.equal(E.uncomplete(p, t, 'leave-am', H(7, 31)).opts.beansLater, true);
+  assert.equal('beansLater' in E.uncomplete(p, E.uncomplete(p, t, 'leave-am', H(7, 31)), 'sauce', H(7, 32)).opts, false);
+  // an option that was changed since is not this rule's value any more: left alone
+  t = E.setOpt(PLAN, left, 'beansLater', false, H(7, 31));
+  assert.equal(E.uncomplete(PLAN, t, 'leave-am', H(7, 32)).opts.beansLater, false);
+});
+
+test('opt: a stored null falls back to the default (SPEC 3.3 uses ??)', () => {
+  const s = Object.assign({}, fresh(), { opts: { soaked: null } });
+  assert.equal(E.opt(PLAN, s, 'soaked'), true);
+  assert.equal(E.isActive(PLAN, s, 'beans-start'), true);
+  assert.equal(E.isActive(PLAN, s, 'beans-quick'), false);
+});
+
+test('reducers: a clock that is not a number changes nothing', () => {
+  const s = richState();
+  for (const now of [NaN, undefined, null, Infinity, '7']) {
+    assert.equal(E.complete(PLAN, s, 'sauce', now), s);
+    assert.equal(E.uncomplete(PLAN, s, 'beans-start', now), s);
+    assert.equal(E.skip(PLAN, s, 'garnish', now), s);
+    assert.equal(E.retry(PLAN, s, 'beans-check', now), s);
+    assert.equal(E.giveUp(PLAN, s, 'beans-check', now), s);
+    assert.equal(E.tick(PLAN, s, 'pack-bag', 'salt', true, now), s);
+    assert.equal(E.tickTonight(PLAN, s, 'soak', true, now), s);
+    assert.equal(E.setOpt(PLAN, s, 'soaked', false, now), s);
+    assert.equal(E.setAnchor(PLAN, s, 'dinner', 1185, now), s);
+    assert.equal(E.startFg(PLAN, s, 'sauce', T + 30000, now), s);
+    assert.equal(E.clearFg(PLAN, s, now), s);
+    assert.equal(E.setDay(PLAN, s, '2026-11-24', now), s);
+  }
+});
+
 // ---------------------------------------------------------------- the real plan, when it is there
 
 // plan.js is written by someone else. These checks only run when the file exists; they never change it.
@@ -1408,12 +1667,14 @@ test('real plan: the default day is clean and on time', { skip: noPlan }, () => 
   }
 });
 
-test('real plan: whenever he starts, dinner is on time and nothing needed is dropped', { skip: noPlan }, () => {
+test('real plan: a start up to 9:30 keeps dinner on time; a later start is at most 20 min late; nothing needed is ever dropped', { skip: noPlan }, () => {
   const s = E.initialState(REAL, 't', H(6, 50));
-  for (let m = 7 * 60; m <= 10 * 60 + 30; m += 15) {
+  for (let m = 7 * 60; m <= 10 * 60 + 30; m += 5) {
     const p = E.project(REAL, s, H(0, m));
     const at = E.fmtClock(H(0, m));
-    assert.equal(p.lateMin, 0, 'dinner on time for a ' + at + ' start');
+    if (m <= 9 * 60 + 30) assert.equal(p.lateMin, 0, 'dinner on time for a ' + at + ' start');
+    else assert.ok(p.lateMin <= 20, 'dinner at most 20 min late for a ' + at + ' start, got ' + p.lateMin);
+    assert.notEqual(p.dinnerAt, null, 'dinner is planned for a ' + at + ' start');
     assert.equal(warning(p, 'missed'), undefined, 'nothing missed for a ' + at + ' start');
     assert.ok(chronological(p));
   }

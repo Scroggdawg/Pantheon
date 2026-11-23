@@ -1,56 +1,103 @@
-# The Smoky Cream — Creamy Chipotle Slaw (×1)
+# The Smoky Cream — Creamy chipotle slaw
 
-Source: Leite's Culinaria, adapted from Daphne Oz.
+Goes inside the tacos and next to them.
 
-- **Chop:** Mon 4:20 PM
-- **Mix:** 5:40 PM
-- **Drain and serve:** 7:15 PM
+- **Makes:** About 6 cups: enough for the tacos plus a side
+- **Source:** Leite's Culinaria, adapted from Daphne Oz
+- **First step:** 8:18 AM · Your kitchen · morning
+- **Last step:** 7:30 PM · Her kitchen
 
 ## Equipment
 
 - Large bowl
-- Small bowl + whisk or fork
-- Sharp knife (for thin cabbage shreds)
-- Measuring cups
+- 2-cup jar with a tight lid
+- Cutting board and sharp knife
+- 1-cup measure
 
 ## Ingredients
 
-- 4 cups shredded green cabbage
-- 1 cup shredded purple cabbage
-- About 1 cup shredded carrot (from the bag)
-- 1 small red onion, very thinly sliced
-- 3 large scallions, thinly sliced
-- 1 jalapeño, seeded and minced
-- Dressing:
-  - ½ cup mayonnaise
-  - ½ cup full-fat plain Greek yogurt
-  - ¼ cup fresh lime juice
-  - 2 Tbsp sugar
-  - 1 tsp ground cumin
-  - 1 tsp chipotle powder
-- About ½ tsp salt and ¼ tsp black pepper
+- **4 cups** shredded green cabbage, about a quarter of the head
+- **1 cup** shredded purple cabbage
+- **1 cup** shredded carrots, from the bag (the recipe's 2 medium carrots)
+- **1 small** red onion, use the half of a large one left from the pickles; sliced very thin
+- **3 large** scallions, thinly sliced
+- **1** jalapeño, seeded and minced
 
-## Prep checklist
+**Dressing**
 
-- [ ] Cabbage: cut the head in quarters through the core, cut the core out, slice across as thin as you can. Measure by cups.
-- [ ] Red onion sliced very thin
-- [ ] Scallions sliced
-- [ ] Jalapeño seeded and minced
+- **½ cup** mayonnaise
+- **½ cup** full-fat plain Greek yogurt
+- **¼ cup** fresh lime juice
+- **2 tablespoons** sugar
+- **1 teaspoon** ground cumin
+- **1 teaspoon** chipotle powder
+- **½ teaspoon** salt, to taste
+- **¼ teaspoon** black pepper, to taste
 
 ## Steps
 
-1. Combine all the vegetables in the large bowl.
-2. Whisk the dressing until smooth.
-3. Toss. Season with salt and pepper. Taste.
-4. Cover and chill at least **20 minutes**.
-5. 7:15 PM — Pour off the liquid that has collected. Toss once more.
+Some steps say “Tap Done” or mention the guide. That is the phone app. On paper, set your own timer for every **Timer** line.
 
-## How you know it's done
+### Your kitchen · morning
 
-- Cabbage is coated and slightly softened but still crunchy.
+1. **8:18 AM — Zest half a lime, then juice eleven** (**18 min**; shared step, it also covers other dishes)
+    - Rinse one lime. First the zest: scrape the green skin off half of it into the marinade jar. Green only, not the white underneath.
+    - Now the juice. Roll each lime hard on the counter. Cut it in half across the middle.
+    - Squeeze each half in the squeezer, cut side facing down, over a medium bowl.
+    - Juice 11 limes. The zested lime is one of them. Pick out any seeds.
+    - Measure ¾ cup of the juice into the ceviche lime jar. Lid on. Fridge.
+    - Pour the rest (about ½ cup) into the sauce lime jar. Lid on. Fridge.
+    - The slaw dressing, the corn sauce and the marinade each use some. About 1 tablespoon will be left over.
+    - You need: 11 limes (keep 4 whole) · Lime squeezer · Medium bowl · Measuring cup · Fine grater or vegetable peeler · Cutting board and knife
+    - Goes into: Ceviche lime jar, sauce lime jar and marinade jar
+    - Tip: Less than ½ cup left for the sauce lime jar? Juice 1 or 2 of the 4 whole limes too. Keep 2 whole for the wedges.
+2. **8:40 AM — Shake up the slaw dressing** (**6 min**)
+    - Into one of the 2-cup jars: ½ cup of mayonnaise, ½ cup of Greek yogurt and ¼ cup of lime juice.
+    - Add 2 tablespoons of sugar, 1 teaspoon of ground cumin and 1 teaspoon of chipotle powder.
+    - Lid on tight. Shake until smooth. Fridge.
+    - You need: Mayonnaise · Greek yogurt · Sauce lime jar · Sugar · Cumin · Chipotle powder
+    - Goes into: Slaw dressing jar
 
-## Storage and make-ahead
+### Her kitchen
 
-- Best made 1–4 hours ahead.
+3. **3:43 PM — Shred the cabbage** (**10 min**)
+    - Stand the green cabbage on its stem end. Hold it at the side, away from the knife. Cut straight down through the middle.
+    - Lay each half flat side down. Cut each half in two through the core. You have 4 wedges.
+    - Cut the hard core off one wedge.
+    - Slice that wedge across as thin as you can.
+    - Keep going until you have 4 cups, loosely packed. That is about a quarter of the head.
+    - Do the same with the purple cabbage until you have 1 cup.
+    - You need: Green cabbage · Purple cabbage · 1-cup measure
+    - Goes into: Slaw bowl (large)
+    - Look for: Thin ribbons, like coleslaw.
+4. **3:53 PM — Finish the slaw vegetables** (**8 min**)
+    - Slice the half red onion as thin as you can.
+    - Trim the roots off 3 scallions. Slice them thin, white and green parts.
+    - Seed the jalapeño and mince it.
+    - Add 1 cup of shredded carrots from the bag.
+    - Everything into the slaw bowl. Cover it. Fridge.
+    - Goes into: Slaw bowl
+    - **Warning:** Wash your hands with soap after the jalapeño.
+5. **5:35 PM — Dress the slaw** (**4 min**)
+    - Shake the slaw dressing jar. Pour all of it over the vegetables in the slaw bowl.
+    - Toss with tongs or two spoons until everything is coated.
+    - Add ½ teaspoon of salt and ¼ teaspoon of black pepper. Toss. Taste a forkful. Flat? Add a pinch more salt and toss again.
+    - Cover. Fridge.
+    - You need: Slaw dressing jar · Salt · Pepper
+    - Not before 5:30 PM.
+6. **7:10 PM — Drain the slaw** (**2 min**)
+    - Take the slaw out of the fridge.
+    - Tip the bowl over the sink and pour off the liquid at the bottom.
+    - Toss once more. Put it on the table.
+    - Not before 7:10 PM.
+7. **7:30 PM — Dinner is served** (shared step, it also covers other dishes)
+    - Build each taco: shrimp, a pile of slaw, a drizzle of pink sauce, a squeeze of lime.
+    - Scoop the ceviche with tostadas, chips or saltines.
+    - Pickled onions go on everything.
+    - Put leftover ceviche back in the fridge right after dinner. Throw it away if it sat out for more than **2 hours**.
+
+## Good to know
+
+- Best dressed **1 to 4 hours** before dinner.
+- Pour off the liquid that collects before you serve it.
 - Keeps 2 days but gets wetter.
-- This is a full batch for two people: 6 tacos plus a generous side, with leftovers.

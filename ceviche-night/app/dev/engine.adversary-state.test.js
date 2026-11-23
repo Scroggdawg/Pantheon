@@ -753,8 +753,20 @@ const refDone = (plan, s, id) => {
   const st = stepOf(plan, id);
   return !!st && (s.done[id] !== undefined || (st.kind === 'choice' && s.opts[st.choice.opt] !== undefined));
 };
+// One addition to SPEC 3.5, made when the "dead end" findings were fixed ("I'm here" marked done without "I'm on my way"
+// left home steps blocking dinner for good): completing a move first completes every earlier move that is still open,
+// at the same time, so their rules and the leavePm write-off run. Still one rev.
+const MOVE_ORDER = ['leaveAm', 'backHome', 'leavePm', 'arrive'];
 function refComplete(plan, state, id, now, payload) {
   const step = stepOf(plan, id);
+  const rev0 = state.rev;
+  if (step.kind === 'move' && MOVE_ORDER.indexOf(step.move) > 0) {
+    for (const name of MOVE_ORDER.slice(0, MOVE_ORDER.indexOf(step.move))) {
+      const mv = plan.steps.find((st) => st.kind === 'move' && st.move === name);
+      if (mv && mv.id !== id && state.done[mv.id] === undefined) state = refComplete(plan, state, mv.id, now);
+    }
+    state = { ...state, rev: rev0 };
+  }
   const n = RT(state);
   n.done[id] = now;
   delete n.skipped[id];
@@ -812,7 +824,16 @@ function refBlockers(plan, s, step, now) {
   }
   if (step.afterWait) {
     const r = s.waits[step.afterWait];
-    if (r) { const end = r.start + r.mins * MIN; if (now < end) out.push({ type: 'wait', waitId: step.afterWait, endsAt: end }); }
+    if (r) {
+      // SPEC 3.3, plus the one exception made for the finding "a must step whose timer ends after the hard out is never
+      // offered": in a place with a hard out the gate of a must step opens no later than (hard out - its hands-on minutes)
+      let end = r.start + r.mins * MIN;
+      const loc = refLocation(plan, s), L = loc === 'home-am' ? E.anchorMs(s, 'leaveAm') : loc === 'home-pm' ? E.anchorMs(s, 'leavePm') : NaN;
+      if (step.must === true && refPlaceOk(step, loc) && Number.isFinite(L)) {
+        end = Math.min(end, Math.max(r.start, L - ((step.mins || 0) + (step.timer ? step.timer.secs / 60 : 0)) * MIN));
+      }
+      if (now < end) out.push({ type: 'wait', waitId: step.afterWait, endsAt: end });
+    }
     else if (plan.steps.some((a) => a.wait && a.wait.id === step.afterWait && refActive(plan, s, a) && !refDone(plan, s, a.id))) {
       out.push({ type: 'wait', waitId: step.afterWait, endsAt: null });
     }
@@ -1062,7 +1083,7 @@ test('uncomplete(leavePm): the home steps that leaving wrote off are open again'
 });
 
 test('uncomplete(leavePm): a home step he skipped HIMSELF before leaving stays skipped',
-  { todo: 'spec gap: SPEC 3.5 says nothing about skips on uncomplete; engine.js promises to undo "the auto-skips" but also drops manual skips' }, () => {
+  { todo: 'spec gap, left open on purpose: state.skipped is {id: true} for both a skip of his own and a write-off by leavePm (SPEC 3.1), so the engine cannot tell them apart without a new state field; engine.js now says so in its header' }, () => {
     let s = TRACE[TRACE.findIndex((x) => x.label === 'complete:go-pm') - 1].state;
     s = E.skip(PLAN, s, 'garnish', H(14, 5));              // optional home step: "Skip"
     const left = E.complete(PLAN, s, 'go-pm', H(14, 10));
@@ -1070,8 +1091,9 @@ test('uncomplete(leavePm): a home step he skipped HIMSELF before leaving stays s
     assert.deepEqual(undone.skipped, s.skipped, 'his own skip of "garnish" is gone after tapping "Not done" on the leave step');
   });
 
+// Was a todo (SPEC 3.5 does not say rules are undone). Fixed in the engine: uncomplete() takes back what the step's rules set.
 test('uncomplete of a move: the options its rules set are taken back',
-  { todo: 'spec gap: SPEC 3.5 does not say rules are undone. app.js doUncomplete() uses its undo stack when "Not done" directly follows the tap; in every other case the options stay' }, () => {
+  {}, () => {
     const before = at('complete:brine-drain');             // soup on, not tasted yet
     const left = E.complete(PLAN, before, 'go-am', H(9, 0));
     assert.deepEqual(left.opts, { soaked: true, late: true, packed: true });
@@ -1209,8 +1231,9 @@ test('tickTonight: ticks, applies the item\'s sets when on, never for an item wi
   assert.equal(n.opts.soaked, true);
 });
 
+// Was a todo (SPEC 3.5 only says sets apply "when on"). Fixed in the engine: unticking takes the option back.
 test('tickTonight: unticking takes back the option the tick had set, so the morning question is asked again',
-  { todo: 'spec gap: SPEC 3.5 only says sets apply "when on". With the engine alone, tick + untick leaves the answer in place and the question is never asked (app.js doTonight() takes it back itself)' }, () => {
+  {}, () => {
     let s = E.tickTonight(PLAN, S0(), 'soak', true, H(7, 31));
     s = act(s, 'tickTonight', ['soak', false], H(7, 32));
     assert.deepEqual(s.tonight, {});
@@ -1876,8 +1899,9 @@ test('junk in any top-level section of the plan: nothing throws, a day can still
 
 // ---------------------------------------------------------------- 14. hardening beyond the spec
 
+// Was a todo (hardening). Fixed in the engine: a reducer called without a finite `now` returns the state unchanged.
 test('a reducer called with a broken clock (NaN / undefined now) does not produce a state that changes meaning in storage',
-  { todo: 'hardening: SPEC says now is epoch ms. complete(.., NaN) gives done = NaN, which is "done" in memory and null = "not done" after JSON' }, () => {
+  {}, () => {
     for (const now of [NaN, undefined]) {
       const out = E.complete(PLAN, at('complete:q-soak'), 'wipe', now);
       assert.equal(E.isDone(PLAN, RT(out), 'wipe'), E.isDone(PLAN, out, 'wipe'), 'now = ' + String(now) + ': done before and after a JSON round trip');
@@ -1914,7 +1938,7 @@ test('real plan: canGiveUp is false everywhere but the morning kitchen (SPEC 9.2
 });
 
 test('real plan: unticking a Tonight item takes back the option it set',
-  { skip: noReal, todo: 'spec gap: with the engine alone, tick + untick of "Soak the beans" leaves soaked = true and the morning question is never asked (app.js doTonight() takes it back itself)' }, () => {
+  { skip: noReal }, () => {
     const eve = new Date(2026, 10, 22, 22, 30).getTime();
     for (const item of REAL.tonight.filter((t) => t.sets)) {
       const s0 = E.initialState(REAL, 'adv-phone', eve);
@@ -1927,7 +1951,7 @@ test('real plan: unticking a Tonight item takes back the option it set',
   });
 
 test('real plan: "Not done" on a move takes back what its rules set',
-  { skip: noReal, todo: 'spec gap: uncomplete() keeps rule-set options (app.js only covers "Not done" directly after the tap)' }, () => {
+  { skip: noReal }, () => {
     for (const name of ['leaveAm', 'backHome', 'leavePm', 'arrive']) {
       const mv = realMove(name);
       const rules = (REAL.rules || []).filter((r) => r.on === mv.id);
