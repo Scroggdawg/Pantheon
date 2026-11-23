@@ -2,8 +2,8 @@
 
 Dinner: Tue Nov 24, 7:30 PM, 2 people.
 Two Instacart orders, tonight (Mon Nov 23):
-- **Lazy Acres:** where quality matters — halibut, shrimp, limes, tomatoes, chiles, cilantro, avocados, corn, olives, tortilla chips.
-- **Ralphs:** everything else — all of The Patrón, onions, cabbage, dairy, canned goods, mayo, allspice, tortillas, tostadas, saltines, citrus squeezer.
+- **Lazy Acres:** halibut, shrimp, corn, tortilla chips.
+- **Ralphs:** everything else.
 
 What actually went in each cart: `cart-report.md`.
 

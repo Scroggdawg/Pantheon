@@ -1,6 +1,6 @@
 # Cart Report
 
-Final state, Mon Nov 23 about 9:45 PM. Two Instacart carts. Nothing is checked out.
+Final state, Mon Nov 23 about 10:00 PM. Two Instacart carts. Nothing is checked out.
 
 - Built through the Instacart connector.
 - Verified and adjusted in Luke's own Chrome on the Mac mini (totals, counts, replacement settings).
@@ -8,26 +8,19 @@ Final state, Mon Nov 23 about 9:45 PM. Two Instacart carts. Nothing is checked o
 
 | Cart | Lines | Item subtotal | Delivery estimate shown |
 |---|---|---|---|
-| Lazy Acres | 11 | $103.46 | 9:41–10:12 PM tonight |
-| Ralphs | 25 | $113.65 | tonight (was 9:38–10:11 PM at last full read) |
-| Both | 36 | $217.11 | |
+| Lazy Acres | 4 | $71.11 | tonight |
+| Ralphs | 32 | $135.19 | 9:59–10:34 PM tonight |
+| Both | 36 | $206.30 | |
 
-Before the split by quality the two carts came to $237.29. Fees, tip and tax are not included in any of these.
+With everything but the beans at Lazy Acres the two carts came to $237.29. Fees, tip and tax are not included in any of these.
 
-## Cart 1 — Lazy Acres (quality matters)
+## Cart 1 — Lazy Acres (fish, shrimp, corn, chips)
 
 | Item | Qty | For |
 |---|---|---|
 | Fresh Halibut Fillet | 1 fillet, about 0.75 lb ($40.87) | Classic Scoop — need ½ lb |
 | Wild Extra Large P&D Shrimp | 1 lb ($14.99) | Smoke & Pink — need ½ lb |
-| Organic Limes | 15 | Scoop, S&P, Smoky Cream, Elote |
-| Organic Roma Tomatoes | 3 | Scoop (raw) |
-| Organic Serrano Peppers | 4 | Scoop (1), Milky Way (2) |
-| Organic Jalapeño | 1 | Smoky Cream |
-| Organic Cilantro | 2 | Scoop, S&P, Patrón, Elote |
-| Organic Hass Avocados | 2 | Scoop (need 1) |
 | White Corn on the Cob | 4 | Elote (Luke doubled it) |
-| Divina Organic Pitted Green Olives, 10.2 oz | 1 | Scoop |
 | Nopalito Tortilla Chips, 20 oz | 1 | Scoop |
 
 Settings:
@@ -38,7 +31,8 @@ Settings:
 Choices made:
 - **Fish = fresh halibut.** No snapper or sea bass fillet is listed. The listing does not say sushi-grade or previously frozen. Luke made an exception to the brief's fish rule for this dinner: pick the best-tasting fish. Halibut is one of the three fish the recipe names; branzino fillet is the runner-up.
 - **Shrimp = extra large**, not medium. It is the only raw peeled-and-deveined counter shrimp sold by the pound. Sear time may run a little over 60 seconds per side.
-- **Olives and chips stayed here.** Ralphs' first olive match was a 21 oz jar of pimiento-stuffed olives, which is the wrong product. The chips are what the ceviche is eaten on.
+- **Chips stayed here.** They are what the ceviche is eaten on.
+- Luke moved limes, tomatoes, serranos, jalapeño, cilantro, avocados and olives to Ralphs for price.
 
 ## Cart 2 — Ralphs (everything else)
 
@@ -57,6 +51,13 @@ Shared and other dishes:
 
 | Item | Qty | For |
 |---|---|---|
+| Limes | 15 | Scoop, S&P, Smoky Cream, Elote |
+| Roma Tomatoes | 3 | Scoop (raw) |
+| Serrano Peppers | 4 | Scoop (1), Milky Way (2) |
+| Jalapeño | 1 | Smoky Cream |
+| Cilantro | 2 bunches | Scoop, S&P, Patrón, Elote |
+| Avocados | 2 | Scoop (need 1) |
+| Simple Truth Organic Pitted Green Olives | 1 | Scoop |
 | White Jumbo Onions | 2 | Patrón, Scoop, Milky Way |
 | Large Red Onions | 3 | Blanch (2), Smoky Cream (1) |
 | Garlic | 1 head | S&P, Milky Way |
