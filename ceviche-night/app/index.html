@@ -607,6 +607,12 @@ svg { display: block; flex: none; }
 .help .card p { font-size: clamp(21px, 5.65vw, 23px); line-height: 1.4; }
 .answer { -webkit-user-select: text; user-select: text; white-space: pre-wrap; font-size: clamp(21px, 5.65vw, 23px); line-height: 1.4; }
 .answer.dim { color: var(--fg-2); }
+.chatlog { display: grid; gap: 10px; }
+.chat { display: grid; }
+.chat p { padding: 12px 14px; border-radius: 18px; background: var(--sheet-card); font-size: clamp(21px, 5.65vw, 23px); line-height: 1.38; white-space: pre-wrap; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
+.chat p.dim { color: var(--fg-2); }
+.chat.me { justify-items: end; }
+.chat.me p { max-width: 88%; background: var(--fg); color: var(--bg); }
 .ask-form { display: flex; gap: 12px; }
 .field {
   flex: 1; width: 100%; min-width: 0; min-height: 64px; padding: 8px 14px; border-radius: 16px;

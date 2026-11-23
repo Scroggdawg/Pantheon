@@ -859,6 +859,122 @@
     });
   }
 
+  /* ---- ask the chef: a chat about the whole dinner (Claude Opus 5.5, low effort, short answers) ---- */
+  var CHEF_MODEL = 'claude-opus-5-5', KEY_CHEF = KEY + '.chef';
+  var CHEF_STARTERS = ['What can I get ahead on right now?', 'I am running late. What can I cut?', 'Something went wrong. Can I fix it?'];
+  var chef = { turns: [], status: 'idle', live: '', err: '', other: false };
+  (function () {
+    var t = readJSON(ls(), KEY_CHEF);
+    if (Array.isArray(t)) chef.turns = t.filter(function (m) { return m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string'; }).slice(-30);
+  })();
+  function saveChef() { writeJSON(ls(), KEY_CHEF, chef.turns.slice(-30)); }
+  // Standing instructions plus the whole plan. Claude keeps nothing between calls, so this goes first every time.
+  function chefRules() {
+    var L = [];
+    L.push('You are the chef standing next to a first-time cook who is in the middle of cooking this dinner for two. Answer his questions about it.');
+    L.push('Rules:');
+    L.push('- Be brief: 1 to 3 short sentences. Give the answer first. No preamble, no recap, no sign-off.');
+    L.push('- Plain words, no cooking jargon. Plain text only: no headings, no bold. A short numbered list only when he asks for steps.');
+    L.push('- Go by the plan below. Do not change its quantities or times unless he asks for a substitution or a fix. Then say exactly what changes.');
+    L.push('- Be conservative about food safety. Raw fish and shrimp stay cold. Lime juice does not make raw fish safe.');
+    L.push('- If you are not sure, say so. Spell units out: tablespoon, teaspoon.');
+    L.push('');
+    L.push('THE PLAN: morning in his kitchen, out from late morning to early afternoon, then her kitchen until dinner.');
+    DISHES.forEach(function (d) {
+      L.push('');
+      L.push('Dish: ' + d.nick + (d.name ? ' (' + d.name + ')' : '') + (d.makes ? '. Makes: ' + d.makes : ''));
+      (d.ingredients || []).forEach(function (g) {
+        L.push(g.item ? '- ' + [g.qty, g.item].filter(Boolean).join(' ') + (g.note ? ' (' + g.note + ')' : '') : String(g.qty || '') + ':');
+      });
+    });
+    L.push('');
+    L.push('Every step of the day in order, with its dish in brackets:');
+    listSteps(function () { return true; }).forEach(function (st, i) { L.push((i + 1) + '. [' + dishOf(st).nick + '] ' + stepText(st)); });
+    return L.join('\n');
+  }
+  // Where he is at this moment. Sent with each question, because it changes all day.
+  function chefNow() {
+    var s = S(), t = now(), L = [];
+    var loc = safe(function () { return E.location(PLAN, s); }, '');
+    var pr = safe(function () { return E.progress(PLAN, s); }, { done: 0, total: 0 });
+    var f = focusGet() || safe(function () { return E.nextStep(PLAN, s, t); }, null), st = f ? byId[f] : null;
+    var p = projection();
+    L.push('Right now: ' + clock(t) + '. Place: ' + (LOC_TITLE[loc] || loc || 'unknown') + '. Steps done: ' + pr.done + ' of ' + pr.total + '.');
+    if (st) L.push('The step on his screen: [' + dishOf(st).nick + '] ' + st.title + (/[.?!]$/.test(st.title) ? '' : '.'));
+    safe(function () { return E.waitsView(PLAN, s, t); }, []).forEach(function (w) {
+      L.push('Timer: ' + w.label + (w.elapsed ? ', time is up.' : ', ' + Math.max(1, Math.round(w.remainingMs / 60000)) + ' min left.'));
+    });
+    if (p && p.dinnerAt) L.push('Dinner is planned for ' + clock(p.dinnerAnchor) + (p.lateMin > 0 ? ' and now looks like ' + clock(p.dinnerAt) + '.' : ' and is on time.'));
+    return L.join('\n');
+  }
+  function scrollChef() { var sc = doc.querySelector('#sheet-layer .sheet-scroll'); if (sc) sc.scrollTop = sc.scrollHeight; }
+  function renderChef() {
+    var top = sheets[sheets.length - 1];
+    if (!top || top.type !== 'chef') return;
+    renderSheet();
+    scrollChef();
+  }
+  function chefSend(q) {
+    q = String(q || '').trim().slice(0, 400);
+    if (!q || !caps.sample || chef.status === 'busy') return;
+    chef.turns.push({ role: 'user', content: q });
+    chef.status = 'busy'; chef.live = ''; chef.err = '';
+    saveChef(); renderChef();
+    var turns = chef.turns.slice(-16);                       // recent chat only; the rules turn is always sent
+    while (turns.length && turns[0].role !== 'user') turns.shift();
+    var last = turns.pop(), input, p;
+    try {
+      input = [{ role: 'user', content: chefRules() }].concat(turns, [{ role: 'user', content: chefNow() + '\n\nQuestion: ' + last.content }]);
+    } catch (e) { chef.status = 'error'; chef.err = "Couldn't get an answer. Try again."; renderChef(); return; }
+    var opts = { model: CHEF_MODEL, modelTier: 'complex', effort: 'low', cache: false, onText: function (u) {
+      if (chef.status !== 'busy' || !u) return;
+      chef.live = String(u.text || '');
+      var el = doc.querySelector('#sheet-layer [data-role="chef-live"]');
+      if (el) { el.textContent = chef.live; el.className = ''; scrollChef(); }
+    } };
+    try { p = caps.sample(input, opts); } catch (e2) { p = Promise.reject(e2); }
+    Promise.resolve(p).then(function (r) {
+      var text = String((r && r.text) || chef.live || '').trim();
+      if (!text) { chef.status = 'error'; chef.err = "Couldn't get an answer. Try again."; return; }
+      chef.turns.push({ role: 'assistant', content: text });
+      chef.other = !(r && r.modelApplied);                   // true when another Claude model had to answer
+      chef.status = 'idle';
+    }, function (err) {
+      var code = err && err.code;
+      if (code === 'cancelled') { chef.status = 'idle'; return; }
+      if (err && err.text) chef.turns.push({ role: 'assistant', content: String(err.text) });
+      chef.status = 'error';
+      chef.err = code === 'rate_limited' ? 'Too many questions in a short time. Wait a minute, then ask again.'
+        : (code === 'not_granted' || code === 'sampling_disabled' || code === 'not_declared' || /^capability_/.test(String(code))) ? 'Ask the Chef is turned off for this page.'
+        : code === 'refused' ? 'The chef could not answer that one. Try asking it another way.'
+        : "Couldn't get an answer. Try again.";
+    }).then(function () { chef.live = ''; saveChef(); renderChef(); });
+  }
+  function chefHTML() {
+    var h = '<div class="help"><div class="block"><h2 class="term-h" id="sheet-title">Ask the Chef</h2>' +
+      '<p class="sub">' + (chef.other ? 'Claude Opus 5.5 was not available here, so another Claude model answered.' : 'Claude Opus 5.5. Short answers about this dinner. It knows the whole plan and where you are in it.') + '</p></div>';
+    if (!caps.sample) {
+      return h + '<div class="card"><p>Ask the Chef is not available in this copy of the guide. Open the guide from the Claude link to use it.</p></div></div>';
+    }
+    if (!chef.turns.length && chef.status !== 'busy') {
+      h += '<div class="rows">' + CHEF_STARTERS.map(function (q, i) { return btn('chef-preset', at('i', i), esc(q)); }).join('') + '</div>';
+    }
+    h += '<div class="chatlog">' + chef.turns.map(function (m) {
+      return '<div class="chat ' + (m.role === 'user' ? 'me' : 'chef') + '"><p>' + esc(m.content) + '</p></div>';
+    }).join('');
+    if (chef.status === 'busy') h += '<div class="chat chef"><p' + (chef.live ? '' : ' class="dim"') + ' data-role="chef-live">' + esc(chef.live || 'Thinking…') + '</p></div>';
+    h += '</div>';
+    if (chef.status === 'error' && chef.err) h += '<p class="answer dim">' + esc(chef.err) + '</p>';
+    return h + '</div>';
+  }
+  function chefActions() {
+    var close = btn('sheet-close', '', 'Close', 'fill');
+    if (!caps.sample) return row(close);
+    return '<form class="ask-form" id="chef-form" autocomplete="off"><input class="field" id="chef-input" name="q" type="text" maxlength="400" enterkeyhint="send" placeholder="Ask about the cooking" aria-label="Your question">' +
+      '<button type="submit" class="btn on">Send</button></form>' +
+      row(chef.turns.length ? btn('chef-clear', '', 'New chat') : '', close);
+  }
+
   /* ================================================================== 9. router */
 
   var cur = { tab: 'now', dish: null };
@@ -1403,7 +1519,7 @@
     function sect(title, inner) { return '<section class="sect"><h2 class="h2">' + title + '</h2>' + inner + '</section>'; }
 
     h += sect('Big board', '<p class="sub">The whole day as a timeline, with the current step beside it. Best on a laptop or an iPad.</p>' +
-      '<a class="btn big on block" href="#board">Open the big board</a>');
+      '<a class="btn big on block" href="#board">Open the big board</a>' + btn('chef-open', '', 'Ask the Chef', 'big block'));
 
     h += sect('The night before', tonightList());
 
@@ -1511,6 +1627,7 @@
       var g = (PLAN.glossary || {})[top.key] || { term: top.key, text: '' };
       return sheetShell('low', '<div class="gloss"><h2 class="term-h" id="sheet-title">' + esc(g.term) + '</h2>' + glossLines(g) + '</div>', close);
     }
+    if (top.type === 'chef') return sheetShell('full', chefHTML(), chefActions());
     var step = byId[top.id];
     if (!step) return sheetShell('low', '<div class="gloss"><h2 class="term-h" id="sheet-title">Not found</h2></div>', close);
     if (top.type === 'help') return sheetShell('full', helpHTML(step, top), close);
@@ -1567,12 +1684,13 @@
     var top = sheets[sheets.length - 1];
     var sc = layer.querySelector('.sheet-scroll');
     var keep = sc && layer.__top === top ? sc.scrollTop : (top.scroll || 0);
-    var typed = $('ask-input') ? $('ask-input').value : '';
+    var typed = $('ask-input') ? $('ask-input').value : '', typedChef = $('chef-input') ? $('chef-input').value : '';
     layer.hidden = false;
     if (setHTML(layer, sheetHTML(top))) {
       sc = layer.querySelector('.sheet-scroll');
       if (sc) sc.scrollTop = keep;
       if (typed && layer.__top === top && $('ask-input')) $('ask-input').value = typed;
+      if (typedChef && layer.__top === top && $('chef-input')) $('chef-input').value = typedChef;
       if (sheetFresh) {
         var sh = layer.querySelector('.sheet');
         if (sh) { sh.classList.add('in'); if (sh.focus) { sh.setAttribute('tabindex', '-1'); sh.focus({ preventScroll: true }); } }
@@ -1682,7 +1800,10 @@
     'reset-ask': function () { confirmReset = true; render(); },
     'reset-no': function () { confirmReset = false; render(); },
     'reset-yes': function () { if (preview) { confirmReset = false; exitPreview(); enterPreview(); } else startOver(); },
-    'ask-preset': function (el) { ask(PRESETS[Number(el.getAttribute('data-i'))]); }
+    'ask-preset': function (el) { ask(PRESETS[Number(el.getAttribute('data-i'))]); },
+    'chef-open': function () { openSheet({ type: 'chef' }); scrollChef(); },
+    'chef-preset': function (el) { chefSend(CHEF_STARTERS[Number(el.getAttribute('data-i'))]); },
+    'chef-clear': function () { if (chef.status === 'busy') return; chef.turns = []; chef.err = ''; chef.status = 'idle'; chef.other = false; saveChef(); renderChef(); }
   };
   function onClick(ev) {
     var el = ev.target && ev.target.closest ? ev.target.closest('[data-act]') : null;
@@ -1715,6 +1836,14 @@
     }
   }
   function onSubmit(ev) {
+    if (ev.target && ev.target.id === 'chef-form') {
+      ev.preventDefault();
+      var ci = $('chef-input'), cq = ci ? ci.value : '';
+      if (chef.status === 'busy' || !String(cq).trim()) return;
+      if (ci) { ci.value = ''; ci.blur(); }
+      chefSend(cq);
+      return;
+    }
     if (!ev.target || ev.target.id !== 'ask-form') return;
     ev.preventDefault();
     var input = $('ask-input'), q = input ? input.value : '';
@@ -1855,6 +1984,6 @@
   setInterval(tick, 1000);
 
   useCap('tts').then(function (t) { caps.tts = t && typeof t.speak === 'function' ? t : null; patchReadButtons(); });
-  useCap('sample').then(function (f) { caps.sample = typeof f === 'function' ? f : null; if (sheets.length && sheets[sheets.length - 1].type === 'help') renderSheet(); });
+  useCap('sample').then(function (f) { caps.sample = typeof f === 'function' ? f : null; if (sheets.length && (sheets[sheets.length - 1].type === 'help' || sheets[sheets.length - 1].type === 'chef')) renderSheet(); });
   useCap('db').then(initSync);
 })();
